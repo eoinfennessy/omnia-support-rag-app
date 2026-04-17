@@ -1,0 +1,923 @@
+{
+  "dataset_metadata": {
+    "name": "Omnia Retail Ltd Customer Support Knowledge Base",
+    "version": "1.0",
+    "created": "2024-04-15",
+    "description": "A synthetic knowledge base for a fictional Irish electronics retailer (Omnia Retail Ltd). Created for use in RAG (Retrieval Augmented Generation) system development assignments. Contains support tickets, policies, and FAQs covering laptops, monitors, accessories, and storage products.",
+    "total_documents": 71,
+    "document_types": {
+      "support_tickets": 40,
+      "policies": 10,
+      "faqs": 21
+    },
+    "product_categories": [
+      "laptops",
+      "monitors",
+      "accessories",
+      "storage",
+      "all",
+      "none"
+    ],
+    "geographic_context": "Republic of Ireland and Northern Ireland",
+    "currency": "EUR",
+    "regulatory_context": [
+      "GDPR",
+      "EU Consumer Rights Directive",
+      "WEEE Ireland",
+      "Consumer Rights Act 2022 (Ireland)"
+    ]
+  },
+  "documents": [
+    {
+      "document_id": "ticket_001",
+      "type": "support_ticket",
+      "category": "delivery_issue",
+      "date": "2024-01-15",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "laptops",
+      "priority": "medium",
+      "content": "Customer reported their ThinkPad X1 Carbon Gen 11 order (#ORD-2024-1891) placed on January 8th has not arrived. Expected delivery was January 14th. Customer needs laptop urgently for business trip on January 20th. Investigation showed package delayed at distribution center due to severe weather. Expedited shipping arranged at no cost. Laptop delivered January 17th. Customer satisfied with resolution and compensation (€25 store credit applied)."
+    },
+    {
+      "document_id": "ticket_002",
+      "type": "support_ticket",
+      "category": "product_defect",
+      "date": "2024-01-18",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 3.5,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Dell XPS 15 battery draining extremely fast (full charge lasting only 2 hours instead of advertised 8 hours). Customer purchased 3 weeks ago. Troubleshooting steps attempted: battery calibration, power settings optimization, background app closure. Issue persists. Battery health diagnostics show 94% capacity - within normal range. Determined to be software issue with Windows power management. Clean Windows reinstall resolved issue. Battery now performs as expected. Follow-up after 1 week confirmed resolution."
+    },
+    {
+      "document_id": "ticket_003",
+      "type": "support_ticket",
+      "category": "order_cancellation",
+      "date": "2024-01-22",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "monitors",
+      "priority": "low",
+      "content": "Customer requested cancellation of LG 27-inch UltraFine monitor order (#ORD-2024-2103) 2 hours after placing order. Order had not yet been processed for shipping. Cancellation processed immediately. Full refund of €349.99 issued to original payment method. Refund processed within 1 business day. Customer expressed appreciation for quick response and mentioned they found a better deal elsewhere."
+    },
+    {
+      "document_id": "ticket_004",
+      "type": "support_ticket",
+      "category": "damaged_delivery",
+      "date": "2024-01-25",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.0,
+      "product_category": "monitors",
+      "priority": "high",
+      "content": "Samsung 32-inch curved gaming monitor arrived with cracked screen. Packaging showed external damage suggesting rough handling during transit. Customer provided photos of damaged box and screen. Replacement unit shipped same day with upgraded packaging and shipping insurance. Customer asked to dispose of damaged unit (not worth return shipping cost). Replacement arrived in perfect condition 2 days later. Customer satisfied but noted original packaging was insufficient."
+    },
+    {
+      "document_id": "ticket_005",
+      "type": "support_ticket",
+      "category": "return_request",
+      "date": "2024-02-01",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 3.0,
+      "product_category": "accessories",
+      "priority": "low",
+      "content": "Customer wants to return Logitech MX Master 3S mouse purchased 45 days ago. Customer states mouse is 'too large' for their hand. Informed customer of 30-day return policy. Customer disappointed but understanding. As goodwill gesture, offered 20% discount on smaller mouse model (Logitech MX Anywhere 3). Customer accepted offer and purchased replacement mouse. Original mouse kept by customer."
+    },
+    {
+      "document_id": "ticket_006",
+      "type": "support_ticket",
+      "category": "technical_support",
+      "date": "2024-02-05",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "laptops",
+      "priority": "medium",
+      "content": "MacBook Pro M3 running very hot during normal use. Fan constantly running at high speed. Customer concerned about hardware defect. Walked customer through Activity Monitor to identify resource-intensive processes. Found Chrome browser with 40+ tabs consuming excessive CPU/memory. Explained memory pressure and browser tab management best practices. Customer closed unnecessary tabs and issue resolved. Scheduled follow-up check-in confirmed sustained improvement."
+    },
+    {
+      "document_id": "ticket_007",
+      "type": "support_ticket",
+      "category": "compatibility_question",
+      "date": "2024-02-08",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "accessories",
+      "priority": "low",
+      "content": "Customer inquiring if Samsung T7 portable SSD (2TB) compatible with both Windows PC and MacBook Air. Confirmed full cross-platform compatibility with USB-C connection. Explained formatting options: exFAT for cross-platform use, NTFS for Windows-only, APFS for Mac-only. Recommended exFAT for customer's use case (frequent transfers between systems). Provided step-by-step formatting instructions for both operating systems. Customer purchased with confidence."
+    },
+    {
+      "document_id": "ticket_008",
+      "type": "support_ticket",
+      "category": "wrong_item_shipped",
+      "date": "2024-02-12",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 3.5,
+      "product_category": "storage",
+      "priority": "high",
+      "content": "Customer ordered Samsung 990 Pro 2TB NVMe SSD but received 1TB version. Order confirmation verified 2TB model was ordered and charged. Warehouse picking error identified. Correct 2TB model shipped immediately with prepaid return label for incorrect item. Customer received correct item 2 days later. Applied €15 store credit as apology. Customer accepted but suggested better quality control."
+    },
+    {
+      "document_id": "ticket_009",
+      "type": "support_ticket",
+      "category": "refund_delay",
+      "date": "2024-02-15",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 2.5,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Customer returned Asus ROG gaming laptop 3 weeks ago but refund not received. Return tracking confirmed receipt at warehouse 18 days ago. Investigation revealed return stuck in quality inspection queue due to backlog. Refund processed immediately (€1,299.00). Explained 5-7 business day bank processing time. Customer frustrated with delay - expected 7-10 day turnaround per policy. Offered expedited processing for future purchases as apology. Customer accepted but voiced dissatisfaction with timeline."
+    },
+    {
+      "document_id": "ticket_010",
+      "type": "support_ticket",
+      "category": "warranty_claim",
+      "date": "2024-02-18",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "laptops",
+      "priority": "medium",
+      "content": "HP Pavilion laptop keyboard keys sticking 8 months after purchase. Customer inquired about warranty coverage. Confirmed 1-year manufacturer warranty active. Keyboard replacement covered under warranty at no cost. Arranged courier pickup and repair at authorized HP service center. Laptop repaired and returned within 6 days. Customer satisfied with turnaround time and repair quality. No additional issues reported in follow-up."
+    },
+    {
+      "document_id": "ticket_011",
+      "type": "support_ticket",
+      "category": "delivery_issue",
+      "date": "2024-02-22",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.0,
+      "product_category": "accessories",
+      "priority": "medium",
+      "content": "Package marked as delivered but customer did not receive it. Delivery confirmation showed signature required but customer states they never signed. Contacted courier - driver left package at neighbor's address by mistake (similar street name). Customer retrieved package from neighbor same day. No damage to contents. Applied €10 store credit for inconvenience. Customer satisfied with resolution but suggested better driver training."
+    },
+    {
+      "document_id": "ticket_012",
+      "type": "support_ticket",
+      "category": "price_match_request",
+      "date": "2024-02-25",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "monitors",
+      "priority": "low",
+      "content": "Customer found Dell UltraSharp U2723DE monitor €50 cheaper at competitor 3 days after purchase. Requested price match. Verified competitor price and stock availability. Applied price match policy - refunded €50 difference to original payment method. Customer extremely satisfied with price match honor. Stated this builds brand loyalty and they will continue shopping with Omnia Retail."
+    },
+    {
+      "document_id": "ticket_013",
+      "type": "support_ticket",
+      "category": "technical_support",
+      "date": "2024-03-01",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.0,
+      "product_category": "laptops",
+      "priority": "medium",
+      "content": "Lenovo ThinkPad not detecting external monitor via HDMI. Customer tried multiple cables and monitors - same issue. Walked through display settings and function key shortcuts (Fn+F7). Issue persisted. Suggested testing USB-C to HDMI adapter as alternative. Customer had USB-C adapter available - worked perfectly. Determined HDMI port hardware failure. Laptop still under warranty. Arranged repair service. Monitor detection via USB-C served as temporary workaround."
+    },
+    {
+      "document_id": "ticket_014",
+      "type": "support_ticket",
+      "category": "account_issue",
+      "date": "2024-03-05",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 3.5,
+      "product_category": "none",
+      "priority": "low",
+      "content": "Customer unable to log into Omnia Retail account. Password reset emails not arriving. Checked spam/junk folders - nothing found. Verified email address on file matched customer's stated email. Discovered customer's email provider had blacklisted our domain due to high volume. Whitelisting requested. Meanwhile, updated account email to customer's alternative address. Customer regained account access. Resolved email deliverability issue with IT team."
+    },
+    {
+      "document_id": "ticket_015",
+      "type": "support_ticket",
+      "category": "bulk_order_inquiry",
+      "date": "2024-03-08",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Small business customer inquiring about bulk purchase of 15 Dell Latitude laptops for office expansion. Requested volume discount and custom configuration (upgraded RAM and SSD). Escalated to B2B sales team. Negotiated 12% discount on bulk order (€16,200 total). Custom configuration arranged with Dell directly. Staggered delivery over 2 weeks to match onboarding schedule. Customer very satisfied with pricing and flexibility. Mentioned potential for future bulk orders."
+    },
+    {
+      "document_id": "ticket_016",
+      "type": "support_ticket",
+      "category": "delivery_issues",
+      "date": "2024-03-04",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.0,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Customer: Siobhán Murphy, Dublin 8\nOrder: ORD-29841 — Dell XPS 15 (16GB RAM, 512GB SSD)\nIssue Reported: Item marked as delivered by An Post tracking but not received at address. Customer was home all day and no knock or card left.\n\nInvestigation: Agent reviewed tracking data showing delivery at 14:32 on 2024-03-02. GPS coordinates in carrier system placed the delivery 400 metres from customer's registered address. Escalated to An Post business account liaison. An Post confirmed driver had incorrectly delivered to a neighbouring apartment block (same street, different building number).\n\nResolution: Agent contacted the neighbouring building's concierge, who confirmed a parcel had been left in their lobby uncollected. Customer was advised and retrieved the laptop herself same evening. Agent followed up next morning; laptop was in perfect condition.\n\nAdditional Action: Omnia Retail filed a delivery accuracy complaint with An Post and issued the customer a €20 store credit as a goodwill gesture for the inconvenience and stress caused.\n\nAgent Notes: This is the second misdelivery on this route in March. Flagged to logistics team to consider alternative carrier for Dublin 8 high-density residential areas."
+    },
+    {
+      "document_id": "ticket_017",
+      "type": "support_ticket",
+      "category": "technical_support",
+      "date": "2024-02-19",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "monitors",
+      "priority": "medium",
+      "content": "Customer: Tomás Ó Briain, Galway City\nOrder: ORD-27653 — LG 27UK850-W 4K USB-C Monitor\nIssue Reported: Customer connected the monitor to his MacBook Pro M2 via USB-C cable (supplied in box). Display works, but customer cannot get 4K resolution — system only offers up to 1080p in display settings. Extremely frustrated as he purchased specifically for design work.\n\nInvestigation: Agent asked customer to share screenshot of System Information > USB. Confirmed the connection was showing as USB 3.0 rather than Thunderbolt/USB4. The supplied USB-C cable, while physically compatible, is a USB 3.2 Gen 1 cable rated at 5Gbps — insufficient bandwidth to drive 4K at 60Hz (requires at least 40Gbps Thunderbolt 3 or DisplayPort Alt Mode over USB 3.2 Gen 2×2).\n\nRoot Cause: LG includes a generic USB-C cable in the box which does not support DisplayPort Alt Mode at 4K/60Hz. This is a known documentation gap — the monitor spec sheet does not clearly specify cable requirements.\n\nResolution: Agent advised customer to purchase a certified Thunderbolt 4 / USB4 cable (recommended: Anker 240W USB-C, available on Omnia Retail for €22). Customer ordered immediately. Followed up 48 hours later — 4K at 60Hz confirmed working. Customer delighted with image quality.\n\nAgent Notes: Raised product listing issue with content team — cable bandwidth requirement should be prominently displayed on monitor product page."
+    },
+    {
+      "document_id": "ticket_018",
+      "type": "support_ticket",
+      "category": "returns",
+      "date": "2024-01-30",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 3.5,
+      "product_category": "accessories",
+      "priority": "low",
+      "content": "Customer: Aoife Brennan, Cork City\nOrder: ORD-24417 — Logitech MX Master 3S Mouse\nIssue Reported: Customer wishes to return the mouse within the 14-day cooling off period (EU Consumer Rights Directive). No fault with the product — simply changed her mind after finding a better deal elsewhere.\n\nInvestigation: Order date 2024-01-17, return request date 2024-01-30 — within the 14-day statutory period. Product confirmed unused (customer stated this; agent explained that if used, return may not be accepted under change-of-mind policy per Omnia Retail returns terms). Customer confirmed the mouse was not unboxed.\n\nProcess: Return label generated and emailed to customer. Customer instructed to use original packaging, attach label, and drop to any An Post outlet. €89.99 refund to be processed within 5 business days of warehouse receiving item.\n\nComplication: Customer expected immediate refund to card. Agent explained that under Omnia Retail policy, refund is issued upon receipt and inspection of returned goods, which typically takes 3–7 working days end-to-end. Customer expressed mild dissatisfaction with this timeline, noting competitor stores offer instant refunds.\n\nAgent Notes: Customer satisfaction impacted by refund timeline expectations. Consider reviewing whether warehouse-receipt-triggered refunds vs. dispatch-triggered refunds would improve customer experience scores. EU Directive technically allows retailer to withhold refund until goods are returned."
+    },
+    {
+      "document_id": "ticket_019",
+      "type": "support_ticket",
+      "category": "defects",
+      "date": "2024-03-11",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Customer: Ciarán Doyle, Limerick\nOrder: ORD-30122 — Lenovo ThinkPad X1 Carbon Gen 11\nIssue Reported: Dead pixels on display — customer noticed a cluster of 3 stuck pixels in the lower-right quadrant of the screen approximately one week after delivery. Unit is otherwise fully functional.\n\nInvestigation: Customer submitted photos clearly showing the pixel cluster. Agent reviewed Lenovo's dead pixel policy: for the X1 Carbon, Lenovo applies a 'bright dot' policy requiring a minimum of 5 bright dots or 8 dark dots for a warranty claim on a non-premium display. However, Omnia Retail's own defective goods policy (aligned with EU Sale of Goods / Consumer Rights Act 2022 Ireland) considers any manufacturing defect within 6 months to be a presumed defect at point of sale.\n\nResolution: Agent invoked Omnia Retail's statutory obligation rather than Lenovo's more restrictive manufacturer policy. Replacement unit dispatched next-day with DPD. Prepaid return label included for defective unit. Replacement arrived in perfect condition.\n\nCustomer Feedback: Customer specifically praised the agent for not 'hiding behind the manufacturer policy' and resolving the issue without argument.\n\nAgent Notes: Lenovo's dead pixel policy is more restrictive than Irish consumer law in this product category. This should be documented in the agent knowledge base so future agents don't incorrectly defer to manufacturer thresholds for recent purchases."
+    },
+    {
+      "document_id": "ticket_020",
+      "type": "support_ticket",
+      "category": "pre_sales",
+      "date": "2024-02-07",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "laptops",
+      "priority": "low",
+      "content": "Customer: Niamh Walsh, Waterford\nEnquiry Type: Pre-sales — product recommendation request\nQuery: Customer is a final-year graphic design student at SETU Waterford. Budget is €1,200–1,400. Needs a laptop for Adobe Creative Cloud (Photoshop, Illustrator, InDesign, Premiere Pro), expects to use it professionally post-graduation. Currently owns an older Windows machine but is open to Mac. Prefers a large screen if possible.\n\nAgent Response: Agent asked three qualifying questions: (1) Preference for macOS vs Windows ecosystem? Answer: Open to either. (2) Will she be doing video editing extensively? Answer: Moderate — mostly print and web design. (3) Does portability matter? Answer: Needs to travel between college and home in Kilkenny weekly.\n\nRecommendation Provided:\nPrimary: MacBook Pro 14-inch M3 (16GB/512GB) — €1,649 (slightly over budget, agent flagged current student discount of €150 bringing it to ~€1,499). Best-in-class display, excellent Creative Cloud performance, battery life exceptional for commuting.\nAlternative: ASUS ProArt Studiobook 16 OLED — €1,299. Windows-based, OLED display outstanding for colour-accurate design work, Pantone validated, stays within budget.\n\nOutcome: Customer purchased the ASUS ProArt after seeing the OLED specification. Agent followed up one week later — customer thrilled, cited display quality as exceptional for design work.\n\nAgent Notes: Student discount validation via college email (.ie domain) was smooth. Worth promoting in marketing to SETU/TUD/UCD design programmes."
+    },
+    {
+      "document_id": "ticket_021",
+      "type": "support_ticket",
+      "category": "warranty_claims",
+      "date": "2024-01-15",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.0,
+      "product_category": "storage",
+      "priority": "medium",
+      "content": "Customer: Declan Farrell, Drogheda, Co. Louth\nOrder: ORD-19872 — Samsung 990 Pro 2TB NVMe SSD (purchased 14 months ago)\nIssue Reported: Drive failed suddenly — Windows no longer detects the drive in Device Manager or BIOS. Customer is a freelance photographer and had approximately 400GB of client work on the drive, some of which was not backed up.\n\nInvestigation: Agent confirmed the Samsung 990 Pro carries a 5-year manufacturer warranty. Drive age (14 months) falls well within this window. Customer ran Samsung Magician before the drive became undetectable — last health report showed 100% health just 3 weeks prior, indicating sudden failure rather than gradual degradation. No evidence of physical damage or improper use.\n\nWarranty Process: Agent initiated RMA with Samsung Ireland warranty centre. Samsung cross-ship replacement arranged (customer receives new drive before returning failed unit — available on drives within warranty for registered products). Customer did not have the product registered; agent assisted with retroactive registration using proof of purchase.\n\nData Recovery: Agent clearly communicated that warranty replacement does not include data recovery, which is a separate paid service. Agent provided contact details for two reputable data recovery services operating in Ireland: Vogon Ireland (Sandyford, Dublin) and CBL Data Recovery (also Dublin-based). Quoted typical costs: €300–€900 depending on failure type.\n\nAgent Notes: Opportunity missed at point of sale to recommend backup solution — consider bundling NAS or cloud backup recommendations for high-capacity storage purchases going forward."
+    },
+    {
+      "document_id": "ticket_022",
+      "type": "support_ticket",
+      "category": "compatibility",
+      "date": "2024-03-18",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "accessories",
+      "priority": "medium",
+      "content": "Customer: Fionnuala Ní Cheallaigh, Dublin 4\nOrder: ORD-31005 — CalDigit TS4 Thunderbolt 4 Dock\nIssue Reported: Customer purchased the CalDigit TS4 dock to use with a HP EliteBook 840 G9 (work-issued laptop). Dock connects but several ports appear non-functional: rear USB-A ports work, but the front SD card slot doesn't appear, the DisplayPort outputs aren't detected, and the 2.5GbE ethernet shows as connected but no internet traffic.\n\nInvestigation: Agent checked HP EliteBook 840 G9 specifications — confirmed it ships with Thunderbolt 4 on the left USB-C port only. Customer had connected the dock to the right USB-C port, which is USB 3.2 Gen 2 only (10Gbps, no DisplayPort Alt Mode, no Thunderbolt). Agent walked customer through port identification using HP's support spec sheet.\n\nResolution: Customer moved the Thunderbolt 4 cable to the left port — all features immediately functional. DisplayPort outputs active, SD card reader detected, ethernet negotiated at 2.5Gbps.\n\nAdditional Guidance: Agent explained the difference between USB-C port capabilities on this model and why physical port appearance gives no indication of capability. Advised customer to label ports with a small sticker to avoid confusion.\n\nAgent Notes: The CalDigit TS4 product listing should include a prominent note that the host laptop must have a Thunderbolt 4 port — not just any USB-C port. This is the third compatibility ticket on this product in Q1 2024. Request raised to content team for listing update."
+    },
+    {
+      "document_id": "ticket_023",
+      "type": "support_ticket",
+      "category": "bulk_orders",
+      "date": "2024-02-28",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Customer: Brian O'Sullivan, Procurement Manager, Clancy & Associates Solicitors, Cork\nEnquiry Type: Bulk order — business procurement\nQuery: Firm is upgrading 22 laptops across two Cork offices. Budget approved at €1,100 per unit. Requirements: Windows 11 Pro, minimum 16GB RAM, 512GB SSD, 13–15 inch, suitable for legal document management (heavy Microsoft 365 use, PDF annotation, video conferencing). Delivery required within 3 weeks to meet office refurbishment schedule.\n\nAgent Action: Escalated to Business Sales team (Tier 2 — orders over 10 units). Business Sales agent assigned within 2 hours.\n\nSolution Proposed: Dell Latitude 5540 (Intel Core i5-1345U, 16GB RAM, 512GB SSD, 15.6-inch FHD, Windows 11 Pro) — standard quote at €1,089/unit (€23,958 total). Business Sales negotiated volume pricing: €999/unit for 22 units = €21,978 total, saving firm €1,980.\n\nDeployment Support: Omnia Retail Business offered pre-configuration service — Windows 11 Pro images with Office 365 licences pre-installed, asset tagging, and staged delivery across two site visits (12 units Cork city, 10 units Ballincollig) within the required timeframe.\n\nAdditional Services: 3-year ProSupport Plus warranty added at €89/unit. Purchase order raised; signed same day.\n\nAgent Notes: High-value client with potential for annual refresh cycle. Added to Business Accounts CRM for relationship follow-up in Q4 2024."
+    },
+    {
+      "document_id": "ticket_024",
+      "type": "support_ticket",
+      "category": "installation_help",
+      "date": "2024-03-22",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.0,
+      "product_category": "storage",
+      "priority": "medium",
+      "content": "Customer: Padraig Hennessy, Kilkenny City\nOrder: ORD-31598 — Crucial P3 Plus 1TB NVMe SSD (for laptop upgrade)\nIssue Reported: Customer purchased the SSD to upgrade his ASUS VivoBook 15 (X1500EA). He opened the laptop base following a YouTube guide but cannot locate the M.2 slot — he can see a PCIe slot near the centre of the board but it appears occupied by something and he is unsure whether to proceed.\n\nInvestigation: Agent looked up ASUS VivoBook 15 X1500EA service manual. This model has one M.2 2280 slot; on many units it ships from factory with a small SSD (32GB or 64GB eMMC used as a cache/boot drive soldered to board) AND a separate M.2 slot which may or may not be pre-populated depending on configuration. Agent confirmed customer's model (via sticker barcode check) is the X1500EA-BQ1177W variant — ships with 512GB M.2 SATA SSD pre-installed.\n\nConclusion: The slot is already occupied by the existing 512GB drive. Customer has two options: (1) Replace existing drive with new 1TB Crucial NVMe drive — requires cloning existing drive first (Macrium Reflect Free recommended) then swapping; (2) Keep existing drive, use 1TB as external via USB enclosure (agent recommended Ugreen M.2 enclosure, €18 on Omnia Retail).\n\nResolution: Customer opted for external enclosure solution (less risk, no cloning required). Ordered the enclosure. Agent sent step-by-step guide for enclosure setup via email.\n\nAgent Notes: ASUS VivoBook product page should note that M.2 slot is pre-populated on certain SKUs to prevent mispurchase."
+    },
+    {
+      "document_id": "ticket_025",
+      "type": "support_ticket",
+      "category": "technical_support",
+      "date": "2024-02-12",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 3.0,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Customer: Áine McCarthy, Tralee, Co. Kerry\nOrder: ORD-26880 — HP Spectre x360 14 (purchased 8 months ago)\nIssue Reported: Laptop has begun shutting down unexpectedly, typically after 45–90 minutes of use. Customer works from home and is fully dependent on the device. No error message before shutdown — screen simply goes black and machine is unresponsive for ~15 seconds before rebooting.\n\nInvestigation Steps:\n1. Agent requested customer check Windows Event Viewer > System for critical events around shutdown times. Customer found repeated Event ID 41 (Kernel-Power) — unexpected shutdown, not a planned shutdown.\n2. Agent asked customer to run HP Support Assistant diagnostics — battery test PASSED, but thermal test showed CPU throttling beginning at 71°C (below expected threshold).\n3. Customer reported laptop sits on a sofa cushion while working — soft surface blocking the bottom vents.\n\nRoot Cause: Thermal throttling and eventual thermal shutdown caused by ventilation blockage. This is an environmental/user issue, not a product defect.\n\nResolution: Agent explained the cause clearly and non-judgementally. Recommended: (1) Always use laptop on hard flat surface, (2) consider a laptop stand with passive cooling (recommended Nexstand K2, €35 on Omnia Retail), (3) use HP Fan Always On feature in BIOS for better airflow baseline.\n\nCustomer Response: Customer frustrated that the issue 'wasn't the laptop's fault' after expecting a replacement. Agent acknowledged her frustration, noted the solution was free and immediate, and offered a 10% discount code on the laptop stand.\n\nAgent Notes: Satisfaction score of 3.0 reflects customer expectation mismatch rather than poor service. Outcome was technically correct."
+    },
+    {
+      "document_id": "ticket_026",
+      "type": "support_ticket",
+      "category": "product_comparison",
+      "date": "2024-01-22",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "monitors",
+      "priority": "low",
+      "content": "Customer: Eoghan Burke, Athlone, Co. Westmeath\nEnquiry Type: Pre-sales product comparison\nQuery: Customer is building a home office setup for software development. Considering three monitors: (A) Dell U2723D 27-inch 4K IPS, €649; (B) LG 27GN950-B 27-inch 4K IPS Nano, €549; (C) ASUS ProArt PA278QV 27-inch WQHD IPS, €399. Main use: coding (multiple windows), occasional photo editing as a hobby, no gaming.\n\nAgent Comparison Provided:\n\nDell U2723D: Best build quality, USB-C with 90W PD, excellent colour accuracy out of box, matte anti-glare ideal for long coding sessions. Premium price justified by ergonomics and connectivity. Best overall for professional mixed use.\n\nLG 27GN950-B: Gaming-oriented — 1ms response, 144Hz refresh. For coding and photo editing these specs are largely wasted; colour accuracy is good but not factory calibrated. Better value for gaming but overkill here.\n\nASUS ProArt PA278QV: WQHD (2560×1440) rather than 4K — lower pixel density on 27-inch but very comfortable for text. Pantone validated, excellent colour accuracy for photo editing. Lacks USB-C PD but strong value proposition for the mixed use case described.\n\nRecommendation: Dell U2723D if budget allows; ASUS ProArt if he prefers to save €250 and doesn't need 4K pixel density.\n\nOutcome: Customer purchased Dell U2723D. Followed up two weeks later — praised the anti-glare coating for his bright home office and the USB-C connection keeping his desk clean."
+    },
+    {
+      "document_id": "ticket_027",
+      "type": "support_ticket",
+      "category": "delivery_issues",
+      "date": "2024-03-07",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "monitors",
+      "priority": "high",
+      "content": "Customer: Roisín Gallagher, Donegal Town\nOrder: ORD-30456 — BenQ PD3220U 32-inch 4K Designer Monitor\nIssue Reported: Package arrived with visible damage to outer box — large dent on one corner consistent with impact damage. Customer signed for delivery but noted damage on the An Post signature pad. On opening, monitor bezel has a hairline crack in the lower-left corner and the stand base is bent.\n\nInvestigation: Customer submitted photos within 2 hours of delivery — excellent documentation. Carrier damage clearly evident. Agent confirmed customer had correctly noted damage at point of delivery, which strengthens the claim against the carrier.\n\nResolution:\n1. Replacement unit dispatched the same afternoon via DPD Express (next business day to Donegal — confirmed delivered successfully).\n2. Damaged unit collected by DPD on the same visit (swap exchange arranged).\n3. Carrier damage claim filed by Omnia Retail logistics team against An Post.\n\nNotes on Rural Delivery: Agent proactively noted that Donegal deliveries occasionally experience delays with standard carriers — advised customer that future orders over €300 will automatically default to DPD for her address given rural routing.\n\nAgent Notes: Monitor arrived well-packaged with foam inserts; damage was transit impact, not packaging failure. BenQ units are heavy (9.2kg with stand) and corner drops are the most common damage point. Request raised for double-boxing on 32-inch+ monitors to logistics team."
+    },
+    {
+      "document_id": "ticket_028",
+      "type": "support_ticket",
+      "category": "returns",
+      "date": "2024-02-05",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.0,
+      "product_category": "laptops",
+      "priority": "medium",
+      "content": "Customer: Seamus Connolly, Ennis, Co. Clare\nOrder: ORD-25990 — Acer Predator Helios 300 Gaming Laptop\nIssue Reported: Customer wishes to return the laptop 11 days after delivery. Reason given: laptop is too loud during gaming — fan noise is distracting and the unit runs very hot on his desk. He had not researched thermal performance before purchase and finds it unsuitable for his apartment.\n\nInvestigation: Agent confirmed return request is within 14-day cooling off period (EU Consumer Rights Directive). Agent also gently noted that the described behaviour (high fan RPM under gaming load, warm exhaust) is characteristic of all high-performance gaming laptops and is not a defect.\n\nReturn Process: Return authorised under change-of-mind / cooling off period. Agent explained the inspection process: if the laptop shows signs of use beyond reasonable examination (e.g. installed games, modified settings, cosmetic marks from use), Omnia Retail may apply a deduction to the refund per EU Directive provisions. Customer confirmed he had installed Steam and several games — agent noted this is acceptable use during evaluation period and no deduction was applied.\n\nAlternative Offered: Agent asked if customer would consider an exchange rather than full refund — proposed the ASUS Zenbook 16X OLED as a balanced performance laptop with significantly quieter thermal profile. Customer declined and proceeded with refund.\n\nRefund: €1,199 refunded to card within 5 working days of warehouse receipt.\n\nAgent Notes: Pre-sales guidance on thermal characteristics of gaming laptops should be more prominently surfaced — possibly as a product page callout."
+    },
+    {
+      "document_id": "ticket_029",
+      "type": "support_ticket",
+      "category": "technical_support",
+      "date": "2024-03-01",
+      "resolution_status": "pending",
+      "customer_satisfaction": null,
+      "product_category": "accessories",
+      "priority": "medium",
+      "content": "Customer: Maura Fitzgerald, Galway City\nOrder: ORD-29677 — Jabra Evolve2 85 Wireless Headset\nIssue Reported: Customer uses the headset with both her MacBook Pro and a Windows work PC (HP EliteBook). Headset works perfectly on the MacBook via Bluetooth but on the Windows machine, audio cuts out intermittently every 2–5 minutes and reconnects after a few seconds. Issue only occurs on Windows.\n\nInvestigation Steps Completed:\n1. Agent confirmed firmware is up to date (Jabra Direct app — version 2.4.1).\n2. Bluetooth driver on HP EliteBook identified as Intel Wireless Bluetooth 22.140 — agent asked customer to update to latest version from Intel support site. Customer did so; issue persists.\n3. Agent requested customer check Windows Power Management for Bluetooth adapter — 'Allow computer to put this device to sleep' was enabled. Customer disabled this; issue persists.\n4. Agent asked customer to test with Jabra Link 380 USB dongle (supplied in box) rather than built-in Bluetooth — issue does NOT occur with dongle.\n\nCurrent Status: Issue is reproducible and isolated to the Windows built-in Bluetooth stack. Dongle workaround is functional. Agent has escalated to Jabra's Level 2 technical support for investigation into potential Intel Bluetooth stack compatibility issue. Awaiting response (SLA: 5 business days).\n\nNext Action: Jabra L2 support to contact customer directly. Agent to follow up in 5 business days if no contact made.\n\nAgent Notes: Jabra Link dongle workaround is fully functional in the interim. Customer has been advised and is using the dongle successfully."
+    },
+    {
+      "document_id": "ticket_030",
+      "type": "support_ticket",
+      "category": "defects",
+      "date": "2024-01-08",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 2.5,
+      "product_category": "accessories",
+      "priority": "high",
+      "content": "Customer: Cathal Ryan, Dublin 2\nOrder: ORD-22145 — Keychron Q3 Pro Mechanical Keyboard\nIssue Reported: Three keys (Q, W, and the left Shift) have stopped registering keystrokes intermittently. Keyboard is 9 months old. Customer uses it for 8+ hours daily in a professional legal transcription role and the malfunction is severely impacting his work.\n\nInvestigation: Agent asked customer to test affected keys in Keychron Launcher software — switches showed as registering only 40–60% of keystrokes in the test matrix. Customer confirmed no liquid exposure or impact damage. The Q3 Pro uses Gateron Jupiter Red switches which have a rated lifetime of 100 million actuations — failure at 9 months suggests a batch defect.\n\nWarranty Assessment: 1-year manufacturer warranty applicable. Keychron's warranty process typically requires the unit to be sent to their EU service centre in Germany. Given the customer's professional dependency on the keyboard, agent explored faster options.\n\nEscalation: Omnia Retail authorised an advance replacement from warehouse stock (only 2 units remaining). Replacement dispatched same day. Customer returns defective unit in the replacement's packaging via prepaid label.\n\nComplication: Replacement unit arrived but had a different keycap colour profile (ISO UK black vs. customer's original ISO UK white). Customer expressed disappointment — agent apologised and placed an order for the correct white keycap set as a free-of-charge goodwill addition.\n\nAgent Notes: Satisfaction score of 2.5 reflects the keycap error, which was avoidable. Warehouse team has been briefed to verify exact SKU match on advance replacements before dispatch."
+    },
+    {
+      "document_id": "ticket_031",
+      "type": "support_ticket",
+      "category": "technical_support",
+      "date": "2024-03-25",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "monitors",
+      "priority": "medium",
+      "content": "Customer: Orla Sheridan, Dublin 6\nOrder: ORD-31874 — Dell U2722D 27-inch 4K Monitor\nIssue Reported: Customer connected monitor to her Dell XPS 13 laptop via the supplied USB-C cable. Monitor works, but reports a persistent 'No Signal' flicker lasting approximately 1–2 seconds every 10–15 minutes, during which the screen goes black before recovering. Very disruptive during video calls and document work.\n\nInvestigation:\n1. Agent asked customer to swap the USB-C cable for the HDMI cable (also in box) — issue persisted, ruling out cable fault.\n2. Agent checked Dell U2722D known issues list — confirmed a firmware bug (firmware v14 and below) causing intermittent signal drop under specific power management states when connected to certain Intel Iris Xe graphics configurations.\n3. Customer confirmed laptop has Intel Iris Xe and monitor firmware was v12.\n\nResolution: Agent walked customer through Dell's monitor firmware update process using the Dell Display Manager application. Customer downloaded firmware v17 from Dell's support site, applied via the DDM firmware update tool (USB-A to USB-B cable required — customer did not have one; agent arranged complimentary dispatch from Omnia Retail accessories stock, delivered next day).\n\nPost-update follow-up (48 hours): No signal drops observed. Issue fully resolved.\n\nAgent Notes: Dell U2722D firmware update process requires a USB-A to USB-B cable not included in box — this should be noted in the product listing as a potential requirement for customers experiencing this issue. Firmware v17 resolves the known flicker bug."
+    },
+    {
+      "document_id": "ticket_032",
+      "type": "support_ticket",
+      "category": "defects",
+      "date": "2024-02-14",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Customer: Liam Breathnach, Galway City (Irish-speaking customer — correspondence conducted in Irish and English)\nOrder: ORD-27901 — Apple MacBook Air 15-inch M2 (16GB/512GB)\nIssue Reported: Laptop arrived with a noticeable rattle from inside the chassis when moved or tilted. No external damage to the unit or packaging. Customer is concerned there is a loose internal component.\n\nInvestigation: Agent asked customer to describe the sound — intermittent metallic rattle when unit is tilted, present even when powered off. Agent searched Apple's known issues database: confirmed this matches a documented issue in some MacBook Air M2 units where a small internal component (reportedly related to the MagSafe charging coil bracket) can become slightly unseated during transit, producing a rattle without affecting functionality.\n\nApple's Response Policy: Apple treats this as a hardware defect and offers free repair at any Apple Authorised Service Provider (AASP). Nearest AASP to customer: iConnect, Galway Shopping Centre.\n\nOmnia Retail Action: Given that the laptop arrived with the defect (within 12 months, presumed defect at sale under Consumer Rights Act 2022), customer was offered choice of: (a) Apple AASP repair (typically 3–5 days), or (b) Omnia Retail replacement unit. Customer preferred replacement to avoid being without a laptop. Replacement MacBook Air M2 dispatched via DPD next-day. Defective unit collected same day on swap.\n\nCustomer Feedback: 'Seirbhís iontach — bhí an fhoireann an-chabhrach ar fad.' (Excellent service — the team was very helpful throughout.)\n\nAgent Notes: Rattling MacBook Air M2 is a known transit issue. Brief customer-facing FAQ article recommended for this product page."
+    },
+    {
+      "document_id": "ticket_033",
+      "type": "support_ticket",
+      "category": "installation_help",
+      "date": "2024-03-14",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.0,
+      "product_category": "accessories",
+      "priority": "low",
+      "content": "Customer: Deirdre Quinn, Sligo Town\nOrder: ORD-31122 — TP-Link Deco XE75 Pro Wi-Fi 6E Mesh System (2-pack)\nIssue Reported: Customer set up the Deco mesh system but one satellite node (the one in her upstairs bedroom) shows as 'offline' in the Deco app despite being plugged in and showing a solid amber LED. The main node in the living room works perfectly and internet is fast downstairs.\n\nInvestigation:\n1. Agent asked what LED colour the offline node was showing — amber (solid). In TP-Link Deco LED guide, solid amber means the node is powered but not connected to the main node.\n2. Agent asked about placement — bedroom node is approx 12 metres from the living room node through two solid concrete walls (typical Irish 1970s construction).\n3. The Deco XE75 Pro uses 6GHz for backhaul between nodes — 6GHz has significantly shorter range and worse wall penetration than 2.4GHz or 5GHz.\n\nRoot Cause: 6GHz backhaul signal cannot penetrate the concrete walls between floors. The node is within distance but the signal cannot pass through the building fabric.\n\nResolution: Agent advised customer to temporarily wire the upstairs node to the router via an Ethernet cable (wired backhaul) — customer had a long Ethernet cable available. Wired backhaul configured in Deco app; upstairs node immediately went online and showed green LED. Speeds upstairs now 600Mbps+.\n\nAlternative Offered: If customer wants wire-free setup, a powerline adapter kit (recommended: TP-Link AV2000) would allow Ethernet over the home's electrical wiring. Customer satisfied with Ethernet solution for now.\n\nAgent Notes: Irish housing stock (pre-2000 concrete construction) is frequently problematic for 6GHz mesh systems. Consider adding a compatibility note to 6GHz mesh product listings."
+    },
+    {
+      "document_id": "ticket_034",
+      "type": "support_ticket",
+      "category": "returns",
+      "date": "2024-01-19",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "monitors",
+      "priority": "medium",
+      "content": "Customer: Shane Dunne, Bray, Co. Wicklow\nOrder: ORD-23988 — LG 34WP65C-B 34-inch Ultrawide Curved Monitor\nIssue Reported: Customer is returning the monitor as faulty — display shows a vertical green line approximately 8cm from the left edge running the full height of the screen. Line appeared on day 3 of use. No physical damage.\n\nInvestigation: Agent asked customer to test with a second video cable and different PC output — green line persisted regardless of input source, confirming the fault is with the panel itself (not the GPU or cable). Customer submitted clear photographs.\n\nResolution: Fault confirmed as manufacturing defect — panel column driver failure (common cause of persistent vertical line defects on IPS panels). Unit is within 30 days of purchase (12 days) — customer eligible for replacement under Omnia Retail's 30-day DOA (Dead on Arrival) policy without requiring manufacturer warranty process.\n\nReplacement unit dispatched next business day via DPD. Defective unit collected on delivery of replacement (same-day swap).\n\nAdditional: Agent checked replacement unit's serial number against LG's batch advisory (LG issued a quiet advisory on a small batch of 34WP65C-B units from Q4 2023 with panel driver susceptibility). Replacement unit confirmed from unaffected batch.\n\nCustomer Feedback: Customer specifically appreciated the same-day swap rather than having to wait for collection before replacement dispatch.\n\nAgent Notes: LG 34WP65C-B batch issue now documented in product notes. Warehouse team briefed to check serial number range on remaining stock. Three units in current inventory confirmed from the unaffected batch."
+    },
+    {
+      "document_id": "ticket_035",
+      "type": "support_ticket",
+      "category": "pre_sales",
+      "date": "2024-03-29",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 5.0,
+      "product_category": "storage",
+      "priority": "low",
+      "content": "Customer: Eileen Bourke, Thurles, Co. Tipperary\nEnquiry Type: Pre-sales — storage solution advice\nQuery: Customer is a recently retired secondary school teacher setting up a home photography and video hobby system. She has accumulated approximately 3TB of RAW photos from a Sony A7 IV camera over the past year and has no structured storage or backup solution. Her budget is €400. She has a MacBook Pro M3 and a Windows desktop PC she wants to access files from both.\n\nNeeds Identified: (1) Primary working storage — fast, accessible from both machines, (2) Backup copy — ideally automated, (3) Archival copy — for long-term safety.\n\nAgent Recommendation (3-2-1 Backup Strategy):\n\nPrimary Working Storage: WD My Cloud Home 6TB NAS (€199) — network-attached, accessible from both Mac and PC simultaneously over Wi-Fi, companion app for remote access. Supports Time Machine (Mac) and Windows Backup.\n\nLocal Backup: WD Elements 4TB USB 3.0 External HDD (€89) — dedicated backup drive, plug into desktop weekly for a manual copy. Simple and reliable.\n\nCloud Archive: Customer already has iCloud 2TB (€9.99/month). Agent recommended enabling iCloud Drive sync for the most important RAW folders as an off-site third copy.\n\nTotal hardware cost: €288 — within budget. Agent walked through the 3-2-1 concept: 3 copies of data, on 2 different media types, with 1 off-site.\n\nOutcome: Customer purchased both the NAS and external HDD. Followed up two weeks later — NAS set up successfully (step-by-step guide emailed by agent was cited as very helpful), automated backups running.\n\nAgent Notes: Pre-sales advisory for photography enthusiasts is a growing segment — consider a dedicated 'Photography Storage Guide' content piece for the website."
+    },
+    {
+      "document_id": "ticket_036",
+      "type": "support_ticket",
+      "category": "warranty_claims",
+      "date": "2024-02-22",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 3.5,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Customer: Cormac Egan, Mullingar, Co. Westmeath\nOrder: ORD-26310 — ASUS ROG Zephyrus G14 (purchased 18 months ago)\nIssue Reported: Battery no longer holds charge — laptop shuts down at 35–40% battery indicator and only runs reliably when plugged in. Customer uses laptop for university (computer science, NUI Galway) and is dependent on all-day battery for lectures.\n\nInvestigation: Agent asked customer to run ASUS Battery Health Charging report in MyASUS app. Report showed battery health at 61% of design capacity (original: 76Whr, current: 46Whr). Customer confirmed he has always stored and used laptop plugged in at his desk and charges to 100% consistently.\n\nAssessment: Battery degradation to 61% in 18 months is faster than expected baseline (typical is 80%+ at 12 months for moderate use). ASUS warranty covers battery defects but excludes normal capacity degradation unless it falls below 80% within the first 12 months under ASUS standard warranty terms. At 18 months, ASUS declined warranty replacement under manufacturer warranty.\n\nOmnia Retail Position: Agent reviewed Irish consumer law — the Consumer Rights Act 2022 allows for remedy claims within 2 years where the product is not durable for a reasonable period given its nature. At 18 months with 61% battery health, Omnia Retail's legal team advised this is arguably not conforming to reasonable durability expectations. Omnia Retail offered a goodwill battery replacement at 50% cost (customer pays €75, Omnia absorbs €75).\n\nCustomer Response: Customer felt he should not pay anything, as the degradation was abnormally fast. After discussion with supervisor, Omnia Retail agreed to cover full replacement cost. ASUS-authorised service centre in Dublin performed battery replacement; turnaround 5 business days.\n\nAgent Notes: Satisfaction score of 3.5 reflects frustration with initial 50/50 offer and the 5-day repair turnaround. Resolution was ultimately correct. ASUS ROG battery degradation complaints are recurring — consider proactively informing customers about optimal battery charging habits (ASUS Battery Care Mode) at point of sale."
+    },
+    {
+      "document_id": "ticket_037",
+      "type": "support_ticket",
+      "category": "compatibility",
+      "date": "2024-01-31",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "accessories",
+      "priority": "medium",
+      "content": "Customer: Muireann Ní Fhaoláin, Cork City\nOrder: ORD-25112 — Crucial 32GB DDR5-4800 SODIMM RAM Kit (2×16GB)\nIssue Reported: Customer purchased RAM to upgrade her MSI Creator Z16 laptop from 16GB to 32GB (replacing existing 2×8GB DDR5 sticks). After installation, laptop will not POST — no display on power-on, keyboard backlight flashes three times and machine shuts off. Three-flash pattern typically indicates memory error in MSI BIOS.\n\nInvestigation:\n1. Agent asked customer to re-seat the RAM modules (remove and reinsert firmly). Customer did so — same result.\n2. Agent confirmed MSI Creator Z16 (model B12UHST) supports DDR5-4800 SODIMM — compatible on paper.\n3. Agent asked customer to test with one stick in Slot A only — machine POSTed successfully. Then Slot B only — also POSTed. Then both sticks — failed to POST again.\n4. Agent checked MSI QVL (Qualified Vendor List) for this laptop — Crucial DDR5-4800 CT16G48C40S5 is listed as compatible on the QVL.\n5. Agent noticed customer purchased CT16G48C40S5U (the 'U' suffix variant — unbuffered with slightly different SPD programming). MSI's QVL lists CT16G48C40S5 (without 'U' suffix).\n\nRoot Cause: Minor SPD variant mismatch — the 'U' suffix Crucial modules use slightly different XMP/JEDEC timing data that the MSI BIOS does not correctly interpret when running dual-channel.\n\nResolution: Customer returned incorrect RAM (restocking fee waived given the ambiguous product listing). Correct CT16G48C40S5 modules ordered and dispatched. Installation successful; system recognises full 32GB dual-channel.\n\nAgent Notes: The 'U' vs non-'U' Crucial RAM distinction is not visible on Omnia Retail's product listing. Content team asked to add MSI QVL notes and clarify the SKU distinction."
+    },
+    {
+      "document_id": "ticket_038",
+      "type": "support_ticket",
+      "category": "technical_support",
+      "date": "2024-03-19",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.0,
+      "product_category": "laptops",
+      "priority": "medium",
+      "content": "Customer: Pádraig Ó Murchú, Tralee, Co. Kerry\nOrder: ORD-31423 — Lenovo IdeaPad Flex 5i (Intel Core i5-1235U, 16GB RAM, 512GB SSD)\nIssue Reported: Customer reports that the laptop's SSD appears to be running extremely slowly — file transfers that should take seconds take several minutes. He copied 20GB of holiday videos from a USB drive and it took over 45 minutes.\n\nInvestigation:\n1. Agent asked customer to run CrystalDiskMark — sequential read: 520 MB/s (expected ~3,000 MB/s for NVMe), sequential write: 480 MB/s (expected ~2,000 MB/s). This is SATA-level performance, not NVMe.\n2. Agent checked Lenovo's spec page for IdeaPad Flex 5i (82R8 series) — confirmed this model ships with a SATA M.2 SSD, not NVMe. The physical form factor is M.2 2242 SATA.\n3. The CrystalDiskMark results are actually normal and correct for the SATA SSD in this unit.\n\nRoot Cause: Customer misapprehension about SSD type. The USB transfer performance issue was separately investigated: the USB drive was a USB 2.0 device (max ~60 MB/s theoretical, ~35 MB/s real-world), making it the bottleneck — not the SSD.\n\nResolution: Agent explained the SSD type, confirmed it is performing correctly, and identified the USB drive as the actual transfer bottleneck. Recommended a USB 3.2 Gen 1 flash drive for video transfers (recommended: SanDisk Ultra USB 3.0 128GB, €22 on Omnia Retail site).\n\nCustomer Response: Initially disappointed that the SSD was SATA rather than NVMe, feeling the specification wasn't clear. Agent acknowledged the spec page was not prominent enough about this distinction.\n\nAgent Notes: Raised to content team — IdeaPad Flex 5i listing should clearly state 'SATA SSD' to avoid mismatched expectations. Customer satisfaction of 4.0 reflects resolution quality but legitimate listing grievance."
+    },
+    {
+      "document_id": "ticket_039",
+      "type": "support_ticket",
+      "category": "bulk_orders",
+      "date": "2024-02-09",
+      "resolution_status": "resolved",
+      "customer_satisfaction": 4.5,
+      "product_category": "monitors",
+      "priority": "high",
+      "content": "Customer: Aoife Malone, IT Manager, Connacht Regional Health Partnership, Galway\nEnquiry Type: Bulk order — healthcare sector procurement\nQuery: Organisation needs 35 monitors for a new clinical administration office. Requirements: 24-inch minimum, full HD or better, must support VESA mount (wall-mounting in clinical setting), height-adjustable stand optional, flicker-free and low blue light (staff working 8-hour shifts), budget €200–€280 per unit. EU public procurement rules apply (above threshold requires formal quotation process).\n\nAgent Action: Flagged immediately to Business Sales. Business Sales team generated a formal written quotation document within 4 hours to support procurement compliance.\n\nSolution Quoted: Dell P2423D 24-inch QHD (2560×1440) IPS Monitor — €229/unit (standard). Volume price for 35 units: €209/unit (total €7,315). Specifications: VESA 100×100, ComfortView Plus (flicker-free, low blue light certified TÜV Rheinland), height/tilt/pivot/swivel adjustable stand, USB-C + HDMI + DisplayPort.\n\nAdditional Value: Omnia Retail Business offered free delivery to Galway site, installation of VESA brackets for 15 wall-mount positions (at €12/mount installed), and 3-year Advanced Exchange warranty for €19/unit.\n\nProcurement Compliance: Formal quotation reference OMN-Q-20240209-001 issued on company letterhead with unit breakdown, warranty terms, and delivery schedule. Purchase order from Connacht Regional Health accepted; payment terms NET 30 approved.\n\nDelivery: Staged over two days. All 35 units installed and signed off by IT team.\n\nAgent Notes: Healthcare is a strong vertical for Omnia Retail Business — ergonomic and flicker-free requirements are consistent. Opportunity for annual monitor refresh and peripheral procurement noted in CRM."
+    },
+    {
+      "document_id": "ticket_040",
+      "type": "support_ticket",
+      "category": "technical_support",
+      "date": "2024-04-02",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "laptops",
+      "priority": "high",
+      "content": "Customer: Fergal Cunningham, Dublin 15\nOrder: ORD-32901 — HP Envy x360 15 (AMD Ryzen 7 7730U, 16GB RAM, 512GB SSD)\nIssue Reported: Customer received the laptop 4 days ago. On first boot, Windows Update ran successfully. Since then, laptop has exhibited random BSODs (Blue Screen of Death) — approximately 2–3 per day. Stop codes seen include: SYSTEM_THREAD_EXCEPTION_NOT_HANDLED, DRIVER_IRQL_NOT_LESS_OR_EQUAL, and PAGE_FAULT_IN_NONPAGED_AREA.\n\nInvestigation Steps Completed:\n1. Agent asked customer to run Windows Memory Diagnostic — completed overnight, no errors found.\n2. Agent asked customer to check Event Viewer — faulting module identified as 'amdppm.sys' (AMD Processor Power Management driver) in two of the three BSOD dumps customer captured using WinDbg.\n3. AMD amdppm.sys BSODs on Ryzen 7 7730U are a documented issue with specific early HP OEM driver bundles — AMD released an updated power management driver in February 2024.\n4. Agent directed customer to HP's support page for the Envy x360 15 — updated AMD drivers available in HP Support Assistant. Customer applied all updates; 24 hours of observation commenced.\n\nCurrent Status: Customer monitoring post-update. No BSODs in first 18 hours. Agent to follow up tomorrow morning.\n\nNext Action: If BSODs persist after driver update, agent will arrange advance replacement under Consumer Rights Act 2022 (defect presumed at point of sale within 12 months). Replacement authorisation pre-approved by supervisor.\n\nAgent Notes: HP Envy x360 15 AMD variant has had driver-related BSOD reports from other customers. HP's out-of-box driver bundle for this model needs updating in the warehouse pre-configuration checklist. Flagged to logistics."
+    },
+    {
+      "document_id": "policy_001",
+      "type": "policy",
+      "category": "returns",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD - RETURN POLICY\n\nStandard Return Period: 30 days from delivery date\n\nEligible Items:\n- Unopened products in original packaging with all accessories\n- Opened products showing no signs of use (for testing purposes)\n- Products with manufacturer defects discovered within 30 days\n\nNon-Returnable Items:\n- Software and digital products once license key activated\n- Items marked as 'Final Sale' or 'Clearance'\n- Personalized or custom-configured products\n\nReturn Process:\n1. Contact customer support within 30-day window\n2. Obtain Return Merchandise Authorization (RMA) number\n3. Ship item with RMA number clearly marked on package\n4. Use provided prepaid return label (within Ireland/EU)\n\nRefund Timeline:\n- Items inspected within 2-3 business days of receipt\n- Refund processed within 5-7 business days after approval\n- Refund issued to original payment method\n- Bank processing may add 3-5 additional business days\n\nReturn Shipping Costs:\n- Free returns for defective/damaged items\n- Free returns for wrong item shipped\n- Customer responsible for return shipping if item not as described or change of mind\n\nRestocking Fees:\n- No restocking fee for defective items\n- 10% restocking fee for opened laptops/computers returned for non-defect reasons\n- No restocking fee for unopened items\n\nExceptions:\n- Extended return period during holiday season (November 15 - January 15): 60 days\n- B2B customers: Custom return terms may apply per contract"
+    },
+    {
+      "document_id": "policy_002",
+      "type": "policy",
+      "category": "warranty",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD - WARRANTY POLICY\n\nManufacturer Warranty:\n- All products sold with manufacturer's standard warranty\n- Warranty period varies by manufacturer and product type\n- Typical periods: Laptops (1 year), Monitors (3 years), Accessories (1-2 years)\n- Warranty coverage begins from date of purchase\n\nWarranty Claims Process:\n1. Contact Omnia Retail customer support\n2. Provide proof of purchase and product serial number\n3. Describe issue and troubleshooting steps attempted\n4. We coordinate directly with manufacturer on your behalf\n5. Manufacturer determines repair, replacement, or refund\n\nOmnia Retail Extended Warranty (Optional Purchase):\n- Available for laptops, monitors, and high-value electronics\n- Extends coverage beyond manufacturer warranty\n- Coverage options: +1 year (15% of product price), +2 years (25% of product price)\n- Includes accidental damage protection\n- On-site repair service for business customers\n\nWhat's Covered:\n- Manufacturing defects\n- Component failures under normal use\n- Software issues (if pre-installed by manufacturer)\n\nWhat's NOT Covered:\n- Physical damage from drops, spills, or impacts\n- Damage from unauthorized repairs or modifications\n- Normal wear and tear (battery degradation, cosmetic scratches)\n- Loss or theft\n- Damage from improper use or environmental factors\n\nRepair Options:\n- Manufacturer authorized service centers\n- Mail-in repair service (courier pickup arranged)\n- On-site repair for extended warranty customers\n- Typical turnaround: 5-10 business days\n\nDead on Arrival (DOA) Policy:\n- Products that fail to function upon first use\n- Report within 7 days of delivery\n- Immediate replacement (no repair attempt)\n- Expedited shipping for replacement unit"
+    },
+    {
+      "document_id": "policy_003",
+      "type": "policy",
+      "category": "shipping",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD - SHIPPING POLICY\n\nShipping Zones:\n- Zone 1: Republic of Ireland (all counties)\n- Zone 2: Northern Ireland and United Kingdom\n- Zone 3: EU member states\n- Zone 4: Rest of Europe\n- International: Contact for quote\n\nStandard Shipping (Zone 1 - Ireland):\n- Processing time: 1-2 business days\n- Delivery time: 2-3 business days after dispatch\n- Cost: FREE for orders over €50, otherwise €6.99\n- Carrier: An Post or FastWay\n\nExpress Shipping (Zone 1 - Ireland):\n- Processing time: Same business day if ordered before 2pm\n- Delivery time: Next business day\n- Cost: €12.99\n- Carrier: DPD Express\n\nInternational Shipping (Zones 2-4):\n- Processing time: 1-2 business days\n- Delivery time: Varies by destination (3-10 business days)\n- Cost: Calculated at checkout based on weight and destination\n- Customs/duties: Customer responsibility for non-EU destinations\n\nOrder Tracking:\n- Tracking number provided via email once order ships\n- Real-time tracking available through carrier website\n- Delivery updates via SMS (opt-in during checkout)\n\nDelivery Requirements:\n- Signature required for orders over €500\n- Safe place delivery available (customer instructions during checkout)\n- Redelivery attempted if first delivery unsuccessful\n- Collection from local depot available after failed delivery\n\nShipping Restrictions:\n- No shipping to PO Boxes for items over 2kg\n- Some rural areas may require additional 1-2 days\n- Peak season delays possible (November-December)\n\nAddress Changes:\n- Must request within 1 hour of order placement\n- Cannot guarantee address change after order processing begins\n- No address changes possible once shipped\n\nOrder Splitting:\n- Large orders may ship in multiple packages\n- Items from different warehouses ship separately\n- No additional shipping charges for split shipments\n\nBackorder Policy:\n- Out-of-stock items marked clearly during checkout\n- Option to wait for restock or cancel backorder item\n- Estimated restock dates provided when available\n- No charge for backordered items until they ship"
+    },
+    {
+      "document_id": "policy_004",
+      "type": "policy",
+      "category": "price_match",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD - PRICE MATCH GUARANTEE\n\nEligibility Period:\n- Price match honored within 7 days of purchase\n- Must provide proof of competitor pricing\n- Competitor price must be current and verifiable\n\nEligible Competitors:\n- Authorized retailers in Ireland or EU\n- Online retailers with physical presence\n- Excludes marketplace sellers (eBay, Amazon Marketplace, etc.)\n- Excludes auction sites and liquidation sales\n\nPrice Match Criteria:\n- Identical product (same model, SKU, color, specifications)\n- Competitor item must be in stock and available for purchase\n- Includes advertised sale prices and promotions\n- Total price comparison includes shipping costs\n\nNOT Eligible for Price Match:\n- Clearance, closeout, or liquidation sales\n- Bundle deals or multi-buy promotions\n- Employee/student discount pricing\n- Pricing errors (obviously below cost)\n- Used, refurbished, or open-box items\n- Gray market imports\n\nHow to Request Price Match:\n1. Contact customer support within 7 days of purchase\n2. Provide order number and proof of purchase\n3. Submit competitor pricing evidence (URL, screenshot, or advertisement)\n4. We verify competitor price and stock availability\n5. If approved, price difference refunded to original payment method\n\nRefund Process:\n- Price match verification: 1-2 business days\n- Refund processed within 3-5 business days after approval\n- Difference refunded to original payment method\n\nLimitations:\n- One price match per product per customer\n- Maximum price match value: €200 per item\n- Cannot combine with other discounts or promotions\n- Final sale/clearance items not eligible\n\nIn-Store vs Online:\n- Online purchases can be price matched against online competitors\n- Physical store purchases can be price matched against physical stores\n- Cross-channel matching considered case-by-case"
+    },
+    {
+      "document_id": "policy_005",
+      "type": "policy",
+      "category": "data_privacy",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "none",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD - DATA PRIVACY & GDPR POLICY\n\nData Collection:\n- Personal information: Name, email, phone, shipping/billing address\n- Order history and purchase patterns\n- Website usage data (cookies, analytics)\n- Customer support interactions\n- Product reviews and feedback\n\nPurpose of Data Collection:\n- Order processing and fulfillment\n- Customer support and communication\n- Marketing communications (opt-in required)\n- Warranty and returns management\n- Fraud prevention and security\n- Website improvement and analytics\n\nData Retention:\n- Order data: 7 years (tax compliance requirements)\n- Customer account data: Until account deletion requested\n- Marketing data: Until opt-out or consent withdrawn\n- Support interaction logs: 3 years\n\nCustomer Rights (GDPR):\n- Right to access: Request copy of personal data held\n- Right to rectification: Correct inaccurate data\n- Right to erasure: Request account and data deletion\n- Right to restrict processing: Limit how data is used\n- Right to data portability: Receive data in machine-readable format\n- Right to object: Opt out of marketing communications\n- Right to withdraw consent: At any time\n\nData Sharing:\n- Shipping carriers: For order fulfillment only\n- Payment processors: For transaction processing\n- Manufacturers: For warranty claims only\n- Third-party service providers: Under strict confidentiality agreements\n- Never sold to third parties for marketing\n\nData Security Measures:\n- Encryption of sensitive data (SSL/TLS)\n- Secure payment processing (PCI DSS compliant)\n- Regular security audits and updates\n- Access controls and employee training\n- Data breach notification within 72 hours\n\nCookies Policy:\n- Essential cookies: Required for website functionality\n- Analytics cookies: Understand site usage (Google Analytics)\n- Marketing cookies: Personalized advertising (opt-in required)\n- Cookie consent banner on first visit\n- Manage cookie preferences in account settings\n\nMarketing Communications:\n- Email newsletters: Opt-in during account creation or checkout\n- Promotional offers and product updates\n- Unsubscribe link in every marketing email\n- SMS marketing: Separate explicit consent required\n- Frequency: Maximum 2 promotional emails per week\n\nThird-Party Links:\n- Website may contain links to external sites\n- Not responsible for privacy practices of third parties\n- Review privacy policies of linked websites\n\nData Protection Officer Contact:\n- Email: privacy@omniaretail.ie\n- Post: Data Protection Officer, Omnia Retail Ltd, Dublin 2, Ireland\n- Response time: 30 days maximum"
+    },
+    {
+      "document_id": "policy_006",
+      "type": "policy",
+      "category": "business_customers",
+      "date": "2024-01-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD — BUSINESS CUSTOMER POLICY\nEffective Date: 1 January 2024 | Document Reference: POL-006 | Review Date: 1 January 2025\n\n1. SCOPE AND ELIGIBILITY\nThis policy applies to all registered business customers of Omnia Retail Ltd, including sole traders, private limited companies, public limited companies, partnerships, non-profit organisations, educational institutions, and government bodies operating within the Republic of Ireland and Northern Ireland. Business customer status is granted upon submission and verification of a valid Irish business registration number (CRO number), VAT registration number (where applicable), or equivalent qualifying documentation.\n\n2. BUSINESS ACCOUNT REGISTRATION\nOrganisations wishing to register as business customers must complete the Omnia Retail Business Account Application Form, available at business.omniaretail.ie. Required documentation includes: Certificate of Incorporation or Business Registration Certificate, proof of VAT registration (if VAT registered), authorised signatory identification, and company letterhead confirming the nominated account administrator. Account approval is typically processed within 2 business days.\n\n3. PRICING AND VOLUME DISCOUNTS\nRegistered business customers are eligible for tiered volume discounts applied at the point of quotation. Discount tiers are as follows: 2–5 units: 3% discount; 6–10 units: 5% discount; 11–20 units: 8% discount; 21–50 units: 12% discount; 51+ units: subject to negotiation with Business Sales team. Discounts apply per product category per order. Volume discounts cannot be combined with promotional codes or consumer sale offers. Annual spend-based loyalty pricing is available for accounts exceeding €50,000 per annum.\n\n4. INVOICING AND PAYMENT TERMS\nBusiness customers with approved credit accounts may avail of NET 30 payment terms (payment due within 30 days of invoice date). Credit account applications are subject to credit assessment. Default payment method for all other business customers is payment at time of order by card or bank transfer. Purchase Orders (POs) are accepted from approved credit accounts. All invoices include Irish VAT at the applicable rate (currently 23% for electronics) and are issued in EUR.\n\n5. DEDICATED BUSINESS SUPPORT\nRegistered business customers have access to a dedicated Business Sales team reachable Monday to Friday, 08:00–18:00, via a priority telephone line (01-XXX-XXXX) or email (business@omniaretail.ie). Business customers with active accounts are assigned a named account manager for orders exceeding €10,000. Business support tickets are prioritised within our helpdesk system and target a 4-hour initial response time versus the standard 24-hour consumer SLA.\n\n6. PRE-CONFIGURATION AND DEPLOYMENT SERVICES\nOmnia Retail offers optional pre-configuration services for bulk laptop and desktop orders. Services include: operating system image deployment, domain join configuration, asset tagging, BIOS/UEFI settings standardisation, and software pre-installation. Pre-configuration is charged at a flat rate of €45 per unit for orders under 20 units, and €35 per unit for orders of 20 or more. Delivery scheduling for large orders can be staged across multiple business days to accommodate on-site IT resources.\n\n7. WARRANTY AND SUPPORT EXTENSIONS\nBusiness customers may purchase extended warranty and support packages at point of sale or within 30 days of purchase. Available packages include: Onsite Next Business Day (NBD) repair for compatible products, advance replacement programmes for critical infrastructure, and priority helpdesk escalation. Extended warranty packages are quoted on a per-product and per-site basis.\n\n8. RETURNS AND CANCELLATIONS\nBusiness-to-business (B2B) transactions are not covered by the EU Consumer Rights Directive 14-day cooling off period, which applies exclusively to consumer (B2C) transactions. Business customers may return goods within 10 business days of delivery for stock or order errors by Omnia Retail. Returns for change of mind or specification error by the purchasing organisation are subject to a restocking fee of 15% of the order value, and return shipping is at the business customer's expense. Defective goods are handled in accordance with the Sale of Goods and Supply of Services Act 1980 as applicable to commercial transactions.\n\n9. DATA PROCESSING\nIn processing business customer data, Omnia Retail acts as a data controller under the GDPR (Regulation (EU) 2016/679) and the Data Protection Acts 1988–2018. Business contact data is retained for the duration of the business relationship and for 7 years thereafter for financial and legal compliance purposes. A Data Processing Agreement (DPA) is available for business customers who require it for their own GDPR compliance obligations.\n\n10. GOVERNING LAW\nThis policy and all business transactions are governed by the laws of the Republic of Ireland. Disputes shall be subject to the exclusive jurisdiction of the Irish courts."
+    },
+    {
+      "document_id": "policy_007",
+      "type": "policy",
+      "category": "environmental_sustainability",
+      "date": "2024-01-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD — ENVIRONMENTAL SUSTAINABILITY POLICY\nEffective Date: 1 January 2024 | Document Reference: POL-007 | Review Date: 1 January 2025\n\n1. POLICY STATEMENT\nOmnia Retail Ltd is committed to operating as an environmentally responsible business. We recognise that the sale and distribution of electronic goods carries significant environmental responsibilities, and we are committed to minimising our ecological footprint through compliance with applicable legislation, adoption of sustainable business practices, and active promotion of responsible product disposal among our customers.\n\n2. WEEE COMPLIANCE\nOmnia Retail Ltd is a registered member of the WEEE (Waste Electrical and Electronic Equipment) Ireland compliance scheme, registration number WEEE-IE-00412. Under EU Directive 2012/19/EU and the European Union (Waste Electrical and Electronic Equipment) Regulations 2014 (S.I. 149/2014), we are legally obligated to facilitate the take-back and recycling of waste electrical equipment.\n\nCustomers may return any waste electrical item on a like-for-like basis when purchasing a replacement product — for example, returning an old laptop when purchasing a new one. This service is provided free of charge at our Dublin warehouse collection point (by appointment) or via our postal take-back programme for items under 3kg. Items returned under the WEEE scheme are transferred to certified recycling partners operating within the EU. Omnia Retail does not profit from WEEE collection; all processing costs are covered through WEEE Ireland scheme contributions included in product pricing.\n\n3. PACKAGING REDUCTION\nOmnia Retail is committed to reducing packaging waste throughout our supply and distribution chain. Since 2022, we have: reduced the weight of branded outer packaging by 22%; eliminated single-use plastic void fill in favour of recycled paper alternatives; transitioned all branded tissue paper and padding to FSC-certified materials; and reduced average box size per shipment by 18% through improved fulfilment software. We target a further 15% reduction in packaging material weight by end of 2025.\n\n4. CARBON FOOTPRINT\nOmnia Retail measures and reports its Scope 1 and Scope 2 carbon emissions annually in accordance with the GHG Protocol Corporate Standard. Our 2023 verified emissions were 312 tonnes CO2e (Scope 1 and 2 combined). We have committed to Science Based Targets (SBTi) alignment and are developing a Scope 3 supply chain emissions baseline for 2024 reporting. Our Dublin warehouse operates on 100% renewable electricity (supplied under a green energy contract with an Irish utility provider).\n\n5. RESPONSIBLE SOURCING\nOmnia Retail prioritises suppliers who hold credible environmental certifications, including ISO 14001 (Environmental Management), EPEAT (Electronic Product Environmental Assessment Tool) registration, and Energy Star compliance. When selecting products for our catalogue, environmental performance is included as a formal evaluation criterion alongside price, quality, and customer demand.\n\n6. REFURBISHED AND EXTENDED LIFE PRODUCTS\nOmnia Retail supports the circular economy by stocking a curated selection of manufacturer-certified refurbished laptops and monitors. All refurbished products are graded, cleaned, tested to manufacturer standards, and sold with a minimum 12-month warranty. The environmental benefit of purchasing a refurbished laptop versus a new equivalent is estimated at approximately 300–400kg CO2e avoided, based on lifecycle assessment data from the European Environment Agency.\n\n7. EMPLOYEE ENVIRONMENTAL AWARENESS\nAll Omnia Retail employees complete annual environmental awareness training covering: proper WEEE handling procedures, packaging waste reduction practices, energy conservation in the workplace, and sustainable commuting options. Omnia Retail operates a bike-to-work scheme under the Revenue Commissioners' Cycle to Work incentive programme.\n\n8. REPORTING AND TRANSPARENCY\nOmnia Retail publishes an annual Environmental Report available on our website. This report includes: verified emissions data, WEEE collection volumes, packaging waste reduction progress, and progress against our 2025 sustainability targets. We welcome customer feedback on our environmental performance at sustainability@omniaretail.ie.\n\n9. REGULATORY COMPLIANCE\nThis policy is maintained in compliance with: EU WEEE Directive 2012/19/EU; EU RoHS Directive 2011/65/EU (restriction of hazardous substances in electrical equipment); EU Packaging and Packaging Waste Directive 94/62/EC as amended; Irish Waste Action Plan for a Circular Economy 2020–2025; and the Climate Action and Low Carbon Development (Amendment) Act 2021."
+    },
+    {
+      "document_id": "policy_008",
+      "type": "policy",
+      "category": "product_reviews",
+      "date": "2024-01-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD — PRODUCT REVIEWS POLICY\nEffective Date: 1 January 2024 | Document Reference: POL-008 | Review Date: 1 January 2025\n\n1. PURPOSE\nOmnia Retail Ltd is committed to providing customers with authentic, reliable product reviews to support informed purchasing decisions. This policy establishes the standards and procedures governing the collection, moderation, publication, and use of customer product reviews on our website and marketing materials.\n\n2. ELIGIBILITY TO REVIEW\nOnly verified purchasers may submit product reviews on the Omnia Retail website. A verified purchaser is defined as a customer who has completed a purchase of the product being reviewed through the Omnia Retail website or app, with the order confirmed as delivered. Review invitations are sent automatically 14 days after confirmed delivery to allow adequate evaluation time. Customers may submit one review per product per purchase.\n\n3. REVIEW COLLECTION\nReviews are collected via email invitation and through the customer's online account. The review form captures: an overall star rating (1–5 stars), ratings across defined criteria (Performance, Value for Money, Build Quality, and Ease of Use), a written review (minimum 20 words, maximum 1,000 words), an optional title, and a recommendation indicator (Would / Would Not Recommend). Customers may optionally attach up to three photos or a short video (maximum 30 seconds, 100MB).\n\n4. MODERATION STANDARDS\nAll submitted reviews are moderated before publication, typically within 48 hours of submission. Reviews are approved if they meet all of the following criteria: written in English or Irish; relate to the specific product purchased; contain no personally identifiable information (PII) about the reviewer or third parties; contain no profanity, hate speech, or defamatory content; do not reference competitor products by name in a disparaging manner; and are not spam or duplicates. Reviews are rejected and the submitter notified if they fail to meet these standards.\n\n5. PROHIBITED CONTENT\nThe following content is strictly prohibited in product reviews and will result in review rejection and may result in account suspension: reviews submitted by or on behalf of product manufacturers, brand representatives, or employees of Omnia Retail; reviews incentivised by undisclosed payment, free products, or other benefits; reviews that contain false or deliberately misleading information; reviews that contain personal attacks on Omnia Retail staff; and reviews submitted by customers who have not genuinely purchased and used the product.\n\n6. REVIEW DISPLAY AND RANKING\nApproved reviews are displayed on the relevant product page. Reviews are displayed by default in 'Most Helpful' order (determined by customer helpfulness votes). Customers can filter by rating, most recent, or verified purchase status. Omnia Retail does not remove, suppress, or alter negative reviews that comply with this policy. The aggregate star rating displayed is calculated as an unweighted mean of all approved ratings for the product. Omnia Retail does not pay for positive reviews or manipulate ratings in any way.\n\n7. RESPONSE TO REVIEWS\nOmnia Retail customer service staff may respond publicly to reviews where a factual clarification or customer support offer is warranted. Responses are clearly identified as coming from 'Omnia Retail Support'. Responses are professional, constructive, and non-defensive. We do not respond to reviews solely to dispute negative opinions.\n\n8. USE OF REVIEWS IN MARKETING\nOmnia Retail may reproduce customer reviews in marketing materials (email campaigns, social media, printed materials) where the review is attributed as a 'verified customer review'. Customers who submit reviews consent to this use as part of the review submission terms. Individual customers may opt out of marketing use of their review by contacting reviews@omniaretail.ie.\n\n9. GDPR AND DATA PROTECTION\nReview data is processed in accordance with Omnia Retail's Privacy Policy and GDPR obligations. Reviewer names are displayed as first name and last initial only (e.g., 'Siobhán M.'). Full reviewer identity is never publicly disclosed. Customers may request deletion of their review at any time; however, aggregate rating data derived from deleted reviews may be retained. Review data is stored on servers within the European Economic Area.\n\n10. THIRD-PARTY REVIEW PLATFORMS\nOmnia Retail also collects reviews via Trustpilot (an independent review platform). Trustpilot reviews are governed by Trustpilot's own terms of service and are not subject to Omnia Retail moderation. Omnia Retail's Trustpilot profile is publicly visible and we respond to reviews on that platform in line with this policy's standards."
+    },
+    {
+      "document_id": "policy_009",
+      "type": "policy",
+      "category": "terms_conditions",
+      "date": "2024-01-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD — TERMS AND CONDITIONS OF SALE\nEffective Date: 1 January 2024 | Document Reference: POL-009 | Review Date: 1 January 2025\n\n1. COMPANY INFORMATION\nOmnia Retail Ltd is a private limited company incorporated in the Republic of Ireland, registered number 654321, with registered office at Unit 14, Park West Business Campus, Nangor Road, Dublin 12, D12 X5Y6. VAT registration number: IE9876543B. Email: legal@omniaretail.ie.\n\n2. ACCEPTANCE OF TERMS\nBy placing an order through the Omnia Retail website (omniaretail.ie), mobile application, or by telephone, you agree to be bound by these Terms and Conditions. If you do not agree to these Terms and Conditions, you must not place an order with us. These Terms and Conditions apply to all sales to consumers (B2C) and, where not superseded by the Business Customer Policy (POL-006), to sales to businesses (B2B).\n\n3. PRODUCT INFORMATION AND PRICING\nOmnia Retail takes reasonable care to ensure that all product descriptions, specifications, and pricing on our website are accurate. However, errors may occur. If a pricing error is identified after you have placed an order, we will notify you as soon as reasonably possible and give you the option to proceed at the correct price or cancel your order for a full refund. We are under no obligation to supply goods at an incorrect price. Product images are for illustrative purposes only; the actual product may differ in minor details from images shown.\n\n4. CONTRACT FORMATION\nA contract between you and Omnia Retail is formed when we send you a dispatch confirmation email (not at the point of placing your order or receiving an order acknowledgement). We reserve the right to refuse or cancel an order at any time before dispatch for reasons including: product unavailability, pricing error, suspected fraudulent activity, or inability to verify payment. In the event of cancellation, any payment taken will be refunded in full.\n\n5. PAYMENT\nWe accept payment by Visa, Mastercard, American Express, Revolut Pay, PayPal, and bank transfer (business accounts only). All prices are displayed in Euro (EUR) and include Irish VAT at the applicable rate. Payment is taken at the time of order placement. Omnia Retail uses Stripe for card payment processing; card details are not stored by Omnia Retail.\n\n6. DELIVERY\nDelivery terms are set out in our Delivery Policy, which forms part of these Terms and Conditions. Risk in the goods passes to you upon delivery. Title (ownership) in the goods passes to you upon receipt of full payment. Omnia Retail is not responsible for delays caused by third-party carriers, weather events, industrial action, or other circumstances beyond our reasonable control.\n\n7. CONSUMER CANCELLATION AND RETURNS\nConsumer customers (individuals purchasing for personal, non-commercial use) have the right to cancel their order within 14 days of delivery without giving any reason (EU Consumer Rights Directive 2011/83/EU as implemented by the European Union (Consumer Information, Cancellation and Other Rights) Regulations 2013). To exercise this right, you must notify us by email to returns@omniaretail.ie or via the returns portal at omniaretail.ie/returns. You must return the goods within 14 days of notifying us of cancellation. Return shipping costs are at your expense unless the item is defective. Refunds are processed within 14 days of our receipt of the returned goods.\n\n8. STATUTORY RIGHTS\nNothing in these Terms and Conditions affects your statutory rights under Irish and EU consumer law, including rights under the Consumer Rights Act 2022 (Ireland) and the EU Sale of Goods Directive 2019/771/EU. These rights exist independently of any manufacturer warranty.\n\n9. LIMITATION OF LIABILITY\nOmnia Retail's total liability to you for any loss or damage arising from or in connection with a contract under these Terms and Conditions shall not exceed the total purchase price paid for the product(s) concerned. Omnia Retail is not liable for indirect, consequential, or special losses, including but not limited to loss of data, loss of income, or loss of profit, to the extent permitted by law.\n\n10. INTELLECTUAL PROPERTY\nAll content on the Omnia Retail website, including product descriptions, images, graphics, and logos, is the property of Omnia Retail Ltd or its licensors and is protected by Irish and international intellectual property laws. You may not reproduce, distribute, or use any content without our prior written consent.\n\n11. GOVERNING LAW AND DISPUTE RESOLUTION\nThese Terms and Conditions are governed by the laws of the Republic of Ireland. Any disputes shall be subject to the exclusive jurisdiction of the Irish courts. If you have a complaint that we cannot resolve, you may refer it to the Competition and Consumer Protection Commission (CCPC) or to the European Online Dispute Resolution (ODR) platform at ec.europa.eu/consumers/odr.\n\n12. AMENDMENTS\nOmnia Retail reserves the right to amend these Terms and Conditions at any time. Updated terms will be published on our website and will apply to orders placed after the date of publication. We will notify registered customers of material changes by email."
+    },
+    {
+      "document_id": "policy_010",
+      "type": "policy",
+      "category": "acceptable_use",
+      "date": "2024-01-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "OMNIA RETAIL LTD — ACCEPTABLE USE POLICY (WEBSITE AND DIGITAL SERVICES)\nEffective Date: 1 January 2024 | Document Reference: POL-010 | Review Date: 1 January 2025\n\n1. PURPOSE AND SCOPE\nThis Acceptable Use Policy (AUP) governs access to and use of the Omnia Retail website (omniaretail.ie), mobile application, customer account portal, business account portal, and any associated digital services (collectively, 'Digital Services'). By accessing our Digital Services, you agree to comply with this policy. This policy applies to all users, including consumers, business customers, and visitors.\n\n2. PERMITTED USE\nYou may access and use our Digital Services for the following purposes: browsing and purchasing products available through Omnia Retail; managing your customer or business account; accessing support resources, FAQs, and documentation; submitting product reviews in accordance with our Product Reviews Policy (POL-008); and communicating with Omnia Retail customer support via chat, email, or web form.\n\n3. PROHIBITED CONDUCT\nThe following activities are strictly prohibited and may result in immediate account suspension, order cancellation, and legal action where appropriate:\n\n3.1 Fraudulent Activity: Submitting false or misleading information to obtain products, refunds, or discounts; using stolen or unauthorised payment methods; creating multiple accounts to exploit first-purchase promotions or referral programmes; filing false warranty or return claims.\n\n3.2 Automated and Systematic Misuse: Using bots, scrapers, spiders, or automated tools to access, copy, or extract data from our website without prior written permission; placing automated or bulk orders in a manner that circumvents purchasing limits or fair-use controls; attempting to interfere with the performance or availability of our Digital Services.\n\n3.3 Reseller Abuse: Purchasing products in quantities that suggest commercial resale with intent to circumvent our Business Customer pricing structure; exploiting consumer-tier pricing or promotions for commercial resale purposes. (Legitimate resellers should contact business@omniaretail.ie to discuss trade account arrangements.)\n\n3.4 Security Violations: Attempting to gain unauthorised access to any part of our Digital Services, customer accounts, or backend systems; introducing malware, viruses, or other malicious code; exploiting vulnerabilities in our systems.\n\n3.5 Abusive Communication: Directing abusive, threatening, discriminatory, or harassing communication at Omnia Retail staff via any channel, including live chat, email, telephone, or social media. Our staff have the right to work without harassment; Omnia Retail reserves the right to terminate service relationships where this standard is not upheld.\n\n4. ACCOUNT SECURITY\nYou are responsible for maintaining the confidentiality of your account credentials (username and password). You must notify Omnia Retail immediately at security@omniaretail.ie if you suspect unauthorised access to your account. Omnia Retail will never contact you asking for your password. Use of a strong, unique password and enabling two-factor authentication (where available) is strongly recommended.\n\n5. COOKIES AND TRACKING\nOmnia Retail uses cookies and similar tracking technologies on our website for essential functionality, analytics, and personalised experience. Your cookie preferences can be managed via the Cookie Preferences tool accessible from the footer of every page. Full details are available in our Cookie Policy. Our use of personal data is governed by our Privacy Policy, available at omniaretail.ie/privacy.\n\n6. THIRD-PARTY LINKS\nOur website may contain links to third-party websites (manufacturer support pages, carrier tracking, WEEE schemes, etc.). Omnia Retail is not responsible for the content, privacy practices, or availability of third-party sites. Links are provided for convenience only.\n\n7. ACCESSIBILITY\nOmnia Retail is committed to making our Digital Services accessible to all users, including those using assistive technologies. Our website targets WCAG 2.1 Level AA compliance. If you encounter an accessibility barrier, please contact us at accessibility@omniaretail.ie so we can assist and improve our services.\n\n8. ENFORCEMENT\nViolations of this policy may result in: removal of content (e.g. non-compliant reviews), account suspension or permanent ban, cancellation of outstanding orders (with appropriate refund where goods have been paid for but not dispatched), civil or criminal legal action where illegal activity has occurred, and reporting to relevant authorities including An Garda Síochána and the Competition and Consumer Protection Commission (CCPC).\n\n9. REPORTING VIOLATIONS\nIf you become aware of any misuse of our Digital Services or suspect fraudulent activity, please report it to security@omniaretail.ie. Reports made in good faith will be treated confidentially.\n\n10. GOVERNING LAW\nThis policy is governed by the laws of the Republic of Ireland and shall be interpreted in accordance with Irish law."
+    },
+    {
+      "document_id": "faq_001",
+      "type": "faq",
+      "category": "general",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "FAQ: How do I track my order?\n\nOnce your order ships, you'll receive a shipping confirmation email containing:\n- Your tracking number\n- A direct link to track your package\n- Estimated delivery date\n- Carrier information (An Post, FastWay, or DPD)\n\nTo track your order:\n1. Check your email for the shipping confirmation\n2. Click the tracking link in the email, OR\n3. Log into your Omnia Retail account and view 'Order History'\n4. Find your order and click 'Track Package'\n5. You'll be redirected to the carrier's tracking page\n\nIf you haven't received a tracking number:\n- Orders are typically processed within 1-2 business days\n- Check your spam/junk folder for the shipping email\n- Log into your account to check order status\n- If order still shows 'Processing' after 2 business days, contact support\n\nTracking updates may be delayed:\n- First scan usually occurs within 24 hours of shipment\n- Tracking updates every time package scans at new location\n- Delivery updates via SMS available (opt-in during checkout)\n\nIf tracking shows 'Delivered' but you haven't received your package:\n- Check safe place delivery instructions you may have provided\n- Check with neighbors or household members\n- Contact the carrier directly using tracking number\n- Contact Omnia Retail support if package cannot be located"
+    },
+    {
+      "document_id": "faq_002",
+      "type": "faq",
+      "category": "general",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "FAQ: What payment methods do you accept?\n\nAccepted Payment Methods:\n\n1. Credit/Debit Cards:\n   - Visa\n   - Mastercard\n   - American Express\n   - Maestro\n\n2. Digital Wallets:\n   - Apple Pay\n   - Google Pay\n   - PayPal\n\n3. Buy Now, Pay Later:\n   - Klarna (Pay in 3 or Pay in 30 days)\n   - Available for orders €50-€3,000\n   - Subject to Klarna credit approval\n\n4. Bank Transfer:\n   - Available for B2B customers and orders over €1,000\n   - Order held until payment clears\n   - Payment instructions provided during checkout\n\nPayment Security:\n- All transactions encrypted (SSL/TLS)\n- PCI DSS compliant payment processing\n- 3D Secure authentication for card payments\n- Card details never stored on our servers\n\nBilling Address:\n- Must match card billing address for fraud prevention\n- Different shipping address can be specified\n- Verification may be required for high-value orders\n\nFailed Payments:\n- Check card details entered correctly\n- Ensure sufficient funds available\n- Contact card issuer if payment repeatedly fails\n- Try alternative payment method\n\nPayment Confirmation:\n- Order confirmation email sent immediately\n- Payment receipt included with confirmation\n- Billing descriptor: 'OMNIA RETAIL DUBLIN'\n\nCurrency:\n- Prices displayed in Euros (€)\n- International cards accepted (converted by card issuer)\n- Currency conversion fees may apply for non-Euro cards"
+    },
+    {
+      "document_id": "faq_003",
+      "type": "faq",
+      "category": "products",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "laptops",
+      "priority": null,
+      "content": "FAQ: What's the difference between Intel and AMD processors for laptops?\n\nPerformance Comparison:\n\nIntel Processors:\n- Slightly better single-core performance (as of 2024)\n- Traditionally stronger in gaming benchmarks\n- Better compatibility with specialized software\n- Thunderbolt 4 support standard on 11th gen and newer\n- Current consumer lineup: Core i3, i5, i7, i9 (13th/14th gen)\n\nAMD Processors:\n- Excellent multi-core performance (often better than Intel at same price)\n- Strong integrated graphics (Radeon 680M/780M beats Intel Iris Xe)\n- Generally better battery efficiency\n- Better value for money (usually €100-200 cheaper for equivalent performance)\n- Current consumer lineup: Ryzen 3, 5, 7, 9 (7000/8000 series)\n\nWhich Should You Choose?\n\nChoose Intel if:\n- You need maximum single-threaded performance\n- You use software specifically optimized for Intel\n- You need Thunderbolt 4 connectivity\n- You primarily game (marginal advantage)\n\nChoose AMD if:\n- You're budget-conscious and want best value\n- You do multi-threaded work (video editing, 3D rendering)\n- You want better battery life\n- You need strong integrated graphics (no dedicated GPU)\n- You do productivity work (office, web browsing)\n\nReal-World Performance:\n- For most users (office work, browsing, streaming), both are excellent\n- The specific model generation matters more than Intel vs AMD\n- RAM (16GB minimum recommended) and SSD speed often impact experience more than CPU choice\n\nCurrent Recommendations by Use Case:\n- Budget laptop: AMD Ryzen 5 7530U\n- Mid-range productivity: Intel Core i5-1335U or AMD Ryzen 5 7540U\n- High-performance: Intel Core i7-13700H or AMD Ryzen 9 7940HS\n- Gaming: Intel Core i7-13650HX or AMD Ryzen 7 7735HS (both good, depends on laptop)\n\nBottom Line:\nBoth are excellent. AMD typically offers better value and efficiency. Intel has slight edge in specific use cases. Choose based on your budget and specific laptop model rather than brand loyalty."
+    },
+    {
+      "document_id": "faq_004",
+      "type": "faq",
+      "category": "products",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "monitors",
+      "priority": null,
+      "content": "FAQ: What monitor resolution should I choose?\n\nCommon Resolutions Explained:\n\n1. Full HD (1920x1080):\n   - Standard resolution for 21-24 inch monitors\n   - Best for: Gaming (high refresh rates affordable), budget builds\n   - Pixel density: ~92 PPI on 24-inch\n   - Pros: Affordable, good game performance, wide compatibility\n   - Cons: Text not as sharp, limited screen real estate\n\n2. QHD / 2K (2560x1440):\n   - Sweet spot for 27-inch monitors\n   - Best for: Productivity, gaming, content creation\n   - Pixel density: ~109 PPI on 27-inch\n   - Pros: Sharp text, more screen space, good gaming performance\n   - Cons: More expensive, requires stronger GPU for gaming\n   - Most popular choice for 27-inch monitors\n\n3. 4K / UHD (3840x2160):\n   - Ideal for 27-inch and larger monitors\n   - Best for: Photo/video editing, professional work, detailed content\n   - Pixel density: ~163 PPI on 27-inch\n   - Pros: Extremely sharp, massive screen space, future-proof\n   - Cons: Expensive, demanding on GPU, UI scaling sometimes needed\n\n4. Ultrawide (3440x1440 or 3840x1600):\n   - 21:9 or wider aspect ratio\n   - Best for: Multitasking, immersive gaming, video editing timeline\n   - Pros: No bezel in center, immersive, great for productivity\n   - Cons: Not all games support ultrawide, expensive\n\nHow to Choose:\n\nConsider Monitor Size:\n- 24-inch or smaller → 1080p is fine\n- 27-inch → 1440p recommended (1080p looks pixelated, 4K may be overkill)\n- 32-inch → 1440p minimum, 4K preferred\n- 34-inch ultrawide → 3440x1440 standard\n\nConsider Your Use Case:\n- Office work / productivity → 1440p or 4K (sharp text matters)\n- Gaming → 1440p (best balance of quality and performance)\n- Competitive gaming → 1080p at high refresh rate (240Hz+)\n- Photo/video editing → 4K (color accuracy and detail important)\n- General use → 1440p (best all-rounder)\n\nConsider Your GPU:\n- Integrated graphics → 1080p or 1440p max\n- Mid-range GPU (RTX 4060, RX 7600) → 1440p comfortable\n- High-end GPU (RTX 4070+, RX 7800XT+) → 4K capable\n\nConsider Your Budget:\n- Budget (€150-250) → 1080p, 24-inch\n- Mid-range (€250-450) → 1440p, 27-inch\n- Premium (€450-800) → 4K, 27-32 inch or ultrawide\n\nOur Recommendation:\nFor most users, 27-inch 1440p offers the best balance of sharpness, screen real estate, and value. It's the sweet spot for both productivity and gaming in 2024."
+    },
+    {
+      "document_id": "faq_005",
+      "type": "faq",
+      "category": "products",
+      "date": "2024-01-01",
+      "resolution_status": "active",
+      "customer_satisfaction": null,
+      "product_category": "storage",
+      "priority": null,
+      "content": "FAQ: SSD vs HDD - Which should I choose?\n\nSolid State Drive (SSD):\n\nAdvantages:\n- Extremely fast read/write speeds (500-7000 MB/s depending on type)\n- No moving parts (more durable, silent operation)\n- Much faster boot times (10-15 seconds vs 30-60 seconds)\n- Applications and files load near-instantly\n- Better for laptops (shock resistant, energy efficient)\n- Cooler operation, longer battery life\n\nDisadvantages:\n- More expensive per gigabyte\n- Limited write cycles (but typically lasts 5-10 years with normal use)\n- Data recovery harder if drive fails\n\nTypes of SSDs:\n1. SATA SSD (500-550 MB/s): Affordable upgrade from HDD\n2. NVMe SSD (1500-3500 MB/s): Most common, great performance\n3. PCIe Gen4 NVMe (5000-7400 MB/s): Fastest consumer option\n\nHard Disk Drive (HDD):\n\nAdvantages:\n- Much cheaper per gigabyte\n- Large capacities affordable (4-8TB common)\n- Better for long-term archival storage\n- Data recovery easier if drive fails\n- More write cycles (longer lifespan for write-heavy workloads)\n\nDisadvantages:\n- Much slower (80-160 MB/s typical)\n- Mechanical parts prone to failure from shock\n- Noisy operation (spinning, clicking sounds)\n- Higher power consumption\n- Heavier, generates more heat\n\nOur Recommendations:\n\nFor Operating System & Applications:\n- ALWAYS use SSD (minimum 500GB recommended)\n- NVMe SSD preferred for best experience\n- This is the single biggest performance upgrade you can make\n\nFor Storage:\n\nLight Users (<500GB data):\n- 512GB SSD sufficient for everything\n- No HDD needed\n\nMedium Users (500GB - 2TB data):\n- 512GB SSD for OS and applications\n- Optional: 1-2TB HDD for files, photos, videos\n- OR: Single 1TB SSD if budget allows\n\nHeavy Users (2TB+ data):\n- 512GB-1TB NVMe SSD for OS and applications\n- 2-4TB HDD for mass storage, media libraries, backups\n- Best value configuration\n\nContent Creators:\n- 1-2TB NVMe SSD for active projects\n- 4-8TB HDD for archived projects and backups\n- External backup drives essential\n\nPricing Reality Check (as of 2024):\n- 500GB SSD: €40-60\n- 1TB SSD: €70-90\n- 2TB SSD: €140-180\n- 1TB HDD: €40-50\n- 2TB HDD: €50-70\n- 4TB HDD: €90-120\n\nBottom Line:\nSSDs are essential for your operating system. HDDs make sense only for mass storage where speed doesn't matter. For most users in 2024, a single 1TB SSD is the best choice unless you have large media libraries."
+    },
+    {
+      "document_id": "faq_006",
+      "type": "faq",
+      "category": "product_questions",
+      "date": "2024-01-15",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "laptops",
+      "priority": null,
+      "content": "FAQ: How much RAM do I need in a laptop?\n\nRAM (Random Access Memory) determines how many tasks your laptop can handle simultaneously without slowing down. Here's a practical guide for different use cases:\n\n8GB RAM — Suitable for: light everyday use (email, web browsing, streaming video, Microsoft Office documents, video calls). Not recommended if you run more than 10–15 browser tabs simultaneously or use any creative software. In 2024, 8GB is increasingly the minimum — many users find it constraining within 2–3 years.\n\n16GB RAM — The sweet spot for most users. Suitable for: professionals using Microsoft 365, developers writing code, students running multiple applications, content consumers with heavy browser use, light photo editing (Lightroom Classic). A 16GB laptop will remain comfortable for most users for 4–6 years. This is our most commonly recommended configuration.\n\n32GB RAM — Suitable for: video editors (Premiere Pro, DaVinci Resolve), 3D designers (Blender, AutoCAD), software developers running virtual machines or Docker containers, data scientists working with large datasets, heavy multitaskers running many demanding applications simultaneously. If your work involves any of these, 32GB is well worth the investment.\n\n64GB+ RAM — Required for: professional video production with high-resolution footage (4K/8K multicam), advanced 3D rendering, running multiple virtual machines concurrently, machine learning model training on CPU. Specialist use cases only.\n\nApple Silicon Note: MacBooks with Apple M-series chips use unified memory — shared between CPU and GPU. Apple's memory architecture is more efficient than x86 Windows laptops, meaning 16GB on an M3 MacBook performs comparably to 24–32GB on many Windows laptops for creative workloads.\n\nCan I upgrade RAM later? This is critically important — most modern thin laptops (ultrabooks, MacBooks, many consumer laptops) have RAM soldered to the motherboard and cannot be upgraded. If in doubt, buy more RAM upfront. ThinkPads, HP EliteBooks, and some ASUS business laptops retain upgradeable RAM. Always check the specification sheet before purchasing if future upgradeability matters to you.\n\nOmnia Retail Recommendation: When choosing between configurations, we always recommend selecting at least one tier above your current needs to future-proof your purchase."
+    },
+    {
+      "document_id": "faq_007",
+      "type": "faq",
+      "category": "shipping_info",
+      "date": "2024-01-15",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "FAQ: What are Omnia Retail's delivery options and timeframes?\n\nOmnia Retail delivers throughout the Republic of Ireland and Northern Ireland. Here is a summary of all available delivery options:\n\nSTANDARD DELIVERY (An Post)\nCost: Free on orders over €50; €4.99 on orders under €50\nTimeframe: 2–4 business days after dispatch\nTracking: Yes — An Post tracking number provided by email\nSuitable for: Non-urgent orders, small accessories, items under 5kg\nNote: Standard delivery is not available for orders over €500 — Express is automatically applied at no extra charge.\n\nEXPRESS DELIVERY (DPD)\nCost: €9.99; Free on orders over €200\nTimeframe: Next business day after dispatch if ordered before 14:00\nTracking: Yes — DPD real-time GPS tracking with 1-hour delivery window notification\nSuitable for: Laptops, monitors, time-sensitive orders\nNote: DPD delivers Monday–Friday only. Orders placed Friday afternoon dispatch Monday for Tuesday delivery.\n\nSATURDAY DELIVERY (DPD Saturday)\nCost: €14.99\nTimeframe: Saturday delivery if ordered by 14:00 on Friday\nTracking: Full DPD tracking\nAvailability: Most Republic of Ireland addresses; not available for all Northern Ireland postcodes. Check availability at checkout.\n\nCLICK AND COLLECT (Dublin Warehouse Only)\nCost: Free\nTimeframe: Same day if ordered before 12:00; next business day otherwise\nLocation: Omnia Retail Warehouse, Park West Business Campus, Dublin 12. Opening hours: Mon–Fri 09:00–17:30.\nNote: Photo ID and order confirmation required at collection.\n\nDISPATCH TIMEFRAMES\nIn-stock items: Dispatched same business day if ordered before 14:00\nPre-order items: Dispatched on or before stated release date\nCustom configuration orders (business): 2–5 business days\n\nROI VS NORTHERN IRELAND\nNorthern Ireland orders may be subject to a small additional carrier surcharge (€2–5) depending on carrier zone. This is displayed at checkout before payment. Delivery timeframes to Northern Ireland may be 1 business day longer than ROI.\n\nFor specific delivery queries, contact our customer service team at delivery@omniaretail.ie or on 01-XXX-XXXX."
+    },
+    {
+      "document_id": "faq_008",
+      "type": "faq",
+      "category": "technical_troubleshooting",
+      "date": "2024-02-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "laptops",
+      "priority": null,
+      "content": "FAQ: My laptop won't turn on — what should I try before contacting support?\n\nBefore contacting Omnia Retail support, please try the following steps in order. Most 'laptop won't turn on' issues can be resolved without returning the device.\n\nSTEP 1: Check the basics\n- Ensure the charger is properly connected at both the laptop end and the wall socket\n- Try a different wall socket — the socket itself may be faulty\n- If using a USB-C charger or dock, ensure it is rated for your laptop's wattage (check your laptop's specifications — many require 65W or 90W minimum to charge and run simultaneously)\n- Look for any indicator LEDs on the laptop — a charging LED, power LED, or battery LED can tell you whether the laptop is receiving power\n\nSTEP 2: Perform a hard reset\nThis clears any residual electrical charge that can prevent startup. Method varies by laptop:\n- Most Windows laptops: hold the power button for 15–20 seconds, release, then press normally to power on\n- MacBooks: hold the power button for 10 seconds. On M-series Macs: press and hold power button until the startup options screen appears, or for 10 seconds to force shutdown if stuck\n- If your laptop has a removable battery (older models): remove battery, hold power button for 10 seconds, reinsert battery, attempt power on\n\nSTEP 3: Check for display issues (laptop may be on but screen blank)\n- Look very closely at the screen — do you see a very faint image? If so, the backlight may have failed (the laptop is on but the screen backlight is not)\n- Connect to an external monitor using HDMI or USB-C DisplayPort. If the external monitor shows the desktop, the laptop's internal display has a fault — contact support\n- Press the brightness keys (Fn + brightness up) to rule out the screen simply being set to minimum brightness\n\nSTEP 4: Boot from charging only\n- Allow the laptop to charge for 30 minutes before attempting to power on — if the battery was deeply discharged below a safe threshold, it needs minimum charge before it can power the startup circuit\n\nSTEP 5: Listen and observe\n- On startup attempt: do you hear fan spin, keyboard backlights flash, or any beep codes? Note these for the support agent — beep codes often indicate specific hardware faults\n\nIf none of these steps resolve the issue, please contact Omnia Retail support at support@omniaretail.ie or 01-XXX-XXXX with your order number and a description of what you observed in each step above. This information helps us resolve your issue faster."
+    },
+    {
+      "document_id": "faq_009",
+      "type": "faq",
+      "category": "warranty_questions",
+      "date": "2024-02-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "FAQ: What warranty coverage do I get when I buy from Omnia Retail?\n\nAll products sold by Omnia Retail come with two distinct layers of warranty protection:\n\n1. STATUTORY RIGHTS (Irish and EU Law)\nUnder the Consumer Rights Act 2022 (Ireland), which implements the EU Sale of Goods Directive (2019/771/EU), you have a statutory 2-year right to remedies for any product that is not in conformity with the contract at the time of delivery. This means:\n- In the first 12 months: the defect is presumed to have existed at the time of sale. You do not need to prove the product was faulty — Omnia Retail must prove it was not, or offer a remedy.\n- In months 13–24: you may need to demonstrate that a defect is due to a manufacturing fault rather than normal wear and misuse, but your rights remain in place.\n\nRemedies available under statutory rights: repair, replacement, or (where repair/replacement is not possible or takes too long) a price reduction or full refund. Omnia Retail will always first attempt repair or replacement; refund is a last resort under the legislation.\n\nThese statutory rights are in addition to any manufacturer warranty and cannot be contracted away.\n\n2. MANUFACTURER WARRANTY\nMost products also come with a separate manufacturer warranty, typically 1–3 years depending on the brand and product. Manufacturer warranties may offer advantages over statutory rights, such as: faster direct-to-manufacturer repair, advance replacement programmes (new unit dispatched before the faulty unit is returned), and international coverage. Manufacturer warranty terms vary — key details for common brands:\n\n- Dell: 1-year basic onsite / ProSupport varies by product\n- Lenovo: 1-year depot or onsite depending on product line\n- HP: 1-year with optional Care Pack extensions\n- Samsung (monitors/storage): 3-year manufacturer warranty on most products\n- Apple: 1-year hardware warranty + 90 days telephone support (AppleCare+ available)\n- LG (monitors): 3-year on most display products\n\n3. WHAT IS NOT COVERED\nNeither statutory nor manufacturer warranties cover: accidental damage (drops, liquid spills, screen cracks); damage caused by misuse, modification, or repair by non-authorised service centres; normal wear and tear (battery capacity degradation over time is normal and not a warranty fault unless it falls below manufacturer thresholds, typically 80% at 1 year).\n\n4. HOW TO MAKE A WARRANTY CLAIM\nContact Omnia Retail support first — we will advise whether to process through us or directly with the manufacturer, depending on which route is faster and more beneficial for you. Have ready: your order number or proof of purchase, product serial number (usually on a sticker on the base of the device), and a clear description of the fault.\n\nOmnia Retail will never instruct you to contact the manufacturer directly in a way that undermines your statutory rights. Your rights are with us as the retailer, and we will always support you in exercising them."
+    },
+    {
+      "document_id": "faq_010",
+      "type": "faq",
+      "category": "product_questions",
+      "date": "2024-02-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "laptops",
+      "priority": null,
+      "content": "FAQ: What is the difference between Intel Core i5, i7, and i9 processors?\n\nIntel's Core processor numbering (i3, i5, i7, i9) indicates relative performance tier within a generation. Here's a practical guide for choosing the right processor for your needs:\n\nCore i3 — Entry level. Suitable for: basic web browsing, email, word processing, streaming media. Not suitable for: video editing, gaming, running multiple demanding applications. Typically found in budget laptops under €600.\n\nCore i5 — Mid-range, the most popular tier. Suitable for: business productivity (Microsoft 365, video conferencing, web research), light photo editing, casual gaming, students across most disciplines. Excellent value for most users. The i5 in the current 12th and 13th generation (e.g. i5-1235U, i5-1345U) is significantly more powerful than i5s from 4–5 years ago — don't dismiss it.\n\nCore i7 — Upper-mid range. Suitable for: video editing (1080p/4K), software development, architecture and CAD, gaming laptops, heavy multitasking, data science. The i7 will handle demanding applications comfortably and future-proof your laptop for longer.\n\nCore i9 — Enthusiast/professional tier. Suitable for: professional video production, 3D rendering, machine learning workloads, high-end gaming. Typically found in high-performance laptops (ROG, Spectre, MacBook Pro equivalent territory). Generates significantly more heat than i5/i7 — expect louder fans in sustained workloads.\n\nImportant: The suffix letter matters.\n- 'U' suffix (e.g. i7-1355U): Ultra-low power, optimised for battery life. Used in thin ultrabooks. Good performance, excellent efficiency.\n- 'P' suffix (e.g. i7-1360P): Performance-optimised for thin-and-light. Balanced between U and H.\n- 'H' suffix (e.g. i7-13700H): High performance, typically in thicker laptops. Maximum performance for creative and gaming workloads. Higher power draw, shorter battery life.\n- 'HX' suffix: Desktop-grade performance in a laptop. Found in workstation-class machines.\n\nAlso Important — Generation numbers: A 12th or 13th generation i5 will often outperform a 10th generation i7. Always check the generation (the first two digits after the dash: i7-13700H = 13th generation).\n\nApple Silicon alternative: If you're considering a Mac, Apple's M-series chips (M2, M3) are not directly comparable to Intel tiers but generally match or exceed i7/i9 performance in most tasks while using significantly less power."
+    },
+    {
+      "document_id": "faq_011",
+      "type": "faq",
+      "category": "product_questions",
+      "date": "2024-02-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "monitors",
+      "priority": null,
+      "content": "FAQ: What monitor size and resolution should I choose?\n\nChoosing monitor size and resolution is about matching pixel density, viewing distance, and use case. Here is a practical guide:\n\nSIZE GUIDE\n24-inch: Ideal for a standard desk where you sit 50–65cm from the screen. Compact, easy on neck with no need to pan. Great for office work, coding, general use.\n27-inch: The most popular professional size. Comfortable at 60–80cm. Gives noticeably more workspace than 24-inch. The sweet spot for most home office and creative setups.\n32-inch: Best for those who want an immersive experience or sit further from the screen (80–100cm). Excellent for video editing timelines, large spreadsheets. Can feel like too much at close range.\n34-inch Ultrawide (21:9): Replaces a dual-monitor setup for many users. Excellent for multitasking — two windows side-by-side with no bezel gap. Not all applications fully support ultrawide ratios.\n\nRESOLUTION GUIDE\n1080p (Full HD, 1920×1080): Appropriate for 24-inch screens. Looks fine at typical viewing distances. Appears soft on 27-inch+ at close range — text won't be as crisp.\n1440p (QHD/2K, 2560×1440): The recommended resolution for 27-inch monitors. Sharp, comfortable pixel density, less GPU demand than 4K. Excellent for both work and gaming.\n4K (UHD, 3840×2160): Essential if you work with 4K video, high-resolution photo editing, or simply want the sharpest possible text. Perfect for 27-inch professional use. Requires scaling (Windows: 150%, macOS: Retina default) for comfortable text size.\n4K on 32-inch: Excellent for video editors and photographers. The extra space is useful for timeline work.\n\nCOLOUR PANEL TECHNOLOGY\nIPS: Best colour accuracy, wide viewing angles. Recommended for design work, photo/video editing, and anyone viewing from different angles.\nVA: Higher contrast ratio, good for dark rooms and multimedia. Slight colour shift at extreme angles.\nOLED: Best-in-class contrast and colour vibrancy. Premium price. Excellent for creative professionals; burn-in risk with static UI elements (managed by screen savers and pixel refresh features on modern panels).\n\nOmnia Retail Recommendation: For most home office users — 27-inch 1440p IPS. For photographers and video editors — 27-inch 4K IPS or OLED. For gaming alongside work — 27-inch 1440p with 144Hz+ refresh rate."
+    },
+    {
+      "document_id": "faq_012",
+      "type": "faq",
+      "category": "product_questions",
+      "date": "2024-02-15",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "storage",
+      "priority": null,
+      "content": "FAQ: What is the difference between HDD, SATA SSD, and NVMe SSD storage?\n\nStorage technology has evolved significantly over the past decade. Here's what you need to know to choose the right storage for your needs:\n\nHDD (Hard Disk Drive)\nHow it works: Spinning magnetic platters with a read/write head — mechanical storage.\nSpeed: ~100–200 MB/s sequential read/write.\nBest for: Large-capacity bulk storage at low cost — external backup drives, NAS systems, archival storage. Not recommended as a primary drive in a new laptop or desktop in 2024.\nCost per GB: Cheapest — typically €0.02–0.04/GB.\nDurability: Vulnerable to shocks and drops (moving parts). Not suitable for portable use without protective cases.\n\nSATA SSD (Solid State Drive, SATA interface)\nHow it works: NAND flash memory chips, connected via the SATA III bus (same interface as older HDDs).\nSpeed: ~500–550 MB/s sequential read, ~450–520 MB/s sequential write. Approximately 3–5× faster than HDD.\nBest for: Budget laptop upgrades (replacing an old HDD), desktop secondary drives, external portable drives. Still a significant improvement over HDD for general computing.\nCost per GB: ~€0.07–0.12/GB.\nDurability: No moving parts — much more shock-resistant than HDD.\n\nNVMe SSD (Non-Volatile Memory Express, PCIe interface)\nHow it works: Flash memory chips communicating directly via PCIe lanes — no SATA bottleneck.\nSpeed: Gen 3 NVMe: ~3,000–3,500 MB/s read / ~2,000–3,000 MB/s write. Gen 4 NVMe: ~5,000–7,000 MB/s read / ~4,000–6,000 MB/s write. Gen 5 NVMe: up to 12,000 MB/s (cutting edge as of 2024).\nBest for: Primary drive in any modern laptop or desktop. Operating system, applications, and active project files benefit enormously from NVMe speeds. Video editors, developers, and power users should always use NVMe as their primary drive.\nCost per GB: ~€0.09–0.18/GB (premium over SATA SSD narrowing rapidly).\nForm factors: M.2 2280 (most common laptop/desktop), M.2 2242 (smaller laptops), PCIe add-in card (desktops).\n\nPractical Impact on Daily Use:\nBoot times: HDD: 45–90 seconds. SATA SSD: 15–25 seconds. NVMe: 8–15 seconds.\nApp launch: NVMe feels instantaneous for most applications vs. noticeable wait on HDD.\nLarge file operations: NVMe can move a 10GB video in under 3 seconds; HDD takes over a minute.\n\nOmnia Retail Recommendation: Choose NVMe SSD as your primary drive in any new purchase. Use HDD or SATA SSD for secondary/external backup storage where cost per GB matters more than speed."
+    },
+    {
+      "document_id": "faq_013",
+      "type": "faq",
+      "category": "account_management",
+      "date": "2024-02-15",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "none",
+      "priority": null,
+      "content": "FAQ: How do I manage my Omnia Retail account?\n\nYour Omnia Retail customer account gives you access to your order history, returns, saved addresses, payment methods, and communication preferences. Here is a guide to common account management tasks:\n\nCREATING AN ACCOUNT\nYou can create an account at omniaretail.ie/register. You will need: a valid email address, a password (minimum 10 characters, must include one uppercase letter, one number, and one special character), and your name and delivery address. Account creation is free and not required to place an order (guest checkout is available), but an account is recommended for easy order tracking, returns, and saved preferences.\n\nLOGGING IN\nVisit omniaretail.ie and click 'Sign In' in the top-right corner. Enter your email and password. If you have forgotten your password, click 'Forgot Password' to receive a reset link to your registered email address. Reset links expire after 60 minutes for security.\n\nCHANGING YOUR EMAIL ADDRESS\nGo to Account Settings > Personal Details > Change Email. You will be asked to confirm your current password and verify the new email address by clicking a link sent to the new address. For security, you will also receive a notification to your old email address.\n\nCHANGING YOUR PASSWORD\nGo to Account Settings > Security > Change Password. Enter your current password and your new password twice to confirm. If you suspect your account has been compromised, change your password immediately and contact security@omniaretail.ie.\n\nMANAGING SAVED ADDRESSES\nYou can save multiple delivery addresses (e.g. home and work). Go to Account Settings > Addresses. You can set a default address, add new addresses, and delete old ones. Your address is not shared with any third party other than the carrier for delivery purposes.\n\nORDER HISTORY\nAll orders (including guest orders linked to your email) are visible under My Orders. Click any order to view status, tracking information, invoice, and return options.\n\nDELETING YOUR ACCOUNT\nTo delete your account, contact privacy@omniaretail.ie. Account deletion is processed within 30 days in accordance with GDPR. Note: orders, invoices, and transaction records may be retained for up to 7 years for legal and financial compliance purposes, even after account deletion. Retained data is not used for marketing.\n\nCOMMUNICATION PREFERENCES\nManage email preferences under Account Settings > Communication. You can opt out of marketing emails at any time. Transactional emails (order confirmations, dispatch notices, returns updates) cannot be opted out of as they relate to active orders."
+    },
+    {
+      "document_id": "faq_014",
+      "type": "faq",
+      "category": "technical_troubleshooting",
+      "date": "2024-03-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "monitors",
+      "priority": null,
+      "content": "FAQ: My monitor is displaying the wrong colours — how do I fix it?\n\nColour issues on a monitor can have several causes. Work through the following steps to diagnose and resolve:\n\nSTEP 1: Check colour temperature and preset mode\nMost monitors ship in a mode unsuitable for accurate colour (e.g. 'Vivid', 'Game', or 'Cinema' mode which boost saturation and contrast artificially). Access your monitor's OSD (On-Screen Display) menu using the buttons on the monitor bezel. Look for: Picture Mode, Colour Temperature, or Preset Mode. For accurate colour: select 'sRGB' mode, or if not available, 'Standard'. Set Colour Temperature to 6500K. This alone resolves most colour complaint cases.\n\nSTEP 2: Check cable type\nHDMI cables transmit colour in 'limited range' (16–235) by default on many systems, causing washed-out blacks and whites. DisplayPort transmits full range (0–255) by default. If using HDMI: in Windows, go to Display Settings > Advanced Display Settings > Display Adapter Properties > Colour Management, or in NVIDIA/AMD control panel set Output Dynamic Range to 'Full'. If using a Mac with HDMI: this is managed automatically in macOS Monterey and later.\n\nSTEP 3: Check your operating system colour profile\nWindows: Go to Settings > System > Display > Advanced display settings > Colour profile. Ensure the correct ICC profile for your monitor is applied. Many monitors include a disc or downloadable ICC profile — check the manufacturer's support page.\nmacOS: Go to System Settings > Displays > Colour Profile. Try different profiles or click 'Calibrate' for a manual calibration walkthrough.\n\nSTEP 4: Check GPU colour output settings\nNVIDIA users: Open NVIDIA Control Panel > Display > Adjust desktop colour settings. Ensure 'Use NVIDIA settings' is selected. Set Output Colour Format to RGB, Output Colour Depth to 8bpc or 10bpc, and Output Dynamic Range to Full.\nAMD users: Open AMD Radeon Software > Display. Check Pixel Format is set to RGB 4:4:4 Pixel Format PC Standard (Full RGB).\n\nSTEP 5: Factory reset the monitor\nIf colour is still incorrect after the above steps, perform a factory reset via the OSD menu (usually under Setup or System options). This returns all monitor settings to default.\n\nSTEP 6: Hardware fault\nIf the display shows a consistent colour cast (e.g. everything appears pink, green, or yellow) that persists after reset and across multiple cables and inputs, this may indicate a hardware fault with the panel or internal display electronics. Contact Omnia Retail support with your order details and a photo of the display issue."
+    },
+    {
+      "document_id": "faq_015",
+      "type": "faq",
+      "category": "product_questions",
+      "date": "2024-03-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "accessories",
+      "priority": null,
+      "content": "FAQ: What accessories do I need for a productive home office setup?\n\nBuilding a comfortable, productive home office doesn't require spending a fortune. Here is a practical guide to the most impactful upgrades, in order of priority:\n\n1. EXTERNAL MONITOR (Highest Impact)\nEven if your laptop screen is excellent, an external monitor dramatically increases your usable workspace. A 27-inch 1440p IPS monitor (€250–400) gives you a second full screen for reference documents, email, or communication while your primary work stays on the laptop. If budget is tight, a 24-inch 1080p IPS (€120–180) is a significant improvement over no second screen. See our monitor size and resolution FAQ for detailed guidance.\n\n2. EXTERNAL KEYBOARD AND MOUSE\nLaptop keyboards are functional but not designed for 8-hour days. An external keyboard allows your laptop screen to be elevated (see below) while you type at a comfortable angle. Recommended for most users: a wireless keyboard and mouse combo (Logitech MK470 Slim, €69) for desk tidiness. For heavy typists: a mechanical keyboard (Keychron K3 or K8) dramatically reduces typing fatigue.\n\n3. LAPTOP STAND OR MONITOR ARM\nLaptop screens used flat on a desk force your neck down — this causes significant neck and shoulder strain over time. A laptop stand (Nexstand K2 at €35, or Rain Design mStand for MacBooks at €49) raises the screen to eye level. Pair with an external keyboard and mouse. This is one of the cheapest, highest-impact ergonomic investments available.\n\n4. USB HUB OR DOCK\nModern laptops often have too few ports. A powered USB-C hub (€30–60) adds USB-A ports, HDMI, SD card reader, and sometimes Ethernet. For a more powerful solution: a Thunderbolt 4 dock (CalDigit TS4, €299) connects everything — dual monitors, USB devices, Ethernet, audio — through one cable to your laptop.\n\n5. WEBCAM\nIf you use video calls regularly, a dedicated external webcam (Logitech C920 at €79, or Logitech Brio 4K at €149) is a substantial upgrade over most laptop webcams, which are 720p in most non-premium models.\n\n6. HEADSET OR SPEAKERS\nFor calls: a wireless headset (Jabra Evolve2 55, €289; or Poly Voyager Focus 2, €199) with active noise cancellation keeps your calls private in shared spaces and significantly improves call audio quality. Budget option: any USB headset with a microphone (~€25–50).\n\n7. LIGHTING\nA ring light or desk lamp with consistent, non-flickering LED illumination improves your on-camera appearance dramatically and reduces eye strain when working in darker environments.\n\nOmnia Retail Tip: If you're starting from nothing, prioritise in this order: monitor → stand + keyboard/mouse → dock/hub → webcam. You'll notice diminishing returns after the first three items."
+    },
+    {
+      "document_id": "faq_016",
+      "type": "faq",
+      "category": "technical_troubleshooting",
+      "date": "2024-03-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "laptops",
+      "priority": null,
+      "content": "FAQ: My laptop is running slowly — what can I do to speed it up?\n\nA slow laptop is one of the most common support questions we receive. Before assuming you need a new machine, try the following steps — many users find a significant improvement without spending anything.\n\nSTEP 1: Check what is using your resources\nWindows: Press Ctrl+Shift+Esc to open Task Manager. Click 'More details', then sort by CPU and Memory columns to see what's consuming resources. A process at 80–100% CPU consistently indicates either a runaway process or a system under genuine heavy load.\nmacOS: Open Activity Monitor (Applications > Utilities > Activity Monitor). Check CPU and Memory tabs.\n\nSTEP 2: Manage startup programmes\nMany applications add themselves to startup without asking. These slow your boot time and run in the background consuming RAM.\nWindows 11: Settings > Apps > Startup. Disable anything non-essential.\nmacOS: System Settings > General > Login Items. Remove unused apps.\n\nSTEP 3: Check available storage\nSystems with less than 10–15% free storage often slow down significantly (Windows needs space for virtual memory paging; both Windows and macOS write temporary files constantly).\nWindows: Settings > System > Storage.\nmacOS: Apple menu > About This Mac > Storage.\nIf low: empty the Recycle Bin / Trash, delete large unused files, uninstall unused applications, and consider offloading files to an external drive or cloud storage.\n\nSTEP 4: Check for malware (Windows)\nMalware silently consuming CPU and network resources is a common slowdown cause. Run a full scan with Windows Defender (Settings > Windows Security > Virus & threat protection > Quick scan). Also consider Malwarebytes Free for a second-opinion scan.\n\nSTEP 5: Update Windows / macOS and drivers\nPending updates can cause background download/install activity that slows the system temporarily. Complete all pending updates, then restart fully (not sleep or hibernate).\n\nSTEP 6: Check thermal throttling\nIf your laptop is running hot (fan running constantly, base warm to touch), it may be throttling its CPU speed to protect itself from overheating. See our FAQ on laptop overheating for steps to resolve this.\n\nSTEP 7: Consider a RAM or storage upgrade\nIf the machine has 8GB RAM and your Task Manager shows consistently >80% memory usage, upgrading to 16GB (if your laptop supports it) will make a meaningful difference. If your laptop has an HDD rather than SSD, replacing it with an SSD is the single most impactful hardware upgrade possible — the difference is transformative.\n\nIf none of these steps help, contact Omnia Retail support with your laptop model and a description of what Task Manager is showing — we can help diagnose further."
+    },
+    {
+      "document_id": "faq_017",
+      "type": "faq",
+      "category": "warranty_questions",
+      "date": "2024-03-15",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "FAQ: Does my warranty cover accidental damage?\n\nThis is one of the most important warranty questions customers ask — unfortunately, the short answer is: standard warranties do not cover accidental damage. Here is a detailed breakdown:\n\nWHAT STANDARD WARRANTIES COVER\nManufacturer warranties (typically 1–3 years) and your statutory rights under Irish consumer law cover manufacturing defects — faults in materials or workmanship that were present at the time of sale or developed due to a quality issue during normal use. Examples of covered issues: screen backlight failure, keyboard keys stopping working without physical damage, battery not charging when in good condition, SSD failure, random shutdowns with no user error involved.\n\nWHAT STANDARD WARRANTIES DO NOT COVER\n- Accidental damage: drops, impacts, cracks, dents\n- Liquid damage: spills, rain exposure, condensation ingress\n- Screen cracks: one of the most common customer issues — a cracked screen is almost always accidental and not covered by standard warranty\n- User-caused damage: modification, repair by non-authorised service centres, opening the case (on sealed devices)\n- Theft or loss\n- Normal wear and tear: cosmetic scratches from everyday use\n\nACCIDENTAL DAMAGE PROTECTION OPTIONS\nIf you want cover for accidents, there are two main routes:\n\n1. Manufacturer AccidentalDamage Protection: Some manufacturers offer paid add-ons:\n   - AppleCare+ (€5.99–14.49/month or one-time fee): Covers up to 2 accidental damage incidents per year, subject to a service fee (€29 for screen damage, €99 for other damage). Highly recommended for MacBook users.\n   - Dell Premium Support Plus: Includes accidental damage coverage for drops and spills.\n   - HP Care Pack with Accidental Damage Protection: Available for most HP EliteBook and Spectre models.\n\n2. Home Insurance: Many home insurance policies (contents cover) include portable electronics as specified items. Check your policy or contact your insurer — adding a laptop as a specified item typically costs €20–50/year in Ireland. This often provides broader cover than manufacturer programmes.\n\nOmnia Retail does not currently offer in-house accidental damage protection plans, but we can advise on manufacturer programme availability for the product you are purchasing.\n\nHOW TO MAKE AN ACCIDENTAL DAMAGE CLAIM\nContact the manufacturer or your insurer directly. Have ready: proof of purchase, serial number, description of the incident, and photos of the damage. Do not attempt to repair accidental damage yourself before making a claim — this can invalidate the claim."
+    },
+    {
+      "document_id": "faq_018",
+      "type": "faq",
+      "category": "shipping_info",
+      "date": "2024-03-15",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "all",
+      "priority": null,
+      "content": "FAQ: What happens if my order is lost or delayed in transit?\n\nWhile the vast majority of Omnia Retail orders are delivered on time, delays and rare lost parcels do occasionally occur. Here is what to do and what to expect:\n\nFIRST STEPS WHEN YOUR ORDER IS LATE\n1. Check your tracking: Your dispatch confirmation email includes a tracking number and a link to the carrier's tracking page (An Post or DPD). Check this first — most delays are visible in tracking (e.g. 'held at depot', 'customs delay', 'missed delivery attempt').\n2. Allow a grace period: Standard delivery is 2–4 business days; express is next business day. Add 1 business day grace before escalating — volume spikes during busy periods (Black Friday, Christmas, bank holidays) can cause brief delays.\n3. Check with neighbours and safe places: DPD will attempt delivery and may leave with a neighbour or in a safe place if pre-authorised. Check your DPD notification texts for safe-place information.\n\nIF YOUR ORDER IS MORE THAN 2 DAYS LATE\nContact Omnia Retail support at delivery@omniaretail.ie or 01-XXX-XXXX. Provide your order number and we will: contact the carrier on your behalf, open a trace request if the parcel cannot be located in the carrier's system, and provide a resolution timeline.\n\nDEFINING A LOST PARCEL\nAn Post: A parcel is considered lost if not delivered or located within 10 business days of dispatch. DPD: 5 business days after expected delivery.\n\nOUR RESPONSIBILITY\nOmnia Retail takes full responsibility for ensuring your order reaches you. If a parcel is confirmed lost by the carrier: we will dispatch a replacement immediately (subject to stock availability) or issue a full refund — your choice. We handle the carrier claim ourselves; you do not need to pursue the carrier directly. Our responsibility for your order ends upon successful delivery to your address (as confirmed by carrier tracking).\n\nSIGNED DELIVERY\nFor orders over €200, signature-on-delivery may be required. If you cannot be home, you can: authorise a neighbour to sign via the DPD notification system, redirect to a DPD Pickup Point (parcel locker or partner store), or request a specific delivery date via the DPD link in your notification.\n\nNORTHERN IRELAND ORDERS\nOrders to Northern Ireland transit through the standard ROI carrier network and are delivered without customs formality (goods remain under EU origin). Delivery times are typically 1 day longer than equivalent ROI addresses."
+    },
+    {
+      "document_id": "faq_019",
+      "type": "faq",
+      "category": "product_questions",
+      "date": "2024-03-15",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "laptops",
+      "priority": null,
+      "content": "FAQ: Should I buy a Mac or a Windows laptop?\n\nThis is genuinely one of the most personal technology decisions, and the right answer depends on your situation. Here is an honest comparison to help you decide:\n\nCHOOSE A MAC IF:\n- You are already in the Apple ecosystem (iPhone, iPad, AirPods): Handoff, AirDrop, Universal Clipboard, and iMessage on Mac are genuinely useful and well-integrated.\n- You prioritise battery life above all else: The MacBook Air M3 regularly achieves 15–18 hours of real-world battery life. No Windows laptop comes close in the same form factor.\n- You do creative work: Apple's M-series chips offer exceptional performance for video editing (Final Cut Pro is Mac-only and highly optimised), music production (Logic Pro is Mac-only), and photography. Adobe Creative Cloud also runs excellently on Apple Silicon.\n- You want a premium build quality and display: MacBook displays (Liquid Retina, Retina) are among the best laptop screens available.\n- Low maintenance appeals to you: macOS is generally considered more stable and requires less active maintenance than Windows.\n\nCHOOSE WINDOWS IF:\n- Your workplace uses Windows software or requires Windows-specific applications, Active Directory, or domain management.\n- You play PC games: Windows is the dominant gaming platform; Mac gaming has improved but remains limited by comparison.\n- You need specific software only available on Windows: e.g. certain engineering tools, Microsoft Access, older legacy applications.\n- Budget is a priority: Windows laptops are available at every price point, including highly capable machines under €600. The cheapest Mac starts at €1,149 (MacBook Air M2).\n- You need hardware flexibility: Windows laptops come in hugely varied configurations — different screen sizes, form factors, port selections, upgradeable RAM and SSD in many models.\n- You prefer a touchscreen: Most MacBooks do not have touchscreens (iPad notwithstanding). Many Windows laptops and 2-in-1s do.\n\nTHE HONEST MIDDLE GROUND\nFor professional productivity, both platforms are excellent in 2024. Microsoft 365 runs identically on both. Video calls, coding, writing, analysis — all equally capable. The choice increasingly comes down to ecosystem preference, budget, and software requirements rather than raw capability.\n\nOmnia Retail Support Note: If you purchase a Mac and later decide it doesn't suit your needs, our 14-day return policy under the EU Consumer Rights Directive applies."
+    },
+    {
+      "document_id": "faq_020",
+      "type": "faq",
+      "category": "technical_troubleshooting",
+      "date": "2024-04-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "accessories",
+      "priority": null,
+      "content": "FAQ: My external hard drive is not showing up on my computer — what should I try?\n\nAn external hard drive that doesn't appear can usually be resolved with one of the following steps. Work through them in order:\n\nSTEP 1: Try a different USB port and cable\nThis resolves most cases. USB cables, particularly those supplied with budget drives, fail regularly. Try: a different USB port on your computer (prefer a port directly on the machine over a hub), a different USB cable if you have one available. Also try connecting to a different computer to determine whether the issue is the drive or your computer.\n\nSTEP 2: Check if the drive is getting power\nFor bus-powered drives (no separate power adapter): some USB ports, especially on the back of desktops or older laptops, don't supply sufficient current. Try a USB port on the front panel or a powered USB hub. For drives with a separate power adapter: ensure the adapter is connected and the power LED is lit on the drive.\n\nSTEP 3: Check Disk Management (Windows) or Disk Utility (Mac)\nThe drive may be detected by the operating system but not automatically mounted.\n\nWindows: Right-click Start > Disk Management. If you can see the drive listed but it shows as 'Unallocated' or without a drive letter: right-click > Assign Drive Letter (if the drive has data) or right-click > Format (only if the drive is new or you want to erase it). If it shows as 'Unknown' or 'Not Initialised': this may indicate a more serious drive failure.\n\nmacOS: Open Disk Utility (Applications > Utilities). If the drive appears in the sidebar but is greyed out: click it and click Mount. If it appears but cannot be mounted, it may have a filesystem the Mac cannot read (e.g. NTFS from a Windows-formatted drive — Macs can read NTFS by default but not write to it).\n\nSTEP 4: Check filesystem compatibility\nWindows-formatted drives (NTFS) are readable on Mac but not writable without third-party software (e.g. Paragon NTFS for Mac, €20). Mac-formatted drives (HFS+, APFS) are not readable on Windows without third-party software. For cross-platform use, format the drive as exFAT — natively read/write on both Windows and macOS.\n\nSTEP 5: Listen for signs of physical failure\nIf the drive makes clicking, grinding, or beeping noises, this indicates physical damage to the drive heads or motor. Stop using the drive immediately — continued use risks making data recovery impossible. Do not attempt to open the drive. Contact a professional data recovery service.\n\nSTEP 6: Contact support\nIf none of the above steps resolve the issue and the drive is within warranty, contact Omnia Retail support with your order number. We will advise on warranty replacement options."
+    },
+    {
+      "document_id": "faq_021",
+      "type": "faq",
+      "category": "product_questions",
+      "date": "2024-04-01",
+      "resolution_status": null,
+      "customer_satisfaction": null,
+      "product_category": "accessories",
+      "priority": null,
+      "content": "FAQ: What is the difference between Wi-Fi 5, Wi-Fi 6, and Wi-Fi 6E?\n\nWi-Fi standards have evolved significantly. Here is what the different generations mean in practical terms:\n\nWI-FI 5 (802.11ac) — Current mainstream standard\nIntroduced: 2014\nFrequency bands: 2.4GHz and 5GHz\nMax theoretical speed: Up to 3.5 Gbps (in ideal multi-antenna configurations)\nReal-world speeds: 300–900 Mbps in typical home environments\nSuitable for: Standard broadband connections, most home and office use. If your router and devices are Wi-Fi 5, you are unlikely to be the bottleneck unless you have a very fast broadband plan (500Mbps+) or a dense, heavily congested wireless environment.\n\nWI-FI 6 (802.11ax) — Current premium standard\nIntroduced: 2019\nFrequency bands: 2.4GHz and 5GHz (same as Wi-Fi 5, different channels and techniques)\nKey improvements over Wi-Fi 5: Higher efficiency in congested environments (OFDMA and MU-MIMO improvements), better performance when many devices connect simultaneously (relevant for smart homes with 20+ devices), improved power management extending battery life on compatible devices.\nMax theoretical speed: Up to 9.6 Gbps\nReal-world speeds: 600 Mbps–1.5 Gbps in good conditions\nSuitable for: Dense home environments, offices with many concurrent devices, anyone with a gigabit broadband connection.\n\nWI-FI 6E (802.11ax with 6GHz extension)\nIntroduced: 2021\nFrequency bands: 2.4GHz, 5GHz, AND 6GHz\nKey improvements: The 6GHz band is largely free of existing device interference (no legacy devices use 6GHz), providing a clean, fast channel for compatible devices. Excellent for mesh networking backhaul (the link between mesh nodes).\nRange limitation: 6GHz has shorter range and worse wall penetration than 5GHz or 2.4GHz — important consideration in Irish homes with concrete walls (see our mesh networking FAQ).\nSuitable for: Power users, multi-device households, anyone building a new whole-home mesh system.\n\nPRACTICAL BUYING ADVICE\nFor a new router or mesh system in 2024, Wi-Fi 6 is the minimum recommendation — prices are competitive and the longevity benefit is worthwhile. Wi-Fi 6E is worth considering if you are setting up a new mesh system and want the cleanest backhaul channel, though be aware of the concrete wall penetration limitation in older Irish housing.\n\nDevice compatibility: Your router's Wi-Fi generation only benefits devices that support the same standard. An older laptop with Wi-Fi 5 will connect to a Wi-Fi 6 router but only at Wi-Fi 5 speeds — backwards compatibility is always maintained."
+    }
+  ],
+  "test_queries": [
+    {
+      "query_id": "TQ-001",
+      "query": "What is Omnia Retail's return policy for a product I changed my mind about?",
+      "expected_document_ids": [
+        "policy_001",
+        "ticket_018",
+        "ticket_028"
+      ],
+      "category": "returns",
+      "notes": "Should retrieve return policy and change-of-mind ticket examples showing 14-day EU cooling off period."
+    },
+    {
+      "query_id": "TQ-002",
+      "query": "My laptop keeps shutting down unexpectedly. What should I do?",
+      "expected_document_ids": [
+        "ticket_025",
+        "ticket_040",
+        "faq_008",
+        "faq_016"
+      ],
+      "category": "technical_support",
+      "notes": "Thermal shutdown and BSOD tickets plus troubleshooting FAQs are all relevant."
+    },
+    {
+      "query_id": "TQ-003",
+      "query": "How much RAM do I need for video editing?",
+      "expected_document_ids": [
+        "faq_006",
+        "faq_010",
+        "ticket_020"
+      ],
+      "category": "product_questions",
+      "notes": "RAM guide FAQ and processor FAQ both directly relevant. Pre-sales ticket for design student provides supporting context."
+    },
+    {
+      "query_id": "TQ-004",
+      "query": "My order hasn't arrived and tracking shows it was delivered but I didn't receive it.",
+      "expected_document_ids": [
+        "ticket_016",
+        "faq_018"
+      ],
+      "category": "delivery_issues",
+      "notes": "Misdelivery ticket and lost/delayed order FAQ are the primary relevant documents."
+    },
+    {
+      "query_id": "TQ-005",
+      "query": "What are my warranty rights if a product develops a fault after 10 months?",
+      "expected_document_ids": [
+        "faq_009",
+        "ticket_019",
+        "ticket_021",
+        "faq_017"
+      ],
+      "category": "warranty",
+      "notes": "Warranty FAQ and statutory rights FAQ are primary. Defect ticket (Lenovo dead pixels at ~1 week) and SSD warranty claim provide practical examples."
+    },
+    {
+      "query_id": "TQ-006",
+      "query": "I want to buy monitors in bulk for my office. Do you offer business pricing?",
+      "expected_document_ids": [
+        "policy_006",
+        "ticket_039",
+        "ticket_023"
+      ],
+      "category": "bulk_orders",
+      "notes": "Business customer policy and two bulk order tickets (healthcare monitors, solicitors laptops) all highly relevant."
+    },
+    {
+      "query_id": "TQ-007",
+      "query": "What is the difference between NVMe and SATA SSD?",
+      "expected_document_ids": [
+        "faq_012",
+        "ticket_024",
+        "ticket_038"
+      ],
+      "category": "product_questions",
+      "notes": "Storage FAQ is primary. Installation ticket (M.2 slot already occupied) and SATA speed misapprehension ticket provide supporting context."
+    },
+    {
+      "query_id": "TQ-008",
+      "query": "How do I set up a good home office on a budget?",
+      "expected_document_ids": [
+        "faq_015",
+        "ticket_026",
+        "faq_011"
+      ],
+      "category": "product_questions",
+      "notes": "Home office accessories FAQ is primary. Monitor comparison ticket and monitor size/resolution FAQ add depth."
+    },
+    {
+      "query_id": "TQ-009",
+      "query": "My external hard drive is making a clicking noise and not showing up.",
+      "expected_document_ids": [
+        "faq_020",
+        "ticket_021"
+      ],
+      "category": "technical_troubleshooting",
+      "notes": "External HDD troubleshooting FAQ is primary (clicking = physical failure warning). SSD warranty claim ticket adds warranty process context."
+    },
+    {
+      "query_id": "TQ-010",
+      "query": "Does Omnia Retail recycle old electronics and how does WEEE work?",
+      "expected_document_ids": [
+        "policy_007"
+      ],
+      "category": "environmental",
+      "notes": "Environmental sustainability policy is the sole directly relevant document for WEEE and recycling queries."
+    }
+  ]
+}

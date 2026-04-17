@@ -1,0 +1,72 @@
+[project]
+name = "omnia-support"
+version = "0.1.0"
+description = "Customer support RAG application for Omnia Retail"
+readme = "README.md"
+authors = [
+    { name = "Eoin Fennessy", email = "fennessyeoin@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = ["ruff>=0.15.0", "ty>=0.0.31"]
+
+[tool.uv.workspace]
+members = ["ingestion", "app", "evaluation"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "F", "E", "W",    # pyflakes + pycodestyle
+    "I",              # isort
+    "N",              # pep8-naming
+    "UP",             # pyupgrade
+    "B",              # flake8-bugbear
+    "A",              # flake8-builtins
+    "SIM",            # flake8-simplify
+    "TCH",            # flake8-type-checking
+    "RUF",            # ruff-specific
+    "C4",             # flake8-comprehensions
+    "PT",             # flake8-pytest-style
+    "RET",            # flake8-return
+    "ARG",            # flake8-unused-arguments
+    "PTH",            # flake8-use-pathlib
+    "FLY",            # flynt
+    "PERF",           # perflint
+    "FURB",           # refurb
+    "LOG",            # flake8-logging
+    "D",              # pydocstyle
+    "S",              # flake8-bandit (security)
+    "C90",            # mccabe (complexity)
+    "ERA",            # eradicate (commented-out code)
+    "PIE",            # flake8-pie
+    "ISC",            # flake8-implicit-str-concat
+    "FBT",            # flake8-boolean-trap
+    "TRY",            # tryceratops
+]
+ignore = [
+    "E501",           # line length handled by formatter
+    "TRY003",         # inline exception messages are fine for CLI scripts
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["omnia_support_ingestion", "omnia_support_app", "omnia_support_eval"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ty.environment]
+python-version = "3.14"
+
+[tool.ty.rules]
+division-by-zero = "warn"
+possibly-missing-import = "warn"
+possibly-unresolved-reference = "warn"
+unsupported-dynamic-base = "warn"
