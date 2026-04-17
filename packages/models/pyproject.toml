@@ -1,9 +1,11 @@
 [project]
-name = "omnia-support-ingestion"
+name = "omnia-support-models"
 version = "0.1.0"
-description = "RAG ingestion pipeline for Omnia Retail knowledge base"
+description = "Shared domain models for Omnia Support"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pydantic>=2.13.2",
+]
 
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]

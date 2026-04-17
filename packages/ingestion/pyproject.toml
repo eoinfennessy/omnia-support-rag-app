@@ -1,0 +1,15 @@
+[project]
+name = "omnia-support-ingestion"
+version = "0.1.0"
+description = "RAG ingestion pipeline for Omnia Retail knowledge base"
+requires-python = ">=3.14"
+dependencies = [
+    "omnia-support-models",
+]
+
+[tool.uv.sources]
+omnia-support-models = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.11.7,<0.12.0"]
+build-backend = "uv_build"
