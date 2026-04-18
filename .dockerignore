@@ -1,0 +1,13 @@
+.venv/
+.git/
+.gitignore
+.env
+data/
+*.egg-info
+__pycache__/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.claude/
+README.md
+Makefile

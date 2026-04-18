@@ -11,6 +11,10 @@ dependencies = []
 
 [dependency-groups]
 dev = ["ruff>=0.15.0", "ty>=0.0.31"]
+test = ["pytest>=9.0", "omnia-support-ingestion"]
+
+[tool.uv.sources]
+omnia-support-ingestion = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]
@@ -59,8 +63,14 @@ convention = "google"
 [tool.ruff.lint.isort]
 known-first-party = ["omnia_support_models", "omnia_support_ingestion", "omnia_support_app", "omnia_support_eval"]
 
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["D", "S101"]
+
 [tool.ruff.format]
 docstring-code-format = true
+
+[tool.pytest.ini_options]
+testpaths = ["packages"]
 
 [tool.ty.environment]
 python-version = "3.14"

@@ -13,5 +13,8 @@ dist/
 wheels/
 *.egg-info
 
+# Data
+data/
+
 # macOS
 .DS_Store

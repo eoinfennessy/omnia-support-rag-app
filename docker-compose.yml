@@ -1,0 +1,25 @@
+services:
+  chromadb:
+    image: chromadb/chroma:1.5.8
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/chroma:/data
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo -e 'GET /api/v2/healthcheck HTTP/1.1\r\nHost: localhost\r\n\r\n' > /dev/tcp/localhost/8000"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: packages/ingestion/Dockerfile
+    env_file: ${ENV_FILE:-.env}
+    environment:
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+      FORCE_INGESTION: "${FORCE_INGESTION:-false}"
+    depends_on:
+      chromadb:
+        condition: service_healthy
