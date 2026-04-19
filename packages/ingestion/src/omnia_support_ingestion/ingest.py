@@ -5,23 +5,25 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import chromadb
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from omnia_support_models import Dataset
+from omnia_support_vectorstore import (
+    ChromaVectorStore,
+    VectorRecord,
+)
 
 from .chunk import build_embed_text, chunk_document
-from .store import ChromaRecord, get_collection, should_skip_ingestion, upload_records
 
 if TYPE_CHECKING:
     from omnia_support_models import Document
-
-    from .store import ChromaRecordMetadata
+    from omnia_support_vectorstore import VectorRecordMetadata, VectorStore
 
 
 @dataclass(frozen=True)
@@ -43,9 +45,26 @@ def load_dataset(path: Path) -> Dataset:
     return Dataset.model_validate(raw)
 
 
-def _build_record_metadata(doc: Document, chunk_index: int, total_chunks: int) -> ChromaRecordMetadata:
+def should_skip_ingestion(store: VectorStore, *, force: bool) -> bool:
+    """Check whether ingestion should be skipped."""
+    if force:
+        return False
+    count = store.count()
+    if not count:
+        return False
+    print(f"Collection '{store.collection_name}' already has documents. Skipping ingestion. Use --force to re-ingest.")
+    return True
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
+def _upload_records(store: VectorStore, records: list[VectorRecord]) -> None:
+    """Upload records to ChromaDB with retry."""
+    store.upload(records)
+
+
+def _build_record_metadata(doc: Document, chunk_index: int, total_chunks: int) -> VectorRecordMetadata:
     """Build ChromaDB metadata for a record, omitting None fields."""
-    metadata: ChromaRecordMetadata = {
+    metadata: VectorRecordMetadata = {
         "document_id": doc.document_id,
         "type": doc.type.value,
         "category": doc.category,
@@ -63,19 +82,19 @@ def _build_record_metadata(doc: Document, chunk_index: int, total_chunks: int) -
     return metadata
 
 
-def build_records(documents: list[Document]) -> list[ChromaRecord]:
+def build_records(documents: list[Document]) -> list[VectorRecord]:
     """Build ChromaDB records from documents.
 
     Chunks long documents and assigns unique IDs per chunk.
     """
-    result: list[ChromaRecord] = []
+    result: list[VectorRecord] = []
 
     for doc in documents:
         text_chunks = chunk_document(doc)
         total_chunks = len(text_chunks)
 
         result.extend(
-            ChromaRecord(
+            VectorRecord(
                 id=f"{doc.document_id}-chunk-{i}",
                 chunk=build_embed_text(doc, text),
                 metadata=_build_record_metadata(doc, chunk_index=i, total_chunks=total_chunks),
@@ -93,7 +112,7 @@ def dry_run(input_path: Path) -> None:
 
     dataset = load_dataset(input_path)
     records = build_records(dataset.documents)
-    print(json.dumps([r._asdict() for r in records], indent=2))
+    print(json.dumps([asdict(r) for r in records], indent=2))
 
 
 def ingest(config: IngestConfig) -> None:
@@ -102,17 +121,18 @@ def ingest(config: IngestConfig) -> None:
         raise SystemExit(f"Error: input file not found: {config.input_path}")
 
     print(f"Connecting to ChromaDB at {config.chroma_host}:{config.chroma_port}...")
-    client = chromadb.HttpClient(host=config.chroma_host, port=config.chroma_port)
-
-    if should_skip_ingestion(client, force=config.force):
-        return
-
-    embedding_fn = OpenAIEmbeddingFunction(
-        api_key=config.openai_api_key,
-        model_name=config.embedding_model,
+    store = ChromaVectorStore(
+        host=config.chroma_host,
+        port=config.chroma_port,
+        embedding_fn=OpenAIEmbeddingFunction(api_key=config.openai_api_key, model_name=config.embedding_model),  # ty: ignore[invalid-argument-type]
     )
 
-    collection = get_collection(client, embedding_fn, should_delete=config.force)
+    if should_skip_ingestion(store, force=config.force):
+        return
+
+    if config.force:
+        store.reset()
+        print(f"  Deleted existing '{store.collection_name}' collection")
 
     print(f"Reading {config.input_path}...")
     dataset = load_dataset(config.input_path)
@@ -122,9 +142,9 @@ def ingest(config: IngestConfig) -> None:
     records = build_records(dataset.documents)
     print(f"  Prepared {len(records)} records")
 
-    upload_records(collection, records)
+    _upload_records(store, records)
 
-    print(f"\nDone! Collection '{collection.name}' has {collection.count()} documents.")
+    print(f"\nDone! Collection '{store.collection_name}' has {store.count()} documents.")
     print(f"  ChromaDB server: {config.chroma_host}:{config.chroma_port}")
 
 

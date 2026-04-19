@@ -5,8 +5,7 @@ description = "RAG ingestion pipeline for Omnia Retail knowledge base"
 requires-python = ">=3.14"
 dependencies = [
     "omnia-support-models",
-    "chromadb>=1.5.8",
-    "openai>=2.32.0",
+    "omnia-support-vectorstore",
     "python-dotenv>=1.2.2",
     "tenacity>=9.1.4",
 ]
@@ -16,6 +15,7 @@ ingest-to-chroma = "omnia_support_ingestion.ingest:main"
 
 [tool.uv.sources]
 omnia-support-models = { workspace = true }
+omnia-support-vectorstore = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]

@@ -15,6 +15,7 @@ test = ["pytest>=9.0", "omnia-support-ingestion"]
 
 [tool.uv.sources]
 omnia-support-ingestion = { workspace = true }
+omnia-support-vectorstore = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]
@@ -61,7 +62,7 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["omnia_support_models", "omnia_support_ingestion", "omnia_support_app", "omnia_support_eval"]
+known-first-party = ["omnia_support_models", "omnia_support_vectorstore", "omnia_support_ingestion", "omnia_support_app", "omnia_support_eval"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["D", "S101"]
