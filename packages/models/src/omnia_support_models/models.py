@@ -1,7 +1,9 @@
 """Pydantic models and enums for the Omnia Retail dataset."""
 
 import datetime  # noqa: TC003 — Pydantic needs this at runtime
+import json
 from enum import StrEnum
+from pathlib import Path  # noqa: TC003 — used at runtime in Dataset.from_json
 
 from pydantic import BaseModel, Field
 
@@ -94,3 +96,10 @@ class Dataset(BaseModel):
     dataset_metadata: DatasetMetadata
     documents: list[Document]
     test_queries: list[TestQuery]
+
+    @classmethod
+    def from_json(cls, path: Path) -> Dataset:
+        """Read and validate a dataset JSON file."""
+        with path.open(encoding="utf-8") as f:
+            raw = json.load(f)
+        return cls.model_validate(raw)

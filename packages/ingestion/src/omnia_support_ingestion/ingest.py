@@ -31,18 +31,8 @@ class IngestConfig:
     """Configuration for the ingestion pipeline."""
 
     input_path: Path
-    chroma_host: str
-    chroma_port: int
-    openai_api_key: str
-    embedding_model: str
+    store: VectorStore
     force: bool
-
-
-def load_dataset(path: Path) -> Dataset:
-    """Read and validate the dataset JSON file."""
-    with path.open(encoding="utf-8") as f:
-        raw = json.load(f)
-    return Dataset.model_validate(raw)
 
 
 def should_skip_ingestion(store: VectorStore, *, force: bool) -> bool:
@@ -110,7 +100,7 @@ def dry_run(input_path: Path) -> None:
     if not input_path.exists():
         raise SystemExit(f"Error: input file not found: {input_path}")
 
-    dataset = load_dataset(input_path)
+    dataset = Dataset.from_json(input_path)
     records = build_records(dataset.documents)
     print(json.dumps([asdict(r) for r in records], indent=2))
 
@@ -120,12 +110,7 @@ def ingest(config: IngestConfig) -> None:
     if not config.input_path.exists():
         raise SystemExit(f"Error: input file not found: {config.input_path}")
 
-    print(f"Connecting to ChromaDB at {config.chroma_host}:{config.chroma_port}...")
-    store = ChromaVectorStore(
-        host=config.chroma_host,
-        port=config.chroma_port,
-        embedding_fn=OpenAIEmbeddingFunction(api_key=config.openai_api_key, model_name=config.embedding_model),  # ty: ignore[invalid-argument-type]
-    )
+    store = config.store
 
     if should_skip_ingestion(store, force=config.force):
         return
@@ -135,7 +120,7 @@ def ingest(config: IngestConfig) -> None:
         print(f"  Deleted existing '{store.collection_name}' collection")
 
     print(f"Reading {config.input_path}...")
-    dataset = load_dataset(config.input_path)
+    dataset = Dataset.from_json(config.input_path)
     print(f"  Loaded {len(dataset.documents)} documents")
 
     print("Preparing documents...")
@@ -145,7 +130,6 @@ def ingest(config: IngestConfig) -> None:
     _upload_records(store, records)
 
     print(f"\nDone! Collection '{store.collection_name}' has {store.count()} documents.")
-    print(f"  ChromaDB server: {config.chroma_host}:{config.chroma_port}")
 
 
 def _parse_args() -> argparse.Namespace:
@@ -203,13 +187,21 @@ def main() -> None:
     if not openai_api_key:
         raise SystemExit("Error: OPENAI_API_KEY environment variable is required")
 
+    embedding_fn = OpenAIEmbeddingFunction(
+        api_key=openai_api_key,
+        model_name=args.embedding_model,
+    )
+
+    store = ChromaVectorStore(
+        host=args.chroma_host,
+        port=args.chroma_port,
+        embedding_fn=embedding_fn,  # ty: ignore[invalid-argument-type]
+    )
+
     ingest(
         IngestConfig(
             input_path=Path(args.input),
-            chroma_host=args.chroma_host,
-            chroma_port=args.chroma_port,
-            openai_api_key=openai_api_key,
-            embedding_model=args.embedding_model,
+            store=store,
             force=args.force,
         )
     )

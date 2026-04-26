@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
 COPY packages/models packages/models
+COPY packages/vectorstore packages/vectorstore
 COPY packages/ingestion packages/ingestion
 
 RUN uv sync --frozen --no-dev --package omnia-support-ingestion

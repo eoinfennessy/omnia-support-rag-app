@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from omnia_support_ingestion.ingest import build_records, load_dataset
+from omnia_support_ingestion.ingest import build_records
 
 if TYPE_CHECKING:
     from pathlib import Path
 from omnia_support_models import (
+    Dataset,
     Document,
     DocumentType,
     Priority,
@@ -131,7 +132,7 @@ class TestLoadDataset:
     def test_loads_and_validates(self, tmp_path: Path):
         path = tmp_path / "dataset.json"
         path.write_text(json.dumps(_MINIMAL_DATASET))
-        dataset = load_dataset(path)
+        dataset = Dataset.from_json(path)
         assert len(dataset.documents) == 1
         assert dataset.documents[0].document_id == "DOC-001"
 
@@ -139,4 +140,4 @@ class TestLoadDataset:
         path = tmp_path / "bad.json"
         path.write_text("{not valid json")
         with pytest.raises(json.JSONDecodeError):
-            load_dataset(path)
+            Dataset.from_json(path)

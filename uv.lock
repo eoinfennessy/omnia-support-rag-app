@@ -9,6 +9,7 @@ members = [
     "omnia-support-eval",
     "omnia-support-ingestion",
     "omnia-support-models",
+    "omnia-support-rag",
     "omnia-support-vectorstore",
 ]
 
@@ -1413,7 +1414,9 @@ dev = [
     { name = "ty" },
 ]
 test = [
+    { name = "omnia-support-eval" },
     { name = "omnia-support-ingestion" },
+    { name = "omnia-support-rag" },
     { name = "pytest" },
 ]
 
@@ -1425,7 +1428,9 @@ dev = [
     { name = "ty", specifier = ">=0.0.31" },
 ]
 test = [
+    { name = "omnia-support-eval", editable = "packages/evaluation" },
     { name = "omnia-support-ingestion", editable = "packages/ingestion" },
+    { name = "omnia-support-rag", editable = "packages/rag" },
     { name = "pytest", specifier = ">=9.0" },
 ]
 
@@ -1441,18 +1446,22 @@ source = { editable = "packages/evaluation" }
 dependencies = [
     { name = "mlflow" },
     { name = "omnia-support-models" },
+    { name = "omnia-support-rag" },
     { name = "omnia-support-vectorstore" },
     { name = "openai" },
     { name = "python-dotenv" },
+    { name = "pyyaml" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "mlflow", specifier = ">=3.11.1" },
     { name = "omnia-support-models", editable = "packages/models" },
+    { name = "omnia-support-rag", editable = "packages/rag" },
     { name = "omnia-support-vectorstore", editable = "packages/vectorstore" },
     { name = "openai", specifier = ">=2.32.0" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
 ]
 
 [[package]]
@@ -1484,6 +1493,23 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "pydantic", specifier = ">=2.13.2" }]
+
+[[package]]
+name = "omnia-support-rag"
+version = "0.1.0"
+source = { editable = "packages/rag" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "mlflow" },
+    { name = "omnia-support-vectorstore" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "jinja2", specifier = ">=3.1.6" },
+    { name = "mlflow", specifier = ">=3.11.1" },
+    { name = "omnia-support-vectorstore", editable = "packages/vectorstore" },
+]
 
 [[package]]
 name = "omnia-support-vectorstore"

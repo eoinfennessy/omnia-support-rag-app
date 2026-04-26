@@ -11,6 +11,19 @@ services:
       timeout: 3s
       retries: 5
 
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.11.1
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data/mlflow:/mlflow
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root /mlflow/artifacts --allowed-hosts localhost,localhost:5000,mlflow,mlflow:5000
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   ingestion:
     build:
       context: .
@@ -23,3 +36,35 @@ services:
     depends_on:
       chromadb:
         condition: service_healthy
+
+  register-prompt:
+    build:
+      context: .
+      dockerfile: packages/evaluation/Dockerfile
+    command: ["register-prompt"]
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    profiles:
+      - eval
+
+  evaluation:
+    build:
+      context: .
+      dockerfile: packages/evaluation/Dockerfile
+    env_file: ${ENV_FILE:-.env}
+    environment:
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    depends_on:
+      chromadb:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      register-prompt:
+        condition: service_completed_successfully
+    profiles:
+      - eval

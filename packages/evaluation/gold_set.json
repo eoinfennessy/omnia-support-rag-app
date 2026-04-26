@@ -1,0 +1,24 @@
+{
+  "expected_answers": {
+    "TQ-001": "Omnia Retail offers a 14-day cooling off period in line with EU consumer rights regulations. If you changed your mind about a product, you can return it within 14 days of delivery for a full refund, provided the item is in its original condition and packaging.",
+    "TQ-002": "Unexpected shutdowns are commonly caused by overheating (thermal shutdown) or system errors (BSOD). Try cleaning the vents, ensuring adequate airflow, updating drivers, and running hardware diagnostics. If the issue persists, contact Omnia Support for warranty assessment.",
+    "TQ-003": "For video editing, 16GB of RAM is the recommended minimum, though 32GB is ideal for working with 4K footage or complex projects. The RAM guide and processor FAQs cover this in detail, and pre-sales consultations can help match your needs to the right configuration.",
+    "TQ-004": "If tracking shows delivered but you haven't received the item, contact Omnia Support immediately. They will open an investigation with the courier, check delivery photos if available, and arrange a replacement or refund. Check with neighbours and any safe places first.",
+    "TQ-005": "Under Irish and EU consumer law, you have statutory warranty rights for up to two years. A fault developing within 10 months is well within this period, and the burden of proof is on the retailer. Omnia Retail will offer repair, replacement, or refund depending on the nature of the defect.",
+    "TQ-006": "Yes, Omnia Retail offers business pricing and dedicated account management for bulk orders. Contact the business sales team to discuss volume discounts, delivery scheduling, and any specific requirements for your organisation.",
+    "TQ-007": "NVMe SSDs connect via the M.2 slot and offer significantly faster read/write speeds (up to 7000 MB/s) compared to SATA SSDs (up to 550 MB/s). NVMe uses the PCIe interface while SATA uses the older AHCI protocol. NVMe is recommended for boot drives and demanding workloads.",
+    "TQ-008": "For a budget home office, prioritise a comfortable monitor (24-27 inch), a reliable keyboard and mouse, and good ergonomics. Omnia Retail's home office accessories FAQ covers recommended setups at various price points, and monitor comparisons can help you choose the best value display.",
+    "TQ-009": "A clicking noise from an external hard drive typically indicates a physical failure of the read/write heads or motor. Stop using the drive immediately to prevent further data loss. The drive likely needs professional data recovery or warranty replacement.",
+    "TQ-010": "Yes, Omnia Retail participates in the WEEE (Waste Electrical and Electronic Equipment) scheme. Customers can return old electronics when purchasing a new equivalent product, free of charge. This is in compliance with Irish WEEE regulations."
+  },
+  "additional_queries": [
+    {
+      "query_id": "AQ-001",
+      "query": "What does Omnia Retail sell related to quantum computing?",
+      "expected_answer": "Omnia Retail does not currently sell quantum computing products. Their product range focuses on consumer and business electronics such as laptops, monitors, storage devices, and accessories.",
+      "expected_document_ids": [],
+      "category": "no_result",
+      "notes": "Out-of-domain query with no relevant documents. Tests fallback handling when retrieval returns no useful results."
+    }
+  ]
+}

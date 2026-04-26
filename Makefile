@@ -1,4 +1,6 @@
-.PHONY: help lint lint-fix format format-check type-check check fix install-hooks up down infra-local infra-docker ingest test
+MLFLOW_TRACKING_URI ?= http://localhost:5000
+
+.PHONY: help lint lint-fix format format-check type-check check fix install-hooks up down infra-local infra-docker ingest test register-prompt eval eval-docker
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$|^##@' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; /^##@/ {printf "\n\033[1m%s\033[0m\n", substr($$0, 5); next} {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -11,17 +13,36 @@ down: ## Stop all services
 	docker compose down
 
 ##@ Development
-infra-local: ## Start ChromaDB locally via uv
-	uv run chroma run --path ./data/chroma --port 8000
+infra-local: ## Start ChromaDB + MLflow locally via uv
+	@trap 'kill 0' EXIT; \
+	uv run --package omnia-support-ingestion chroma run \
+		--path ./data/chroma \
+		--port 8000 & \
+	uv run --package omnia-support-eval mlflow server \
+		--backend-store-uri sqlite:///data/mlflow/mlflow.db \
+		--default-artifact-root ./data/mlflow/artifacts \
+		--host 0.0.0.0 --port 5000
 
-infra-docker: ## Start ChromaDB via Docker Compose
-	docker compose up chromadb
+infra-docker: ## Start ChromaDB + MLflow via Docker Compose
+	docker compose up chromadb mlflow
 
 ingest: ## Run ingestion pipeline locally via uv
 	uv run ingest-to-chroma
 
 test: ## Run tests
-	uv run --group test pytest
+	MLFLOW_TRACKING_URI="sqlite:///:memory:" uv run --group test pytest
+
+##@ Evaluation
+register-prompt: ## Register system prompt to MLflow
+	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
+		uv run --package omnia-support-eval register-prompt
+
+eval: ## Run evaluation locally
+	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
+		uv run --package omnia-support-eval evaluate
+
+eval-docker: ## Run evaluation in Docker
+	docker compose --profile eval run evaluation
 
 ##@ Code quality
 lint: ## Run ruff linter

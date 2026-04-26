@@ -3,7 +3,24 @@ name = "omnia-support-eval"
 version = "0.1.0"
 description = "RAG evaluation suite for Omnia Support"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "omnia-support-models",
+    "omnia-support-rag",
+    "omnia-support-vectorstore",
+    "mlflow>=3.11.1",
+    "openai>=2.32.0",
+    "pyyaml>=6.0.3",
+    "python-dotenv>=1.2.2",
+]
+
+[project.scripts]
+evaluate = "omnia_support_eval.evaluate:main"
+register-prompt = "omnia_support_eval.register_prompt:main"
+
+[tool.uv.sources]
+omnia-support-models = { workspace = true }
+omnia-support-rag = { workspace = true }
+omnia-support-vectorstore = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]
