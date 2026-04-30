@@ -1,16 +1,16 @@
 MLFLOW_TRACKING_URI ?= http://localhost:5000
 
-.PHONY: help lint lint-fix format format-check type-check check fix install-hooks up down infra-local infra-docker ingest test register-prompt eval eval-docker
+.PHONY: help lint lint-fix format format-check type-check check fix install-hooks up down infra-local infra-docker ingest test register-prompt eval-local eval-docker frontend-build app
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$|^##@' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; /^##@/ {printf "\n\033[1m%s\033[0m\n", substr($$0, 5); next} {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
 ##@ Docker
 up: ## Start all services
-	docker compose up --build
+	docker compose --profile app up --build
 
 down: ## Stop all services
-	docker compose down
+	docker compose --profile app --profile eval down
 
 ##@ Development
 infra-local: ## Start ChromaDB + MLflow locally via uv
@@ -33,16 +33,27 @@ test: ## Run tests
 	MLFLOW_TRACKING_URI="sqlite:///:memory:" uv run --group test pytest
 
 ##@ Evaluation
-register-prompt: ## Register system prompt to MLflow
+register-prompt: ## Register all prompts to MLflow
 	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
 		uv run --package omnia-support-eval register-prompt
+	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
+		uv run --package omnia-support-eval register-prompt \
+		--prompt-path prompts/reformulate_query.yaml \
+		--prompt-name reformulate_query
 
-eval: ## Run evaluation locally
+eval-local: ## Run evaluation locally
 	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
 		uv run --package omnia-support-eval evaluate
 
 eval-docker: ## Run evaluation in Docker
 	docker compose --profile eval run evaluation
+
+##@ Application
+frontend-build: ## Build the SvelteKit frontend
+	cd frontend && npm ci && npm run build
+
+app: frontend-build ## Start the app server locally
+	uv run omnia-support-app
 
 ##@ Code quality
 lint: ## Run ruff linter

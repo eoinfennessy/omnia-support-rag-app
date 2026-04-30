@@ -7,10 +7,12 @@ from omnia_support_rag.rag import (
     retrieve_context,
     run_rag_pipeline,
 )
+from omnia_support_rag.reformulate import reformulate_query
 
 __all__ = [
     "CompletionsClient",
     "generate_answer",
+    "reformulate_query",
     "render_messages",
     "retrieve_context",
     "run_rag_pipeline",

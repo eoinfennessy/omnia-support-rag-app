@@ -146,6 +146,65 @@ class TestRenderMessages:
         assert len(result) == 1
         assert result[0]["content"] == "ok"
 
+    def test_history_spliced_between_preamble_and_current_turn(self):
+        prompt = _make_prompt(
+            [
+                {"role": "system", "content": "System prompt"},
+                {"role": "developer", "content": "Context: {{context}}"},
+                {"role": "user", "content": "{{question}}"},
+            ]
+        )
+        history = [
+            {"role": "developer", "content": "Context: old context"},
+            {"role": "user", "content": "old question"},
+            {"role": "assistant", "content": "old answer"},
+        ]
+
+        result = render_messages(prompt, history=history, context="new context", question="new question")  # ty: ignore[invalid-argument-type]
+
+        assert len(result) == 6
+        assert result[0] == {"role": "system", "content": "System prompt"}
+        assert result[1] == {"role": "developer", "content": "Context: old context"}
+        assert result[2] == {"role": "user", "content": "old question"}
+        assert result[3] == {"role": "assistant", "content": "old answer"}
+        assert result[4] == {"role": "developer", "content": "Context: new context"}
+        assert result[5] == {"role": "user", "content": "new question"}
+
+    def test_history_filters_out_system_messages(self):
+        prompt = _make_prompt(
+            [
+                {"role": "system", "content": "System prompt"},
+                {"role": "user", "content": "{{question}}"},
+            ]
+        )
+        history = [
+            {"role": "system", "content": "Should be filtered"},
+            {"role": "user", "content": "prior question"},
+            {"role": "assistant", "content": "prior answer"},
+        ]
+
+        result = render_messages(prompt, history=history, question="new question")  # ty: ignore[invalid-argument-type]
+
+        assert len(result) == 4
+        assert result[0]["role"] == "system"
+        assert result[0]["content"] == "System prompt"
+        assert result[1]["role"] == "user"
+        assert result[2]["role"] == "assistant"
+        assert result[3]["role"] == "user"
+
+    def test_none_history_same_as_no_history(self):
+        prompt = _make_prompt(
+            [
+                {"role": "system", "content": "sys"},
+                {"role": "user", "content": "{{question}}"},
+            ]
+        )
+
+        with_none = render_messages(prompt, history=None, question="q")
+        without = render_messages(prompt, question="q")
+
+        assert with_none == without
+
 
 class TestGenerateAnswer:
     def test_returns_response_content(self):
@@ -229,6 +288,101 @@ class TestRunRagPipeline:
         )
 
         mock_load_prompt.assert_called_once_with("prompts:/my_prompt@prod")
+
+    def test_passes_history_to_render_messages(self, mock_load_prompt):
+        mock_load_prompt.return_value = _make_prompt(
+            [
+                {"role": "system", "content": "System"},
+                {"role": "developer", "content": "{{context}}"},
+                {"role": "user", "content": "{{question}}"},
+            ]
+        )
+        store = MagicMock(spec=VectorStore)
+        store.query.return_value = [_make_scored_record(chunk="new chunk")]
+        client = MagicMock()
+        client.create.return_value = _make_completion("answer")
+        history = [
+            {"role": "developer", "content": "old context"},
+            {"role": "user", "content": "old q"},
+            {"role": "assistant", "content": "old a"},
+        ]
+
+        run_rag_pipeline(
+            "new q",
+            completions_client=client,
+            store=store,
+            prompt_uri="prompts:/p@prod",
+            n_results=1,
+            model="gpt-4",
+            history=history,  # ty: ignore[invalid-argument-type]
+        )
+
+        messages = client.create.call_args.kwargs["messages"]
+        assert messages[0] == {"role": "system", "content": "System"}
+        assert messages[1] == {"role": "developer", "content": "old context"}
+        assert messages[2] == {"role": "user", "content": "old q"}
+        assert messages[3] == {"role": "assistant", "content": "old a"}
+        assert messages[4] == {"role": "developer", "content": "new chunk"}
+        assert messages[5] == {"role": "user", "content": "new q"}
+
+    @patch("omnia_support_rag.rag.reformulate_query")
+    def test_reformulates_question_when_prompt_uri_provided(self, mock_reformulate, mock_load_prompt):
+        mock_reformulate.return_value = "standalone question"
+        mock_load_prompt.return_value = _make_prompt(
+            [
+                {"role": "user", "content": "{{context}} {{question}}"},
+            ]
+        )
+        store = MagicMock(spec=VectorStore)
+        store.query.return_value = [_make_scored_record(chunk="chunk")]
+        client = MagicMock()
+        client.create.return_value = _make_completion("answer")
+        history = [
+            {"role": "user", "content": "prior"},
+            {"role": "assistant", "content": "reply"},
+        ]
+
+        run_rag_pipeline(
+            "follow-up",
+            completions_client=client,
+            store=store,
+            prompt_uri="prompts:/p@prod",
+            n_results=1,
+            model="gpt-4",
+            history=history,  # ty: ignore[invalid-argument-type]
+            reformulate_prompt_uri="prompts:/reformulate@prod",
+        )
+
+        mock_reformulate.assert_called_once_with(
+            history,
+            "follow-up",
+            completions_client=client,
+            model="gpt-4",
+            prompt_uri="prompts:/reformulate@prod",
+        )
+        store.query.assert_called_once_with("standalone question", 1)
+
+    def test_skips_reformulation_without_prompt_uri(self, mock_load_prompt):
+        mock_load_prompt.return_value = _make_prompt(
+            [
+                {"role": "user", "content": "{{context}} {{question}}"},
+            ]
+        )
+        store = MagicMock(spec=VectorStore)
+        store.query.return_value = [_make_scored_record(chunk="chunk")]
+        client = MagicMock()
+        client.create.return_value = _make_completion("answer")
+
+        run_rag_pipeline(
+            "my question",
+            completions_client=client,
+            store=store,
+            prompt_uri="prompts:/p@prod",
+            n_results=1,
+            model="gpt-4",
+        )
+
+        store.query.assert_called_once_with("my question", 1)
 
     def test_context_joined_with_separator(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(

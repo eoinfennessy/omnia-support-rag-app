@@ -6,6 +6,7 @@ requires-python = ">=3.14"
 dependencies = [
     "omnia-support-models",
     "omnia-support-vectorstore",
+    "openai>=1.78.1",
     "python-dotenv>=1.2.2",
     "tenacity>=9.1.4",
 ]

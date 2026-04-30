@@ -1414,6 +1414,7 @@ dev = [
     { name = "ty" },
 ]
 test = [
+    { name = "omnia-support-app" },
     { name = "omnia-support-eval" },
     { name = "omnia-support-ingestion" },
     { name = "omnia-support-rag" },
@@ -1428,6 +1429,7 @@ dev = [
     { name = "ty", specifier = ">=0.0.31" },
 ]
 test = [
+    { name = "omnia-support-app", editable = "packages/app" },
     { name = "omnia-support-eval", editable = "packages/evaluation" },
     { name = "omnia-support-ingestion", editable = "packages/ingestion" },
     { name = "omnia-support-rag", editable = "packages/rag" },
@@ -1438,6 +1440,26 @@ test = [
 name = "omnia-support-app"
 version = "0.1.0"
 source = { editable = "packages/app" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "mlflow" },
+    { name = "omnia-support-rag" },
+    { name = "omnia-support-vectorstore" },
+    { name = "openai" },
+    { name = "python-dotenv" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115.0" },
+    { name = "mlflow", specifier = ">=3.11.1" },
+    { name = "omnia-support-rag", editable = "packages/rag" },
+    { name = "omnia-support-vectorstore", editable = "packages/vectorstore" },
+    { name = "openai", specifier = ">=2.32.0" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.35.0" },
+]
 
 [[package]]
 name = "omnia-support-eval"
@@ -1471,6 +1493,7 @@ source = { editable = "packages/ingestion" }
 dependencies = [
     { name = "omnia-support-models" },
     { name = "omnia-support-vectorstore" },
+    { name = "openai" },
     { name = "python-dotenv" },
     { name = "tenacity" },
 ]
@@ -1479,6 +1502,7 @@ dependencies = [
 requires-dist = [
     { name = "omnia-support-models", editable = "packages/models" },
     { name = "omnia-support-vectorstore", editable = "packages/vectorstore" },
+    { name = "openai", specifier = ">=1.78.1" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "tenacity", specifier = ">=9.1.4" },
 ]

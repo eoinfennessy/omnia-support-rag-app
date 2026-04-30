@@ -37,6 +37,27 @@ services:
       chromadb:
         condition: service_healthy
 
+  app:
+    build:
+      context: .
+      dockerfile: packages/app/Dockerfile
+    ports:
+      - "8080:8080"
+    env_file: ${ENV_FILE:-.env}
+    environment:
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    depends_on:
+      chromadb:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      ingestion:
+        condition: service_completed_successfully
+    profiles:
+      - app
+
   register-prompt:
     build:
       context: .

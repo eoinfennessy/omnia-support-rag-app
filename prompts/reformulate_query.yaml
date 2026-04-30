@@ -1,0 +1,3 @@
+- role: system
+  content: |
+    Given the following conversation history and a follow-up question, rewrite the follow-up question as a standalone question that captures all necessary context. If the question is already standalone, return it unchanged. Return ONLY the rewritten question, nothing else.

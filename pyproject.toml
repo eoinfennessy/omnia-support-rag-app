@@ -11,7 +11,7 @@ dependencies = []
 
 [dependency-groups]
 dev = ["ruff>=0.15.0", "ty>=0.0.31"]
-test = ["pytest>=9.0", "omnia-support-ingestion", "omnia-support-rag", "omnia-support-eval"]
+test = ["pytest>=9.0", "omnia-support-ingestion", "omnia-support-rag", "omnia-support-eval", "omnia-support-app"]
 
 [tool.uv.sources]
 omnia-support-ingestion = { workspace = true }
@@ -19,6 +19,7 @@ omnia-support-vectorstore = { workspace = true }
 omnia-support-rag = { workspace = true }
 omnia-support-eval = { workspace = true }
 omnia-support-models = { workspace = true }
+omnia-support-app = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]
