@@ -15,6 +15,7 @@ COPY packages/models packages/models
 COPY packages/vectorstore packages/vectorstore
 COPY packages/rag packages/rag
 COPY packages/app packages/app
+COPY dataset/omnia_retail_knowledge_base.json dataset/omnia_retail_knowledge_base.json
 
 RUN uv sync --frozen --no-dev --package omnia-support-app
 

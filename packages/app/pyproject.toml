@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Chat UI for Omnia Support"
 requires-python = ">=3.14"
 dependencies = [
+    "omnia-support-models",
     "omnia-support-rag",
     "omnia-support-vectorstore",
     "fastapi>=0.115.0",
@@ -17,6 +18,7 @@ dependencies = [
 omnia-support-app = "omnia_support_app.main:main"
 
 [tool.uv.sources]
+omnia-support-models = { workspace = true }
 omnia-support-rag = { workspace = true }
 omnia-support-vectorstore = { workspace = true }
 

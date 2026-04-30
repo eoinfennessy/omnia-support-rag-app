@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import openai
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from dotenv import load_dotenv
 
+from omnia_support_models import Dataset
 from omnia_support_vectorstore import ChromaVectorStore
 
 from .session import InMemorySessionStore
@@ -38,6 +40,7 @@ class AppState:
     config: AppConfig
     store: VectorStore
     completions_client: CompletionsClient
+    dataset: Dataset
     sessions: SessionStore = field(default_factory=InMemorySessionStore)
 
 
@@ -72,8 +75,14 @@ def create_app_state() -> AppState:
         llm_model=os.environ.get("LLM_MODEL", "gpt-4.1-mini"),
     )
 
+    dataset_path = Path(
+        os.environ.get("DATASET_PATH", "dataset/omnia_retail_knowledge_base.json"),
+    )
+    dataset = Dataset.from_json(dataset_path)
+
     return AppState(
         config=config,
         store=store,
         completions_client=openai.OpenAI().chat.completions,
+        dataset=dataset,
     )

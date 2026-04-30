@@ -51,7 +51,7 @@
 	}
 </script>
 
-<div class="flex h-screen flex-col bg-white">
+<div class="flex h-full flex-col bg-white">
 	<header class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
 		<h1 class="text-lg font-semibold text-gray-900">Omnia Support</h1>
 		<button

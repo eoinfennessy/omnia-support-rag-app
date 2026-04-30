@@ -11,7 +11,8 @@ import mlflow
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException
+from starlette.staticfiles import StaticFiles
 
 from .dependencies import create_app_state
 from .routes import router
@@ -19,7 +20,22 @@ from .routes import router
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
+    from starlette.responses import Response
+    from starlette.types import Scope
+
 _DEFAULT_STATIC_DIR = Path(__file__).resolve().parents[4] / "frontend" / "build"
+
+
+class SPAStaticFiles(StaticFiles):
+    """Serve index.html for any path not matching a static file (SPA fallback)."""
+
+    async def get_response(self, path: str, scope: Scope) -> Response:  # noqa: D102
+        try:
+            return await super().get_response(path, scope)
+        except HTTPException as exc:
+            if exc.status_code == 404:
+                return await super().get_response("index.html", scope)
+            raise
 
 
 @asynccontextmanager
@@ -39,7 +55,7 @@ def create_app() -> FastAPI:
 
     static_dir = Path(os.environ.get("STATIC_DIR", str(_DEFAULT_STATIC_DIR)))
     if static_dir.is_dir():
-        app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+        app.mount("/", SPAStaticFiles(directory=static_dir, html=True), name="static")
 
     return app
 

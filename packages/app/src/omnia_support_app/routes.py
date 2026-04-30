@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
+from omnia_support_models import Document, DocumentType
 from omnia_support_rag import run_rag_pipeline
 
 from .dependencies import AppState  # noqa: TC001 — needed at runtime for FastAPI Depends
@@ -72,3 +73,48 @@ def clear_session(
     """Clear a session's conversation history."""
     state.sessions.clear(session_id)
     return Response(status_code=204)
+
+
+def _documents_by_type(state: AppState, doc_type: DocumentType) -> list[Document]:
+    return [doc for doc in state.dataset.documents if doc.type == doc_type]
+
+
+def _find_document(state: AppState, doc_type: DocumentType, document_id: str) -> Document:
+    for doc in state.dataset.documents:
+        if doc.type == doc_type and doc.document_id == document_id:
+            return doc
+    raise HTTPException(status_code=404, detail="Document not found")
+
+
+@router.get("/policies")
+def list_policies(
+    state: Annotated[AppState, Depends(_get_state)],
+) -> list[Document]:
+    """Return all policy documents."""
+    return _documents_by_type(state, DocumentType.POLICY)
+
+
+@router.get("/policies/{document_id}")
+def get_policy(
+    document_id: str,
+    state: Annotated[AppState, Depends(_get_state)],
+) -> Document:
+    """Return a single policy document by ID."""
+    return _find_document(state, DocumentType.POLICY, document_id)
+
+
+@router.get("/faqs")
+def list_faqs(
+    state: Annotated[AppState, Depends(_get_state)],
+) -> list[Document]:
+    """Return all FAQ documents."""
+    return _documents_by_type(state, DocumentType.FAQ)
+
+
+@router.get("/faqs/{document_id}")
+def get_faq(
+    document_id: str,
+    state: Annotated[AppState, Depends(_get_state)],
+) -> Document:
+    """Return a single FAQ document by ID."""
+    return _find_document(state, DocumentType.FAQ, document_id)
