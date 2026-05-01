@@ -1,6 +1,13 @@
+export interface Source {
+	url: string;
+	title: string;
+	type: string;
+}
+
 export interface ChatResponse {
 	session_id: string;
 	answer: string;
+	sources: Source[];
 }
 
 export interface Document {

@@ -1,22 +1,31 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { beforeNavigate } from '$app/navigation';
 	import { sendMessage, clearSession } from '$lib/api';
 	import { getSessionId, resetSession } from '$lib/session';
+	import { getChatState } from '$lib/chat.svelte';
 	import ChatMessage from '$lib/components/ChatMessage.svelte';
 	import ChatInput from '$lib/components/ChatInput.svelte';
 
-	interface Message {
-		role: 'user' | 'assistant';
-		content: string;
-	}
+	const chat = getChatState();
 
-	let messages: Message[] = $state([]);
 	let loading = $state(false);
-	let sessionId = $state('');
 	let messagesEnd: HTMLDivElement = $state(undefined!);
+	let mainEl: HTMLElement = $state(undefined!);
 
 	onMount(() => {
-		sessionId = getSessionId();
+		if (!chat.sessionId) {
+			chat.sessionId = getSessionId();
+		}
+		if (chat.scrollTop && mainEl) {
+			mainEl.scrollTop = chat.scrollTop;
+		}
+	});
+
+	beforeNavigate(() => {
+		if (mainEl) {
+			chat.scrollTop = mainEl.scrollTop;
+		}
 	});
 
 	function scrollToBottom() {
@@ -26,15 +35,15 @@
 	}
 
 	async function handleSend(text: string) {
-		messages.push({ role: 'user', content: text });
+		chat.messages.push({ role: 'user', content: text });
 		loading = true;
 		scrollToBottom();
 
 		try {
-			const res = await sendMessage(sessionId, text);
-			messages.push({ role: 'assistant', content: res.answer });
+			const res = await sendMessage(chat.sessionId, text);
+			chat.messages.push({ role: 'assistant', content: res.answer, sources: res.sources });
 		} catch {
-			messages.push({
+			chat.messages.push({
 				role: 'assistant',
 				content: 'Sorry, something went wrong. Please try again.'
 			});
@@ -45,9 +54,9 @@
 	}
 
 	async function handleNewConversation() {
-		await clearSession(sessionId);
-		sessionId = resetSession();
-		messages = [];
+		await clearSession(chat.sessionId);
+		chat.sessionId = resetSession();
+		chat.messages = [];
 	}
 </script>
 
@@ -62,15 +71,15 @@
 		</button>
 	</header>
 
-	<main class="flex-1 overflow-y-auto px-6 py-4">
-		{#if messages.length === 0}
+	<main bind:this={mainEl} class="flex-1 overflow-y-auto px-6 py-4">
+		{#if chat.messages.length === 0}
 			<div class="flex h-full items-center justify-center text-gray-400">
 				<p>Ask a question about Omnia Retail products, orders, or policies.</p>
 			</div>
 		{:else}
 			<div class="mx-auto flex max-w-3xl flex-col gap-4">
-				{#each messages as msg}
-					<ChatMessage role={msg.role} content={msg.content} />
+				{#each chat.messages as msg}
+					<ChatMessage role={msg.role} content={msg.content} sources={msg.sources} />
 				{/each}
 				{#if loading}
 					<div class="flex justify-start">

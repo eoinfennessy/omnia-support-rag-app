@@ -94,13 +94,53 @@ def _create_test_app() -> tuple[FastAPI, AppState]:
     return app, state
 
 
+_POLICY_RECORD = {
+    "page_content": "Return policy content",
+    "metadata": {
+        "document_id": "policy_001",
+        "type": "policy",
+        "category": "returns",
+        "date": "2024-01-01",
+        "product_category": "all",
+        "chunk_index": 0,
+        "total_chunks": 1,
+    },
+}
+
+_FAQ_RECORD = {
+    "page_content": "FAQ content",
+    "metadata": {
+        "document_id": "faq_001",
+        "type": "faq",
+        "category": "general",
+        "date": "2024-01-01",
+        "product_category": "all",
+        "chunk_index": 0,
+        "total_chunks": 1,
+    },
+}
+
+_TICKET_RECORD = {
+    "page_content": "Ticket content",
+    "metadata": {
+        "document_id": "ticket_001",
+        "type": "support_ticket",
+        "category": "delivery_issue",
+        "date": "2024-01-01",
+        "product_category": "laptops",
+        "chunk_index": 0,
+        "total_chunks": 1,
+    },
+}
+
+
 @patch("omnia_support_app.routes.run_rag_pipeline")
 class TestChatEndpoint:
     def test_returns_answer(self, mock_pipeline):
         mock_pipeline.return_value = {
             "answer": "Our return policy is...",
             "retrieved_context": "policy content",
-            "retrieved_records": [],
+            "retrieved_records": [_POLICY_RECORD],
         }
         app, _ = _create_test_app()
         client = TestClient(app)
@@ -119,7 +159,7 @@ class TestChatEndpoint:
         mock_pipeline.return_value = {
             "answer": "answer",
             "retrieved_context": "context",
-            "retrieved_records": [],
+            "retrieved_records": [_POLICY_RECORD],
         }
         app, _ = _create_test_app()
         client = TestClient(app)
@@ -135,7 +175,7 @@ class TestChatEndpoint:
         mock_pipeline.return_value = {
             "answer": "answer",
             "retrieved_context": "context",
-            "retrieved_records": [],
+            "retrieved_records": [_POLICY_RECORD],
         }
         app, _state = _create_test_app()
         client = TestClient(app)
@@ -160,7 +200,7 @@ class TestChatEndpoint:
         mock_pipeline.return_value = {
             "answer": "the answer",
             "retrieved_context": "the context",
-            "retrieved_records": [],
+            "retrieved_records": [_POLICY_RECORD],
         }
         app, state = _create_test_app()
         client = TestClient(app)
@@ -176,6 +216,55 @@ class TestChatEndpoint:
         assert history[1] == {"role": "user", "content": "my question"}
         assert history[2] == {"role": "assistant", "content": "the answer"}
 
+    def test_returns_deduplicated_sources(self, mock_pipeline):
+        duplicate_record = {
+            "page_content": "Another chunk from same policy",
+            "metadata": {
+                "document_id": "policy_001",
+                "type": "policy",
+                "category": "returns",
+                "date": "2024-01-01",
+                "product_category": "all",
+                "chunk_index": 1,
+                "total_chunks": 1,
+            },
+        }
+        mock_pipeline.return_value = {
+            "answer": "answer",
+            "retrieved_context": "context",
+            "retrieved_records": [_POLICY_RECORD, duplicate_record, _FAQ_RECORD],
+        }
+        app, _ = _create_test_app()
+        client = TestClient(app)
+
+        response = client.post(
+            "/api/chat",
+            json={"session_id": "s1", "message": "question"},
+        )
+
+        sources = response.json()["sources"]
+        assert len(sources) == 2
+        assert sources[0] == {"url": "/policies/policy_001", "title": "Returns", "type": "policy"}
+        assert sources[1] == {"url": "/faqs/faq_001", "title": "faq_001 - General", "type": "faq"}
+
+    def test_excludes_support_tickets_from_sources(self, mock_pipeline):
+        mock_pipeline.return_value = {
+            "answer": "answer",
+            "retrieved_context": "context",
+            "retrieved_records": [_TICKET_RECORD, _POLICY_RECORD],
+        }
+        app, _ = _create_test_app()
+        client = TestClient(app)
+
+        response = client.post(
+            "/api/chat",
+            json={"session_id": "s1", "message": "question"},
+        )
+
+        sources = response.json()["sources"]
+        assert len(sources) == 1
+        assert sources[0]["type"] == "policy"
+
 
 @patch("omnia_support_app.routes.run_rag_pipeline")
 class TestClearSessionEndpoint:
@@ -183,7 +272,7 @@ class TestClearSessionEndpoint:
         mock_pipeline.return_value = {
             "answer": "a",
             "retrieved_context": "c",
-            "retrieved_records": [],
+            "retrieved_records": [_POLICY_RECORD],
         }
         app, state = _create_test_app()
         client = TestClient(app)

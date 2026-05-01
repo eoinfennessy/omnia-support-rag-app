@@ -15,6 +15,10 @@ from .dependencies import AppState  # noqa: TC001 — needed at runtime for Fast
 router = APIRouter(prefix="/api")
 
 
+def _to_title_case(snake: str) -> str:
+    return " ".join(word.capitalize() for word in snake.split("_"))
+
+
 def _get_state(request: Request) -> AppState:
     return request.app.state.app_state
 
@@ -26,11 +30,20 @@ class ChatRequest(BaseModel):
     message: str
 
 
+class Source(BaseModel):
+    """A source document referenced by the assistant's answer."""
+
+    url: str
+    title: str
+    type: str
+
+
 class ChatResponse(BaseModel):
     """Chat response returned to the client."""
 
     session_id: str
     answer: str
+    sources: list[Source]
 
 
 @router.post("/chat")
@@ -62,7 +75,30 @@ def chat(
         ],
     )
 
-    return ChatResponse(session_id=body.session_id, answer=result["answer"])
+    seen: set[str] = set()
+    sources: list[Source] = []
+    for record in result["retrieved_records"]:
+        doc_id = record["metadata"]["document_id"]
+        doc_type = record["metadata"]["type"]
+        if doc_id not in seen and doc_type in ("policy", "faq"):
+            seen.add(doc_id)
+            category = record["metadata"]["category"]
+            title = _to_title_case(category)
+            if doc_type == "faq":
+                title = f"{doc_id} - {title}"
+            sources.append(
+                Source(
+                    url=f"/{doc_type}s/{doc_id}" if doc_type == "faq" else f"/policies/{doc_id}",
+                    title=title,
+                    type=doc_type,
+                )
+            )
+
+    return ChatResponse(
+        session_id=body.session_id,
+        answer=result["answer"],
+        sources=sources,
+    )
 
 
 @router.delete("/chat/{session_id}", status_code=204)
