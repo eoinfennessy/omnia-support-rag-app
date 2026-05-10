@@ -1,9 +1,10 @@
 [project]
-name = "omnia-support-vectorstore"
+name = "omnia-support-store"
 version = "0.1.0"
-description = "ChromaDB vector store layer for Omnia Support"
+description = "Vector and keyword store layer for Omnia Support"
 requires-python = ">=3.14"
 dependencies = [
+    "bm25s[stem]>=0.3.8",
     "chromadb>=1.5.8",
 ]
 

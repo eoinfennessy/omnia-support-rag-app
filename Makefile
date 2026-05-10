@@ -1,4 +1,5 @@
 MLFLOW_TRACKING_URI ?= http://localhost:5000
+RETRIEVAL_MODE ?= hybrid
 
 .PHONY: help lint lint-fix format format-check type-check check fix install-hooks up down infra-local infra-docker ingest test register-prompt eval-local eval-docker frontend-build app
 
@@ -43,7 +44,7 @@ register-prompt: ## Register all prompts to MLflow
 
 eval-local: ## Run evaluation locally
 	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
-		uv run --package omnia-support-eval evaluate
+		uv run --package omnia-support-eval evaluate --retrieval-mode $(RETRIEVAL_MODE)
 
 eval-docker: ## Run evaluation in Docker
 	docker compose --profile eval run evaluation
@@ -53,7 +54,7 @@ frontend-build: ## Build the SvelteKit frontend
 	cd frontend && npm ci && npm run build
 
 app: frontend-build ## Start the app server locally
-	uv run omnia-support-app
+	RETRIEVAL_MODE=$(RETRIEVAL_MODE) uv run omnia-support-app
 
 ##@ Code quality
 lint: ## Run ruff linter

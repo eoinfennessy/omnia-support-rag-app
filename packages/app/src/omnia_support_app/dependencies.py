@@ -12,8 +12,8 @@ from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from dotenv import load_dotenv
 
 from omnia_support_models import Dataset
-from omnia_support_rag import SemanticRetriever
-from omnia_support_vectorstore import ChromaVectorStore
+from omnia_support_rag import BM25Retriever, HybridRetriever, SemanticRetriever
+from omnia_support_store import BM25sKeywordStore, ChromaVectorStore
 
 from .session import InMemorySessionStore
 
@@ -58,11 +58,32 @@ def create_app_state() -> AppState:
         model_name=embedding_model,
     )
 
-    store = ChromaVectorStore(
-        host=os.environ.get("CHROMA_HOST", "localhost"),
-        port=int(os.environ.get("CHROMA_PORT", "8000")),
-        embedding_fn=embedding_fn,  # ty: ignore[invalid-argument-type]
-    )
+    retrieval_mode = os.environ.get("RETRIEVAL_MODE", "semantic")
+
+    vector_store = None
+    keyword_store = None
+    if retrieval_mode in ("semantic", "hybrid"):
+        vector_store = ChromaVectorStore(
+            host=os.environ.get("CHROMA_HOST", "localhost"),
+            port=int(os.environ.get("CHROMA_PORT", "8000")),
+            embedding_fn=embedding_fn,  # ty: ignore[invalid-argument-type]
+        )
+    if retrieval_mode in ("bm25", "hybrid"):
+        keyword_store = BM25sKeywordStore(index_path=Path(os.environ.get("BM25_INDEX_PATH", "data/bm25")))
+
+    retriever: Retriever
+    if retrieval_mode == "hybrid":
+        if vector_store is None or keyword_store is None:
+            raise SystemExit("Error: hybrid mode requires both vector and keyword stores")
+        retriever = HybridRetriever(vector_store, keyword_store)
+    elif retrieval_mode == "bm25":
+        if keyword_store is None:
+            raise SystemExit("Error: bm25 mode requires a keyword store")
+        retriever = BM25Retriever(keyword_store)
+    else:
+        if vector_store is None:
+            raise SystemExit("Error: semantic mode requires a vector store")
+        retriever = SemanticRetriever(vector_store)
 
     prompt_name = os.environ.get("PROMPT_NAME", "omnia_support_system")
     prompt_alias = os.environ.get("PROMPT_ALIAS", "production")
@@ -82,7 +103,7 @@ def create_app_state() -> AppState:
 
     return AppState(
         config=config,
-        retriever=SemanticRetriever(store),
+        retriever=retriever,
         completions_client=openai.OpenAI().chat.completions,
         dataset=dataset,
     )

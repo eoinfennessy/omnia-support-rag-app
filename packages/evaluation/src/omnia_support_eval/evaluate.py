@@ -34,8 +34,8 @@ from mlflow.genai.scorers import (
 )
 
 from omnia_support_models import Dataset, TestQuery
-from omnia_support_rag import CompletionsClient, SemanticRetriever, run_rag_pipeline
-from omnia_support_vectorstore import ChromaVectorStore
+from omnia_support_rag import BM25Retriever, CompletionsClient, HybridRetriever, SemanticRetriever, run_rag_pipeline
+from omnia_support_store import BM25sKeywordStore, ChromaVectorStore
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -331,6 +331,17 @@ def _parse_args() -> argparse.Namespace:
         default="omnia-support-eval",
         help="MLflow experiment name (default: omnia-support-eval)",
     )
+    parser.add_argument(
+        "--retrieval-mode",
+        choices=["semantic", "bm25", "hybrid"],
+        default="semantic",
+        help="Retrieval strategy: semantic (default), bm25, or hybrid (RRF dense+BM25)",
+    )
+    parser.add_argument(
+        "--bm25-path",
+        default=os.environ.get("BM25_INDEX_PATH", "data/bm25"),
+        help="Path to BM25 keyword index (default: $BM25_INDEX_PATH or data/bm25)",
+    )
     return parser.parse_args()
 
 
@@ -348,11 +359,30 @@ def main() -> None:
         model_name=args.embedding_model,
     )
 
-    store = ChromaVectorStore(
-        host=args.chroma_host,
-        port=args.chroma_port,
-        embedding_fn=embedding_fn,  # ty: ignore[invalid-argument-type]
-    )
+    vector_store = None
+    keyword_store = None
+    if args.retrieval_mode in ("semantic", "hybrid"):
+        vector_store = ChromaVectorStore(
+            host=args.chroma_host,
+            port=args.chroma_port,
+            embedding_fn=embedding_fn,  # ty: ignore[invalid-argument-type]
+        )
+    if args.retrieval_mode in ("bm25", "hybrid"):
+        keyword_store = BM25sKeywordStore(index_path=Path(args.bm25_path))
+
+    retriever: Retriever
+    if args.retrieval_mode == "hybrid":
+        if vector_store is None or keyword_store is None:
+            raise SystemExit("Error: hybrid mode requires both vector and keyword stores")
+        retriever = HybridRetriever(vector_store, keyword_store)
+    elif args.retrieval_mode == "bm25":
+        if keyword_store is None:
+            raise SystemExit("Error: bm25 mode requires a keyword store")
+        retriever = BM25Retriever(keyword_store)
+    else:
+        if vector_store is None:
+            raise SystemExit("Error: semantic mode requires a vector store")
+        retriever = SemanticRetriever(vector_store)
 
     gold_set = load_gold_set(Path(args.gold_set), Path(args.dataset))
 
@@ -361,8 +391,8 @@ def main() -> None:
         prompt_name=args.prompt_name,
         prompt_version=args.prompt_version,
         prompt_alias=args.prompt_alias,
-        retriever=SemanticRetriever(store),
-        collection_name=store.collection_name,
+        retriever=retriever,
+        collection_name=vector_store.collection_name if vector_store else "n/a",
         embedding_model=args.embedding_model,
         completions_client=openai.OpenAI().chat.completions,
         n_results=args.n_results,

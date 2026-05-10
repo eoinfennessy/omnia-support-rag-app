@@ -15,7 +15,7 @@ test = ["pytest>=9.0", "omnia-support-ingestion", "omnia-support-rag", "omnia-su
 
 [tool.uv.sources]
 omnia-support-ingestion = { workspace = true }
-omnia-support-vectorstore = { workspace = true }
+omnia-support-store = { workspace = true }
 omnia-support-rag = { workspace = true }
 omnia-support-eval = { workspace = true }
 omnia-support-models = { workspace = true }
@@ -66,7 +66,7 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["omnia_support_models", "omnia_support_vectorstore", "omnia_support_ingestion", "omnia_support_app", "omnia_support_eval", "omnia_support_rag"]
+known-first-party = ["omnia_support_models", "omnia_support_store", "omnia_support_ingestion", "omnia_support_app", "omnia_support_eval", "omnia_support_rag"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["D", "S101"]

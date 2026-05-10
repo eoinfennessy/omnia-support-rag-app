@@ -5,14 +5,18 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 from omnia_support_rag.rag import (
+    BM25Retriever,
+    HybridRetriever,
+    RrfWeights,
     SemanticRetriever,
+    _rrf_fuse,
     generate_answer,
     render_messages,
     retrieve_context,
     run_rag_pipeline,
 )
-from omnia_support_vectorstore import VectorStore
-from omnia_support_vectorstore.models import ScoredVectorRecord, VectorRecordMetadata
+from omnia_support_store import KeywordStore, VectorStore
+from omnia_support_store.models import ChunkMetadata, ScoredChunk
 
 
 def _make_scored_record(
@@ -22,8 +26,8 @@ def _make_scored_record(
     chunk_index: int = 0,
     total_chunks: int = 1,
     distance: float = 0.1,
-) -> ScoredVectorRecord:
-    metadata: VectorRecordMetadata = {
+) -> ScoredChunk:
+    metadata: ChunkMetadata = {
         "document_id": document_id,
         "type": "faq",
         "category": "General",
@@ -32,7 +36,7 @@ def _make_scored_record(
         "chunk_index": chunk_index,
         "total_chunks": total_chunks,
     }
-    return ScoredVectorRecord(
+    return ScoredChunk(
         id=f"{document_id}-chunk-{chunk_index}",
         chunk=chunk,
         metadata=metadata,
@@ -148,6 +152,141 @@ class TestSemanticRetriever:
         result = retriever.retrieve("query", 5)
 
         assert result == []
+
+
+class TestBM25Retriever:
+    def test_delegates_to_keyword_store(self):
+        keyword_store = MagicMock(spec=KeywordStore)
+        keyword_store.query.return_value = [_make_scored_record(chunk="bm25 text", distance=1.5)]
+        retriever = BM25Retriever(keyword_store)
+
+        result = retriever.retrieve("query", 3)
+
+        keyword_store.query.assert_called_once_with("query", 3)
+        assert len(result) == 1
+        assert result[0]["page_content"] == "bm25 text"
+        assert result[0]["distance"] == 1.5
+
+    def test_returns_empty_list_when_no_results(self):
+        keyword_store = MagicMock(spec=KeywordStore)
+        keyword_store.query.return_value = []
+        retriever = BM25Retriever(keyword_store)
+
+        result = retriever.retrieve("query", 5)
+
+        assert result == []
+
+
+class TestHybridRetriever:
+    def test_fuses_results_from_both_stores(self):
+        vector_store = MagicMock(spec=VectorStore)
+        keyword_store = MagicMock(spec=KeywordStore)
+        vector_store.query.return_value = [
+            _make_scored_record(document_id="d1", chunk="semantic A", distance=0.1),
+        ]
+        keyword_store.query.return_value = [
+            _make_scored_record(document_id="d2", chunk="keyword B", distance=1.5),
+        ]
+        retriever = HybridRetriever(vector_store, keyword_store)
+
+        result = retriever.retrieve("query", 5)
+
+        assert len(result) == 2
+        assert {r["metadata"]["document_id"] for r in result} == {"d1", "d2"}
+
+    def test_overlapping_doc_gets_higher_score(self):
+        shared = _make_scored_record(document_id="shared", chunk="both")
+        only_semantic = _make_scored_record(document_id="sem-only", chunk="sem")
+        vector_store = MagicMock(spec=VectorStore)
+        keyword_store = MagicMock(spec=KeywordStore)
+        vector_store.query.return_value = [shared, only_semantic]
+        keyword_store.query.return_value = [
+            _make_scored_record(document_id="shared", chunk="both", distance=1.0),
+        ]
+        retriever = HybridRetriever(vector_store, keyword_store)
+
+        result = retriever.retrieve("query", 5)
+
+        shared_result = next(r for r in result if r["metadata"]["document_id"] == "shared")
+        sem_result = next(r for r in result if r["metadata"]["document_id"] == "sem-only")
+        assert shared_result["distance"] > sem_result["distance"]
+
+    def test_empty_results_from_both(self):
+        vector_store = MagicMock(spec=VectorStore)
+        keyword_store = MagicMock(spec=KeywordStore)
+        vector_store.query.return_value = []
+        keyword_store.query.return_value = []
+        retriever = HybridRetriever(vector_store, keyword_store)
+
+        result = retriever.retrieve("query", 5)
+
+        assert result == []
+
+    def test_one_source_empty(self):
+        vector_store = MagicMock(spec=VectorStore)
+        keyword_store = MagicMock(spec=KeywordStore)
+        vector_store.query.return_value = [_make_scored_record(chunk="only semantic")]
+        keyword_store.query.return_value = []
+        retriever = HybridRetriever(vector_store, keyword_store)
+
+        result = retriever.retrieve("query", 5)
+
+        assert len(result) == 1
+        assert result[0]["page_content"] == "only semantic"
+
+    def test_custom_weights(self):
+        vector_store = MagicMock(spec=VectorStore)
+        keyword_store = MagicMock(spec=KeywordStore)
+        vector_store.query.return_value = [_make_scored_record(document_id="sem", chunk="s")]
+        keyword_store.query.return_value = [_make_scored_record(document_id="kw", chunk="k")]
+        retriever = HybridRetriever(vector_store, keyword_store, weights=RrfWeights(semantic=2.0, keyword=1.0))
+
+        result = retriever.retrieve("query", 5)
+
+        sem = next(r for r in result if r["metadata"]["document_id"] == "sem")
+        kw = next(r for r in result if r["metadata"]["document_id"] == "kw")
+        assert sem["distance"] > kw["distance"]
+
+
+class TestRrfFuse:
+    def test_single_ranking(self):
+        records = [
+            _make_scored_record(document_id="a", chunk="A"),
+            _make_scored_record(document_id="b", chunk="B"),
+        ]
+
+        fused = _rrf_fuse((1.0, records), k=60, n_results=5)
+
+        assert len(fused) == 2
+        assert fused[0].chunk == "A"
+
+    def test_overlapping_docs_score_higher(self):
+        ranking1 = [_make_scored_record(document_id="shared", chunk="X")]
+        ranking2 = [
+            _make_scored_record(document_id="shared", chunk="X"),
+            _make_scored_record(document_id="unique", chunk="Y"),
+        ]
+
+        fused = _rrf_fuse((1.0, ranking1), (1.0, ranking2), k=60, n_results=5)
+
+        assert fused[0].id == "shared-chunk-0"
+
+    def test_n_results_limits_output(self):
+        records = [_make_scored_record(document_id=f"d{i}", chunk=f"chunk {i}") for i in range(10)]
+
+        fused = _rrf_fuse((1.0, records), k=60, n_results=3)
+
+        assert len(fused) == 3
+
+    def test_rank_order_matters(self):
+        ranking = [
+            _make_scored_record(document_id="first", chunk="1"),
+            _make_scored_record(document_id="last", chunk="5"),
+        ]
+
+        fused = _rrf_fuse((1.0, ranking), k=60, n_results=5)
+
+        assert fused[0].distance > fused[1].distance
 
 
 class TestRenderMessages:

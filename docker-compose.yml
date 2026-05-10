@@ -33,6 +33,9 @@ services:
       CHROMA_HOST: chromadb
       CHROMA_PORT: 8000
       FORCE_INGESTION: "${FORCE_INGESTION:-false}"
+      BM25_INDEX_PATH: /data/bm25
+    volumes:
+      - ./data/bm25:/data/bm25
     depends_on:
       chromadb:
         condition: service_healthy
@@ -48,6 +51,10 @@ services:
       CHROMA_HOST: chromadb
       CHROMA_PORT: 8000
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      RETRIEVAL_MODE: "${RETRIEVAL_MODE:-hybrid}"
+      BM25_INDEX_PATH: /data/bm25
+    volumes:
+      - ./data/bm25:/data/bm25
     depends_on:
       chromadb:
         condition: service_healthy

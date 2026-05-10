@@ -1,4 +1,4 @@
-"""ChromaDB record types shared across ingestion and evaluation."""
+"""Record types shared across vector and keyword stores."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from typing import NotRequired, TypedDict
 
 
-class VectorRecordMetadata(TypedDict):
-    """Metadata stored alongside each record in ChromaDB."""
+class ChunkMetadata(TypedDict):
+    """Metadata stored alongside each chunk."""
 
     document_id: str
     type: str
@@ -22,16 +22,16 @@ class VectorRecordMetadata(TypedDict):
 
 
 @dataclass(frozen=True)
-class VectorRecord:
-    """A chunk of text with its ID and metadata, ready for ChromaDB."""
+class Chunk:
+    """A chunk of text with its ID and metadata."""
 
     id: str
     chunk: str
-    metadata: VectorRecordMetadata
+    metadata: ChunkMetadata
 
 
 @dataclass(frozen=True)
-class ScoredVectorRecord(VectorRecord):
-    """A VectorRecord returned from a query, with a distance score."""
+class ScoredChunk(Chunk):
+    """A Chunk returned from a query, with a distance score."""
 
     distance: float = 0.0

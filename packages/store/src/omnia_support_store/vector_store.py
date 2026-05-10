@@ -6,14 +6,14 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from .models import ScoredVectorRecord, VectorRecord
+    from .models import Chunk, ScoredChunk
 
 
 class VectorStore(ABC):
     """Interface for a vector store backend."""
 
     @abstractmethod
-    def upload(self, records: list[VectorRecord]) -> None:
+    def upload(self, records: list[Chunk]) -> None:
         """Upload records to the store, replacing any with matching IDs."""
 
     @abstractmethod
@@ -22,7 +22,7 @@ class VectorStore(ABC):
         query_text: str,
         n_results: int,
         where: dict[str, Any] | None = None,
-    ) -> list[ScoredVectorRecord]:
+    ) -> list[ScoredChunk]:
         """Return the closest records to the query text."""
 
     @abstractmethod

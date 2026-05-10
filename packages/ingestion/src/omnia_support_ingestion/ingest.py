@@ -14,16 +14,17 @@ from dotenv import load_dotenv
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from omnia_support_models import Dataset
-from omnia_support_vectorstore import (
+from omnia_support_store import (
+    BM25sKeywordStore,
     ChromaVectorStore,
-    VectorRecord,
+    Chunk,
 )
 
 from .chunk import build_embed_text, chunk_document
 
 if TYPE_CHECKING:
     from omnia_support_models import Document
-    from omnia_support_vectorstore import VectorRecordMetadata, VectorStore
+    from omnia_support_store import ChunkMetadata, KeywordStore, VectorStore
 
 
 @dataclass(frozen=True)
@@ -31,30 +32,30 @@ class IngestConfig:
     """Configuration for the ingestion pipeline."""
 
     input_path: Path
-    store: VectorStore
+    vector_store: VectorStore
+    keyword_store: KeywordStore
     force: bool
 
 
-def should_skip_ingestion(store: VectorStore, *, force: bool) -> bool:
+def _should_skip_ingestion(config: IngestConfig) -> bool:
     """Check whether ingestion should be skipped."""
-    if force:
+    if config.force:
         return False
-    count = store.count()
-    if not count:
+    if not config.vector_store.count() or not config.keyword_store.count():
         return False
-    print(f"Collection '{store.collection_name}' already has documents. Skipping ingestion. Use --force to re-ingest.")
+    print("Stores already populated. Skipping ingestion. Use --force to re-ingest.")
     return True
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
-def _upload_records(store: VectorStore, records: list[VectorRecord]) -> None:
-    """Upload records to ChromaDB with retry."""
+def _upload_records(store: VectorStore, records: list[Chunk]) -> None:
+    """Upload records to the vector store with retry."""
     store.upload(records)
 
 
-def _build_record_metadata(doc: Document, chunk_index: int, total_chunks: int) -> VectorRecordMetadata:
+def _build_record_metadata(doc: Document, chunk_index: int, total_chunks: int) -> ChunkMetadata:
     """Build ChromaDB metadata for a record, omitting None fields."""
-    metadata: VectorRecordMetadata = {
+    metadata: ChunkMetadata = {
         "document_id": doc.document_id,
         "type": doc.type.value,
         "category": doc.category,
@@ -72,19 +73,19 @@ def _build_record_metadata(doc: Document, chunk_index: int, total_chunks: int) -
     return metadata
 
 
-def build_records(documents: list[Document]) -> list[VectorRecord]:
+def build_records(documents: list[Document]) -> list[Chunk]:
     """Build ChromaDB records from documents.
 
     Chunks long documents and assigns unique IDs per chunk.
     """
-    result: list[VectorRecord] = []
+    result: list[Chunk] = []
 
     for doc in documents:
         text_chunks = chunk_document(doc)
         total_chunks = len(text_chunks)
 
         result.extend(
-            VectorRecord(
+            Chunk(
                 id=f"{doc.document_id}-chunk-{i}",
                 chunk=build_embed_text(doc, text),
                 metadata=_build_record_metadata(doc, chunk_index=i, total_chunks=total_chunks),
@@ -110,14 +111,13 @@ def ingest(config: IngestConfig) -> None:
     if not config.input_path.exists():
         raise SystemExit(f"Error: input file not found: {config.input_path}")
 
-    store = config.store
-
-    if should_skip_ingestion(store, force=config.force):
+    if _should_skip_ingestion(config):
         return
 
     if config.force:
-        store.reset()
-        print(f"  Deleted existing '{store.collection_name}' collection")
+        config.vector_store.reset()
+        config.keyword_store.reset()
+        print("  Reset vector store and keyword index")
 
     print(f"Reading {config.input_path}...")
     dataset = Dataset.from_json(config.input_path)
@@ -127,9 +127,13 @@ def ingest(config: IngestConfig) -> None:
     records = build_records(dataset.documents)
     print(f"  Prepared {len(records)} records")
 
-    _upload_records(store, records)
+    _upload_records(config.vector_store, records)
+    print(f"  Uploaded {config.vector_store.count()} records to vector store")
 
-    print(f"\nDone! Collection '{store.collection_name}' has {store.count()} documents.")
+    config.keyword_store.index(records)
+    print(f"  Indexed {config.keyword_store.count()} records in keyword store")
+
+    print("\nDone!")
 
 
 def _parse_args() -> argparse.Namespace:
@@ -166,6 +170,11 @@ def _parse_args() -> argparse.Namespace:
         help="OpenAI embedding model (default: $EMBEDDING_MODEL or text-embedding-3-small)",
     )
     parser.add_argument(
+        "--bm25-path",
+        default=os.environ.get("BM25_INDEX_PATH", "data/bm25"),
+        help="Path to save BM25 keyword index (default: $BM25_INDEX_PATH or data/bm25)",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print prepared chunks as JSON without ingesting",
@@ -192,16 +201,19 @@ def main() -> None:
         model_name=args.embedding_model,
     )
 
-    store = ChromaVectorStore(
+    vector_store = ChromaVectorStore(
         host=args.chroma_host,
         port=args.chroma_port,
         embedding_fn=embedding_fn,  # ty: ignore[invalid-argument-type]
     )
 
+    keyword_store = BM25sKeywordStore(index_path=Path(args.bm25_path))
+
     ingest(
         IngestConfig(
             input_path=Path(args.input),
-            store=store,
+            vector_store=vector_store,
+            keyword_store=keyword_store,
             force=args.force,
         )
     )

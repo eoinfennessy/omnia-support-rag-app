@@ -7,6 +7,7 @@ inspect RETRIEVER spans automatically.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
 import mlflow
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
     from mlflow.entities.model_registry.prompt_version import PromptVersion
     from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
-    from omnia_support_vectorstore import VectorStore
+    from omnia_support_store import KeywordStore, ScoredChunk, VectorStore
 
 
 class CompletionsClient(Protocol):
@@ -53,6 +54,80 @@ class SemanticRetriever:
     def retrieve(self, query: str, n_results: int) -> list[dict]:
         """Retrieve documents using semantic similarity via the vector store."""
         return retrieve_context(self._store, query, n_results)
+
+
+class BM25Retriever:
+    """Retriever using BM25 keyword search via a KeywordStore."""
+
+    def __init__(self, keyword_store: KeywordStore) -> None:
+        """Wrap a keyword store for BM25 retrieval."""
+        self._keyword_store = keyword_store
+
+    @mlflow.trace(span_type="RETRIEVER")
+    def retrieve(self, query: str, n_results: int) -> list[dict]:
+        """Retrieve documents using BM25 keyword matching."""
+        records = self._keyword_store.query(query, n_results)
+        return [{"page_content": r.chunk, "metadata": r.metadata, "distance": r.distance} for r in records]
+
+
+@dataclass(frozen=True)
+class RrfWeights:
+    """Weights for each ranking source in Reciprocal Rank Fusion."""
+
+    semantic: float = 1.0
+    keyword: float = 1.0
+
+
+class HybridRetriever:
+    """Retriever combining dense and BM25 results via Reciprocal Rank Fusion."""
+
+    def __init__(
+        self,
+        vector_store: VectorStore,
+        keyword_store: KeywordStore,
+        *,
+        rrf_k: int = 60,
+        weights: RrfWeights | None = None,
+    ) -> None:
+        """Wrap a vector store and keyword store for hybrid retrieval."""
+        self._vector_store = vector_store
+        self._keyword_store = keyword_store
+        self._rrf_k = rrf_k
+        self._weights = weights or RrfWeights()
+
+    @mlflow.trace(span_type="RETRIEVER")
+    def retrieve(self, query: str, n_results: int) -> list[dict]:
+        """Retrieve documents using RRF fusion of semantic and BM25 results."""
+        semantic = self._vector_store.query(query, n_results)
+        keyword = self._keyword_store.query(query, n_results)
+        fused = _rrf_fuse(
+            (self._weights.semantic, semantic),
+            (self._weights.keyword, keyword),
+            k=self._rrf_k,
+            n_results=n_results,
+        )
+        return [{"page_content": r.chunk, "metadata": r.metadata, "distance": r.distance} for r in fused]
+
+
+def _rrf_fuse(
+    *weighted_rankings: tuple[float, list[ScoredChunk]],
+    k: int = 60,
+    n_results: int = 5,
+) -> list[ScoredChunk]:
+    """Fuse multiple weighted rankings using Reciprocal Rank Fusion."""
+    from omnia_support_store import ScoredChunk as _ScoredChunk
+
+    scores: dict[str, float] = {}
+    records: dict[str, ScoredChunk] = {}
+    for weight, ranking in weighted_rankings:
+        for rank, record in enumerate(ranking):
+            scores[record.id] = scores.get(record.id, 0.0) + weight / (k + rank + 1)
+            records.setdefault(record.id, record)
+    sorted_ids = sorted(scores, key=scores.__getitem__, reverse=True)[:n_results]
+    return [
+        _ScoredChunk(id=rid, chunk=records[rid].chunk, metadata=records[rid].metadata, distance=scores[rid])
+        for rid in sorted_ids
+    ]
 
 
 @mlflow.trace(span_type="RETRIEVER")

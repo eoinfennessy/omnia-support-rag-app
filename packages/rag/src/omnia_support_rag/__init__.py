@@ -1,8 +1,11 @@
 """RAG pipeline for Omnia Support."""
 
 from omnia_support_rag.rag import (
+    BM25Retriever,
     CompletionsClient,
+    HybridRetriever,
     Retriever,
+    RrfWeights,
     SemanticRetriever,
     generate_answer,
     render_messages,
@@ -12,8 +15,11 @@ from omnia_support_rag.rag import (
 from omnia_support_rag.reformulate import reformulate_query
 
 __all__ = [
+    "BM25Retriever",
     "CompletionsClient",
+    "HybridRetriever",
     "Retriever",
+    "RrfWeights",
     "SemanticRetriever",
     "generate_answer",
     "reformulate_query",

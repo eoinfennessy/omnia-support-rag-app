@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING, Any, cast
 
 from chromadb.errors import NotFoundError
 
-from ..base import VectorStore
-from ..models import ScoredVectorRecord, VectorRecordMetadata
+from ..models import ChunkMetadata, ScoredChunk
+from ..vector_store import VectorStore
 
 if TYPE_CHECKING:
     from chromadb import ClientAPI, Collection
     from chromadb.api.types import Embeddable, EmbeddingFunction
 
-    from ..models import VectorRecord
+    from ..models import Chunk
 
 DEFAULT_COLLECTION_NAME = "omnia_support"
 
@@ -42,10 +42,15 @@ class ChromaVectorStore(VectorStore):
         )
 
     @property
+    def collection(self) -> Collection:
+        """Return the underlying ChromaDB collection."""
+        return self._collection
+
+    @property
     def collection_name(self) -> str:  # noqa: D102
         return self._collection_name
 
-    def upload(self, records: list[VectorRecord]) -> None:  # noqa: D102 - docstring on ABC
+    def upload(self, records: list[Chunk]) -> None:  # noqa: D102 - docstring on ABC
         self._collection.upsert(
             ids=[r.id for r in records],
             documents=[r.chunk for r in records],
@@ -57,7 +62,7 @@ class ChromaVectorStore(VectorStore):
         query_text: str,
         n_results: int,
         where: dict[str, Any] | None = None,
-    ) -> list[ScoredVectorRecord]:
+    ) -> list[ScoredChunk]:
         results = self._collection.query(
             query_texts=[query_text],
             n_results=n_results,
@@ -69,7 +74,7 @@ class ChromaVectorStore(VectorStore):
             return []
 
         return [
-            ScoredVectorRecord(id=id_, chunk=doc, metadata=cast("VectorRecordMetadata", meta), distance=dist)
+            ScoredChunk(id=id_, chunk=doc, metadata=cast("ChunkMetadata", meta), distance=dist)
             for id_, doc, meta, dist in zip(
                 results["ids"][0],
                 results["documents"][0],

@@ -6,7 +6,7 @@ requires-python = ">=3.14"
 dependencies = [
     "omnia-support-models",
     "omnia-support-rag",
-    "omnia-support-vectorstore",
+    "omnia-support-store",
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.35.0",
     "openai>=2.32.0",
@@ -20,7 +20,7 @@ omnia-support-app = "omnia_support_app.main:main"
 [tool.uv.sources]
 omnia-support-models = { workspace = true }
 omnia-support-rag = { workspace = true }
-omnia-support-vectorstore = { workspace = true }
+omnia-support-store = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]

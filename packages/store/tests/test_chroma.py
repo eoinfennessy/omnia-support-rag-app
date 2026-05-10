@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from chromadb.errors import NotFoundError
 
-from omnia_support_vectorstore import DEFAULT_COLLECTION_NAME, ChromaVectorStore
+from omnia_support_store import DEFAULT_COLLECTION_NAME, ChromaVectorStore
 
 
 class TestChromaVectorStore:
@@ -70,3 +70,14 @@ class TestChromaVectorStore:
         store.reset()
 
         assert mock_client.get_or_create_collection.call_count == 2
+
+    @patch("chromadb.HttpClient")
+    def test_collection_property_returns_underlying_collection(self, mock_http_client_cls: MagicMock):
+        mock_client = MagicMock()
+        mock_http_client_cls.return_value = mock_client
+        mock_collection = MagicMock()
+        mock_client.get_or_create_collection.return_value = mock_collection
+
+        store = ChromaVectorStore(host="localhost", port=8000, embedding_fn=MagicMock())
+
+        assert store.collection is mock_collection

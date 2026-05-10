@@ -10,7 +10,7 @@ members = [
     "omnia-support-ingestion",
     "omnia-support-models",
     "omnia-support-rag",
-    "omnia-support-vectorstore",
+    "omnia-support-store",
 ]
 
 [[package]]
@@ -196,6 +196,23 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/21/28/9b3f50ce0e048515135495f198351908d99540d69bfdc8c1d15b73dc55ce/blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf", size = 22460, upload-time = "2024-11-08T17:25:47.436Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/10/cb/f2ad4230dc2eb1a74edf38f1a38b9b52277f75bef262d8908e60d957e13c/blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc", size = 8458, upload-time = "2024-11-08T17:25:46.184Z" },
+]
+
+[[package]]
+name = "bm25s"
+version = "0.3.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/98/3f/88010a24298e2ca4b0807ca5a59ee69e867551fc289c3b062d41cefda59b/bm25s-0.3.8.tar.gz", hash = "sha256:d165f096d64961de0b25a0ad4989d42dfe529c94ca12a9a070eef173c62b8612", size = 80495, upload-time = "2026-04-29T02:18:45.493Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/82/c2/e5dbdbf8e99ec504432f9bd82cdf990faff1ffcdd5316272cb7fccce31ed/bm25s-0.3.8-py3-none-any.whl", hash = "sha256:b5ff52a0633ee5add26ca89619f5c5fff66127dcce0984976a2a09e1871a33f9", size = 74452, upload-time = "2026-04-29T02:18:43.892Z" },
+]
+
+[package.optional-dependencies]
+stem = [
+    { name = "pystemmer" },
 ]
 
 [[package]]
@@ -1445,7 +1462,7 @@ dependencies = [
     { name = "mlflow" },
     { name = "omnia-support-models" },
     { name = "omnia-support-rag" },
-    { name = "omnia-support-vectorstore" },
+    { name = "omnia-support-store" },
     { name = "openai" },
     { name = "python-dotenv" },
     { name = "uvicorn", extra = ["standard"] },
@@ -1457,7 +1474,7 @@ requires-dist = [
     { name = "mlflow", specifier = ">=3.11.1" },
     { name = "omnia-support-models", editable = "packages/models" },
     { name = "omnia-support-rag", editable = "packages/rag" },
-    { name = "omnia-support-vectorstore", editable = "packages/vectorstore" },
+    { name = "omnia-support-store", editable = "packages/store" },
     { name = "openai", specifier = ">=2.32.0" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.35.0" },
@@ -1471,7 +1488,7 @@ dependencies = [
     { name = "mlflow" },
     { name = "omnia-support-models" },
     { name = "omnia-support-rag" },
-    { name = "omnia-support-vectorstore" },
+    { name = "omnia-support-store" },
     { name = "openai" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
@@ -1482,7 +1499,7 @@ requires-dist = [
     { name = "mlflow", specifier = ">=3.11.1" },
     { name = "omnia-support-models", editable = "packages/models" },
     { name = "omnia-support-rag", editable = "packages/rag" },
-    { name = "omnia-support-vectorstore", editable = "packages/vectorstore" },
+    { name = "omnia-support-store", editable = "packages/store" },
     { name = "openai", specifier = ">=2.32.0" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "pyyaml", specifier = ">=6.0.3" },
@@ -1494,7 +1511,7 @@ version = "0.1.0"
 source = { editable = "packages/ingestion" }
 dependencies = [
     { name = "omnia-support-models" },
-    { name = "omnia-support-vectorstore" },
+    { name = "omnia-support-store" },
     { name = "openai" },
     { name = "python-dotenv" },
     { name = "tenacity" },
@@ -1503,7 +1520,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "omnia-support-models", editable = "packages/models" },
-    { name = "omnia-support-vectorstore", editable = "packages/vectorstore" },
+    { name = "omnia-support-store", editable = "packages/store" },
     { name = "openai", specifier = ">=1.78.1" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "tenacity", specifier = ">=9.1.4" },
@@ -1527,26 +1544,30 @@ source = { editable = "packages/rag" }
 dependencies = [
     { name = "jinja2" },
     { name = "mlflow" },
-    { name = "omnia-support-vectorstore" },
+    { name = "omnia-support-store" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "mlflow", specifier = ">=3.11.1" },
-    { name = "omnia-support-vectorstore", editable = "packages/vectorstore" },
+    { name = "omnia-support-store", editable = "packages/store" },
 ]
 
 [[package]]
-name = "omnia-support-vectorstore"
+name = "omnia-support-store"
 version = "0.1.0"
-source = { editable = "packages/vectorstore" }
+source = { editable = "packages/store" }
 dependencies = [
+    { name = "bm25s", extra = ["stem"] },
     { name = "chromadb" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "chromadb", specifier = ">=1.5.8" }]
+requires-dist = [
+    { name = "bm25s", extras = ["stem"], specifier = ">=0.3.8" },
+    { name = "chromadb", specifier = ">=1.5.8" },
+]
 
 [[package]]
 name = "onnxruntime"
@@ -2054,6 +2075,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/e7/82/28175b2414effca1c
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bd/24/12818598c362d7f300f18e74db45963dbcb85150324092410c8b49405e42/pyproject_hooks-1.2.0-py3-none-any.whl", hash = "sha256:9e5c6bfa8dcc30091c74b0cf803c81fdd29d94f01992a7707bc97babb1141913", size = 10216, upload-time = "2024-09-29T09:24:11.978Z" },
 ]
+
+[[package]]
+name = "pystemmer"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8f/ca/959415b311e05812c1cfe926e21a6c64dd0131b076f258805891c10840e7/pystemmer-3.0.0.tar.gz", hash = "sha256:eb9f31accf188e733f0f375cad1594f7cc21ad86b20977ccce0c7162c7c6c35e", size = 303779, upload-time = "2025-05-08T03:21:40.943Z" }
 
 [[package]]
 name = "pytest"
