@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from omnia_support_rag.rag import generate_answer, render_messages, retrieve_context, run_rag_pipeline
+from omnia_support_rag.rag import (
+    SemanticRetriever,
+    generate_answer,
+    render_messages,
+    retrieve_context,
+    run_rag_pipeline,
+)
 from omnia_support_vectorstore import VectorStore
 from omnia_support_vectorstore.models import ScoredVectorRecord, VectorRecordMetadata
 
@@ -32,6 +38,29 @@ def _make_scored_record(
         metadata=metadata,
         distance=distance,
     )
+
+
+def _make_retrieved_record(
+    *,
+    document_id: str = "doc-1",
+    chunk: str = "Some text",
+    chunk_index: int = 0,
+    total_chunks: int = 1,
+    distance: float = 0.1,
+) -> dict:
+    return {
+        "page_content": chunk,
+        "metadata": {
+            "document_id": document_id,
+            "type": "faq",
+            "category": "General",
+            "date": "2025-01-01",
+            "product_category": "laptops",
+            "chunk_index": chunk_index,
+            "total_chunks": total_chunks,
+        },
+        "distance": distance,
+    }
 
 
 def _make_prompt(template: list) -> MagicMock:
@@ -96,6 +125,29 @@ class TestRetrieveContext:
         assert meta["total_chunks"] == 5
         assert meta["type"] == "faq"
         assert result[0]["distance"] == 0.1
+
+
+class TestSemanticRetriever:
+    def test_delegates_to_vector_store(self):
+        store = MagicMock(spec=VectorStore)
+        store.query.return_value = [_make_scored_record(chunk="text", distance=0.2)]
+        retriever = SemanticRetriever(store)
+
+        result = retriever.retrieve("query", 3)
+
+        store.query.assert_called_once_with("query", 3)
+        assert len(result) == 1
+        assert result[0]["page_content"] == "text"
+        assert result[0]["distance"] == 0.2
+
+    def test_returns_empty_list_when_no_results(self):
+        store = MagicMock(spec=VectorStore)
+        store.query.return_value = []
+        retriever = SemanticRetriever(store)
+
+        result = retriever.retrieve("query", 5)
+
+        assert result == []
 
 
 class TestRenderMessages:
@@ -249,10 +301,10 @@ class TestRunRagPipeline:
                 {"role": "user", "content": "{{context}} {{question}}"},
             ]
         )
-        store = MagicMock(spec=VectorStore)
-        store.query.return_value = [
-            _make_scored_record(chunk="chunk A"),
-            _make_scored_record(chunk="chunk B", document_id="doc-2"),
+        retriever = MagicMock()
+        retriever.retrieve.return_value = [
+            _make_retrieved_record(chunk="chunk A"),
+            _make_retrieved_record(chunk="chunk B", document_id="doc-2"),
         ]
         client = MagicMock()
         client.create.return_value = _make_completion("answer text")
@@ -260,7 +312,7 @@ class TestRunRagPipeline:
         result = run_rag_pipeline(
             "my question",
             completions_client=client,
-            store=store,
+            retriever=retriever,
             prompt_uri="prompts:/test@prod",
             n_results=5,
             model="gpt-4",
@@ -276,15 +328,15 @@ class TestRunRagPipeline:
                 {"role": "user", "content": "{{context}} {{question}}"},
             ]
         )
-        store = MagicMock(spec=VectorStore)
-        store.query.return_value = []
+        retriever = MagicMock()
+        retriever.retrieve.return_value = []
         client = MagicMock()
         client.create.return_value = _make_completion()
 
         run_rag_pipeline(
             "q",
             completions_client=client,
-            store=store,
+            retriever=retriever,
             prompt_uri="prompts:/my_prompt@prod",
             n_results=1,
             model="gpt-4",
@@ -300,8 +352,8 @@ class TestRunRagPipeline:
                 {"role": "user", "content": "{{question}}"},
             ]
         )
-        store = MagicMock(spec=VectorStore)
-        store.query.return_value = [_make_scored_record(chunk="new chunk")]
+        retriever = MagicMock()
+        retriever.retrieve.return_value = [_make_retrieved_record(chunk="new chunk")]
         client = MagicMock()
         client.create.return_value = _make_completion("answer")
         history = [
@@ -313,7 +365,7 @@ class TestRunRagPipeline:
         run_rag_pipeline(
             "new q",
             completions_client=client,
-            store=store,
+            retriever=retriever,
             prompt_uri="prompts:/p@prod",
             n_results=1,
             model="gpt-4",
@@ -336,8 +388,8 @@ class TestRunRagPipeline:
                 {"role": "user", "content": "{{context}} {{question}}"},
             ]
         )
-        store = MagicMock(spec=VectorStore)
-        store.query.return_value = [_make_scored_record(chunk="chunk")]
+        retriever = MagicMock()
+        retriever.retrieve.return_value = [_make_retrieved_record(chunk="chunk")]
         client = MagicMock()
         client.create.return_value = _make_completion("answer")
         history = [
@@ -348,7 +400,7 @@ class TestRunRagPipeline:
         run_rag_pipeline(
             "follow-up",
             completions_client=client,
-            store=store,
+            retriever=retriever,
             prompt_uri="prompts:/p@prod",
             n_results=1,
             model="gpt-4",
@@ -363,7 +415,7 @@ class TestRunRagPipeline:
             model="gpt-4",
             prompt_uri="prompts:/reformulate@prod",
         )
-        store.query.assert_called_once_with("standalone question", 1)
+        retriever.retrieve.assert_called_once_with("standalone question", 1)
 
     def test_skips_reformulation_without_prompt_uri(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(
@@ -371,21 +423,21 @@ class TestRunRagPipeline:
                 {"role": "user", "content": "{{context}} {{question}}"},
             ]
         )
-        store = MagicMock(spec=VectorStore)
-        store.query.return_value = [_make_scored_record(chunk="chunk")]
+        retriever = MagicMock()
+        retriever.retrieve.return_value = [_make_retrieved_record(chunk="chunk")]
         client = MagicMock()
         client.create.return_value = _make_completion("answer")
 
         run_rag_pipeline(
             "my question",
             completions_client=client,
-            store=store,
+            retriever=retriever,
             prompt_uri="prompts:/p@prod",
             n_results=1,
             model="gpt-4",
         )
 
-        store.query.assert_called_once_with("my question", 1)
+        retriever.retrieve.assert_called_once_with("my question", 1)
 
     def test_context_joined_with_separator(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(
@@ -393,11 +445,11 @@ class TestRunRagPipeline:
                 {"role": "user", "content": "{{context}}"},
             ]
         )
-        store = MagicMock(spec=VectorStore)
-        store.query.return_value = [
-            _make_scored_record(chunk="first"),
-            _make_scored_record(chunk="second", document_id="doc-2"),
-            _make_scored_record(chunk="third", document_id="doc-3"),
+        retriever = MagicMock()
+        retriever.retrieve.return_value = [
+            _make_retrieved_record(chunk="first"),
+            _make_retrieved_record(chunk="second", document_id="doc-2"),
+            _make_retrieved_record(chunk="third", document_id="doc-3"),
         ]
         client = MagicMock()
         client.create.return_value = _make_completion()
@@ -405,7 +457,7 @@ class TestRunRagPipeline:
         result = run_rag_pipeline(
             "q",
             completions_client=client,
-            store=store,
+            retriever=retriever,
             prompt_uri="prompts:/p@prod",
             n_results=3,
             model="gpt-4",

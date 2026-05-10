@@ -85,7 +85,7 @@ def _create_test_app() -> tuple[FastAPI, AppState]:
             n_results=3,
             llm_model="gpt-4",
         ),
-        store=MagicMock(),
+        retriever=MagicMock(),
         completions_client=MagicMock(),
         dataset=_TEST_DATASET,
         sessions=InMemorySessionStore(),

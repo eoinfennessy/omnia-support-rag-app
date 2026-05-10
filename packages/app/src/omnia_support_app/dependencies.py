@@ -12,13 +12,13 @@ from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from dotenv import load_dotenv
 
 from omnia_support_models import Dataset
+from omnia_support_rag import SemanticRetriever
 from omnia_support_vectorstore import ChromaVectorStore
 
 from .session import InMemorySessionStore
 
 if TYPE_CHECKING:
-    from omnia_support_rag.rag import CompletionsClient
-    from omnia_support_vectorstore import VectorStore
+    from omnia_support_rag.rag import CompletionsClient, Retriever
 
     from .session import SessionStore
 
@@ -38,7 +38,7 @@ class AppState:
     """Shared application state created once at startup."""
 
     config: AppConfig
-    store: VectorStore
+    retriever: Retriever
     completions_client: CompletionsClient
     dataset: Dataset
     sessions: SessionStore = field(default_factory=InMemorySessionStore)
@@ -82,7 +82,7 @@ def create_app_state() -> AppState:
 
     return AppState(
         config=config,
-        store=store,
+        retriever=SemanticRetriever(store),
         completions_client=openai.OpenAI().chat.completions,
         dataset=dataset,
     )

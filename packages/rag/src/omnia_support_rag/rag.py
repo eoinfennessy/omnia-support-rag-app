@@ -35,6 +35,26 @@ class CompletionsClient(Protocol):
         ...
 
 
+class Retriever(Protocol):
+    """Protocol for a retrieval strategy."""
+
+    def retrieve(self, query: str, n_results: int) -> list[dict]:
+        """Retrieve relevant documents for the given query."""
+        ...
+
+
+class SemanticRetriever:
+    """Retriever that wraps a VectorStore for pure semantic search."""
+
+    def __init__(self, store: VectorStore) -> None:
+        """Wrap a vector store for pure semantic retrieval."""
+        self._store = store
+
+    def retrieve(self, query: str, n_results: int) -> list[dict]:
+        """Retrieve documents using semantic similarity via the vector store."""
+        return retrieve_context(self._store, query, n_results)
+
+
 @mlflow.trace(span_type="RETRIEVER")
 def retrieve_context(
     store: VectorStore,
@@ -86,7 +106,7 @@ def run_rag_pipeline(
     question: str,
     *,
     completions_client: CompletionsClient,
-    store: VectorStore,
+    retriever: Retriever,
     prompt_uri: str,
     n_results: int,
     model: str,
@@ -104,7 +124,7 @@ def run_rag_pipeline(
         )
 
     prompt = mlflow.genai.load_prompt(prompt_uri)
-    records = retrieve_context(store, question, n_results)
+    records = retriever.retrieve(question, n_results)
     chunks = [r["page_content"] for r in records]
     context = "\n---\n".join(chunks)
     rendered = render_messages(prompt, history=history, context=context, question=question)

@@ -58,7 +58,7 @@ def chat(
     result = run_rag_pipeline(
         body.message,
         completions_client=state.completions_client,
-        store=state.store,
+        retriever=state.retriever,
         prompt_uri=cfg.prompt_uri,
         n_results=cfg.n_results,
         model=cfg.llm_model,

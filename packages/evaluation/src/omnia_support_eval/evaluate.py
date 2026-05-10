@@ -34,7 +34,7 @@ from mlflow.genai.scorers import (
 )
 
 from omnia_support_models import Dataset, TestQuery
-from omnia_support_rag import CompletionsClient, run_rag_pipeline
+from omnia_support_rag import CompletionsClient, SemanticRetriever, run_rag_pipeline
 from omnia_support_vectorstore import ChromaVectorStore
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
     from mlflow.genai.datasets import EvaluationDataset
 
-    from omnia_support_vectorstore import VectorStore
+    from omnia_support_rag import Retriever
 
 DATASET_NAME = "omnia-support-gold-set"
 
@@ -55,7 +55,9 @@ class RunEvaluationConfig:
     prompt_name: str
     prompt_version: int | None
     prompt_alias: str
-    store: VectorStore
+    retriever: Retriever
+    collection_name: str
+    embedding_model: str
     completions_client: CompletionsClient
     n_results: int
     llm_model: str
@@ -178,7 +180,7 @@ def retrieval_precision(expectations: dict, trace: Any) -> float | None:
 def make_predict_fn(
     *,
     completions_client: CompletionsClient,
-    store: VectorStore,
+    retriever: Retriever,
     prompt_uri: str,
     n_results: int,
     model: str,
@@ -189,7 +191,7 @@ def make_predict_fn(
         result = run_rag_pipeline(
             question,
             completions_client=completions_client,
-            store=store,
+            retriever=retriever,
             prompt_uri=prompt_uri,
             n_results=n_results,
             model=model,
@@ -213,8 +215,7 @@ def run_evaluation(config: RunEvaluationConfig) -> None:
     prompt = mlflow.genai.load_prompt(prompt_uri)
     print(f"Loaded prompt '{config.prompt_name}' version {prompt.version}")
 
-    store = config.store
-    print(f"Connected to vector store '{store.collection_name}'")
+    print(f"Connected to vector store '{config.collection_name}'")
 
     print(f"Loaded {len(config.gold_set)} gold set entries")
 
@@ -228,7 +229,7 @@ def run_evaluation(config: RunEvaluationConfig) -> None:
 
     predict_fn = make_predict_fn(
         completions_client=config.completions_client,
-        store=store,
+        retriever=config.retriever,
         prompt_uri=prompt_uri,
         n_results=config.n_results,
         model=config.llm_model,
@@ -239,8 +240,8 @@ def run_evaluation(config: RunEvaluationConfig) -> None:
             {
                 "prompt_name": config.prompt_name,
                 "prompt_version": prompt.version,
-                "embedding_model": getattr(config.store, "embedding_model", "unknown"),
-                "collection": store.collection_name,
+                "embedding_model": config.embedding_model,
+                "collection": config.collection_name,
                 "n_results": config.n_results,
                 "model": config.llm_model,
                 "gold_set_size": len(config.gold_set),
@@ -360,7 +361,9 @@ def main() -> None:
         prompt_name=args.prompt_name,
         prompt_version=args.prompt_version,
         prompt_alias=args.prompt_alias,
-        store=store,
+        retriever=SemanticRetriever(store),
+        collection_name=store.collection_name,
+        embedding_model=args.embedding_model,
         completions_client=openai.OpenAI().chat.completions,
         n_results=args.n_results,
         llm_model=args.model,
