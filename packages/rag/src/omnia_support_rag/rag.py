@@ -43,7 +43,7 @@ def retrieve_context(
 ) -> list[dict]:
     """Query the vector store and return results as dicts for MLflow scorers."""
     records = store.query(query, n_results)
-    return [{"page_content": r.chunk, "metadata": r.metadata} for r in records]
+    return [{"page_content": r.chunk, "metadata": r.metadata, "distance": r.distance} for r in records]
 
 
 def render_messages(

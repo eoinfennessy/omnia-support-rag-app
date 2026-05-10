@@ -58,19 +58,21 @@ class TestRetrieveContext:
         assert len(result) == 1
         assert result[0]["page_content"] == "Some text"
         assert result[0]["metadata"]["document_id"] == "doc-1"
+        assert result[0]["distance"] == 0.1
         store.query.assert_called_once_with("test query", 3)
 
     def test_multiple_results_preserves_order(self):
         store = MagicMock(spec=VectorStore)
         store.query.return_value = [
-            _make_scored_record(chunk="A", document_id="d1"),
-            _make_scored_record(chunk="B", document_id="d2"),
-            _make_scored_record(chunk="C", document_id="d3"),
+            _make_scored_record(chunk="A", document_id="d1", distance=0.1),
+            _make_scored_record(chunk="B", document_id="d2", distance=0.5),
+            _make_scored_record(chunk="C", document_id="d3", distance=0.9),
         ]
 
         result = retrieve_context(store, "query", 3)
 
         assert [r["page_content"] for r in result] == ["A", "B", "C"]
+        assert [r["distance"] for r in result] == [0.1, 0.5, 0.9]
 
     def test_empty_results(self):
         store = MagicMock(spec=VectorStore)
@@ -93,6 +95,7 @@ class TestRetrieveContext:
         assert meta["chunk_index"] == 2
         assert meta["total_chunks"] == 5
         assert meta["type"] == "faq"
+        assert result[0]["distance"] == 0.1
 
 
 class TestRenderMessages:
