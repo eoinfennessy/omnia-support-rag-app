@@ -34,6 +34,32 @@ class TestChromaVectorStore:
         assert mock_client.get_or_create_collection.call_count == 2
 
     @patch("chromadb.HttpClient")
+    def test_query_passes_where_filter(self, mock_http_client_cls: MagicMock):
+        mock_client = MagicMock()
+        mock_http_client_cls.return_value = mock_client
+        mock_collection = MagicMock()
+        mock_collection.query.return_value = {
+            "ids": [["1", "2"]],
+            "documents": [["Returns policy info", "Shipping policy details"]],
+            "metadatas": [[{"type": "policy"}, {"type": "policy"}]],
+            "distances": [[0.1, 0.3]],
+        }
+        mock_client.get_or_create_collection.return_value = mock_collection
+
+        store = ChromaVectorStore(host="localhost", port=8000, embedding_fn=MagicMock())
+        where = {"type": "policy"}
+        results = store.query("return policy", 5, where=where)
+
+        mock_collection.query.assert_called_once_with(
+            query_texts=["return policy"],
+            n_results=5,
+            where=where,
+            include=["documents", "metadatas", "distances"],
+        )
+        assert len(results) == 2
+        assert all(r.metadata["type"] == "policy" for r in results)
+
+    @patch("chromadb.HttpClient")
     def test_reset_tolerates_missing_collection(self, mock_http_client_cls: MagicMock):
         mock_client = MagicMock()
         mock_http_client_cls.return_value = mock_client

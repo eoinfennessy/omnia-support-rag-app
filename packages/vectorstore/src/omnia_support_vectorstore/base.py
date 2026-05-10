@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .models import ScoredVectorRecord, VectorRecord
@@ -17,7 +17,12 @@ class VectorStore(ABC):
         """Upload records to the store, replacing any with matching IDs."""
 
     @abstractmethod
-    def query(self, query_text: str, n_results: int) -> list[ScoredVectorRecord]:
+    def query(
+        self,
+        query_text: str,
+        n_results: int,
+        where: dict[str, Any] | None = None,
+    ) -> list[ScoredVectorRecord]:
         """Return the closest records to the query text."""
 
     @abstractmethod

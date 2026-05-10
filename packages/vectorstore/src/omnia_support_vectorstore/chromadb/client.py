@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import contextlib
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from chromadb.errors import NotFoundError
 
@@ -52,10 +52,16 @@ class ChromaVectorStore(VectorStore):
             metadatas=[r.metadata for r in records],  # ty: ignore[invalid-argument-type]
         )
 
-    def query(self, query_text: str, n_results: int) -> list[ScoredVectorRecord]:  # noqa: D102 - docstring on ABC
+    def query(  # noqa: D102 - docstring on ABC
+        self,
+        query_text: str,
+        n_results: int,
+        where: dict[str, Any] | None = None,
+    ) -> list[ScoredVectorRecord]:
         results = self._collection.query(
             query_texts=[query_text],
             n_results=n_results,
+            where=where,
             include=["documents", "metadatas", "distances"],
         )
 
