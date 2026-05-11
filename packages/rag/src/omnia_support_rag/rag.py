@@ -16,10 +16,20 @@ from jinja2 import Template
 from .reformulate import reformulate_query
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from mlflow.entities.model_registry.prompt_version import PromptVersion
     from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
     from omnia_support_store import KeywordStore, ScoredChunk, VectorStore
+
+
+class Rescorer(Protocol):
+    """Protocol for a post-retrieval rescoring strategy."""
+
+    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
+        """Return a new ScoredChunk with an adjusted distance."""
+        ...
 
 
 class CompletionsClient(Protocol):
@@ -44,29 +54,58 @@ class Retriever(Protocol):
         ...
 
 
+def _apply_rescorers(
+    records: list[ScoredChunk],
+    rescorers: Sequence[Rescorer],
+) -> list[ScoredChunk]:
+    """Apply rescorers in sequence and re-sort by distance (descending)."""
+    for rescorer in rescorers:
+        records = [rescorer.rescore(r) for r in records]
+    records.sort(key=lambda r: r.distance, reverse=True)
+    return records
+
+
 class SemanticRetriever:
     """Retriever that wraps a VectorStore for pure semantic search."""
 
-    def __init__(self, store: VectorStore) -> None:
+    def __init__(
+        self,
+        store: VectorStore,
+        *,
+        rescorers: Sequence[Rescorer] | None = None,
+    ) -> None:
         """Wrap a vector store for pure semantic retrieval."""
         self._store = store
+        self._rescorers = rescorers
 
+    @mlflow.trace(span_type="RETRIEVER")
     def retrieve(self, query: str, n_results: int) -> list[dict]:
         """Retrieve documents using semantic similarity via the vector store."""
-        return retrieve_context(self._store, query, n_results)
+        records = self._store.query(query, n_results)
+        if self._rescorers:
+            records = _apply_rescorers(records, self._rescorers)
+        return [{"page_content": r.chunk, "metadata": r.metadata, "distance": r.distance} for r in records]
 
 
 class BM25Retriever:
     """Retriever using BM25 keyword search via a KeywordStore."""
 
-    def __init__(self, keyword_store: KeywordStore) -> None:
+    def __init__(
+        self,
+        keyword_store: KeywordStore,
+        *,
+        rescorers: Sequence[Rescorer] | None = None,
+    ) -> None:
         """Wrap a keyword store for BM25 retrieval."""
         self._keyword_store = keyword_store
+        self._rescorers = rescorers
 
     @mlflow.trace(span_type="RETRIEVER")
     def retrieve(self, query: str, n_results: int) -> list[dict]:
         """Retrieve documents using BM25 keyword matching."""
         records = self._keyword_store.query(query, n_results)
+        if self._rescorers:
+            records = _apply_rescorers(records, self._rescorers)
         return [{"page_content": r.chunk, "metadata": r.metadata, "distance": r.distance} for r in records]
 
 
@@ -88,18 +127,23 @@ class HybridRetriever:
         *,
         rrf_k: int = 60,
         weights: RrfWeights | None = None,
+        rescorers: Sequence[Rescorer] | None = None,
     ) -> None:
         """Wrap a vector store and keyword store for hybrid retrieval."""
         self._vector_store = vector_store
         self._keyword_store = keyword_store
         self._rrf_k = rrf_k
         self._weights = weights or RrfWeights()
+        self._rescorers = rescorers
 
     @mlflow.trace(span_type="RETRIEVER")
     def retrieve(self, query: str, n_results: int) -> list[dict]:
         """Retrieve documents using RRF fusion of semantic and BM25 results."""
         semantic = self._vector_store.query(query, n_results)
         keyword = self._keyword_store.query(query, n_results)
+        if self._rescorers:
+            semantic = _apply_rescorers(semantic, self._rescorers)
+            keyword = _apply_rescorers(keyword, self._rescorers)
         fused = _rrf_fuse(
             (self._weights.semantic, semantic),
             (self._weights.keyword, keyword),

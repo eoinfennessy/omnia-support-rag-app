@@ -12,7 +12,13 @@ from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from dotenv import load_dotenv
 
 from omnia_support_models import Dataset
-from omnia_support_rag import BM25Retriever, HybridRetriever, SemanticRetriever
+from omnia_support_rag import (
+    BM25Retriever,
+    HybridRetriever,
+    ResolutionStatusRescorer,
+    SatisfactionRescorer,
+    SemanticRetriever,
+)
 from omnia_support_store import BM25sKeywordStore, ChromaVectorStore
 
 from .session import InMemorySessionStore
@@ -71,19 +77,21 @@ def create_app_state() -> AppState:
     if retrieval_mode in ("bm25", "hybrid"):
         keyword_store = BM25sKeywordStore(index_path=Path(os.environ.get("BM25_INDEX_PATH", "data/bm25")))
 
+    rescorers = [SatisfactionRescorer(), ResolutionStatusRescorer()]
+
     retriever: Retriever
     if retrieval_mode == "hybrid":
         if vector_store is None or keyword_store is None:
             raise SystemExit("Error: hybrid mode requires both vector and keyword stores")
-        retriever = HybridRetriever(vector_store, keyword_store)
+        retriever = HybridRetriever(vector_store, keyword_store, rescorers=rescorers)
     elif retrieval_mode == "bm25":
         if keyword_store is None:
             raise SystemExit("Error: bm25 mode requires a keyword store")
-        retriever = BM25Retriever(keyword_store)
+        retriever = BM25Retriever(keyword_store, rescorers=rescorers)
     else:
         if vector_store is None:
             raise SystemExit("Error: semantic mode requires a vector store")
-        retriever = SemanticRetriever(vector_store)
+        retriever = SemanticRetriever(vector_store, rescorers=rescorers)
 
     prompt_name = os.environ.get("PROMPT_NAME", "omnia_support_system")
     prompt_alias = os.environ.get("PROMPT_ALIAS", "production")

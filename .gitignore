@@ -19,5 +19,8 @@ node_modules/
 # Data
 data/
 
+# MLflow
+mlflow.db
+
 # macOS
 .DS_Store

@@ -34,7 +34,15 @@ from mlflow.genai.scorers import (
 )
 
 from omnia_support_models import Dataset, TestQuery
-from omnia_support_rag import BM25Retriever, CompletionsClient, HybridRetriever, SemanticRetriever, run_rag_pipeline
+from omnia_support_rag import (
+    BM25Retriever,
+    CompletionsClient,
+    HybridRetriever,
+    ResolutionStatusRescorer,
+    SatisfactionRescorer,
+    SemanticRetriever,
+    run_rag_pipeline,
+)
 from omnia_support_store import BM25sKeywordStore, ChromaVectorStore
 
 if TYPE_CHECKING:
@@ -370,19 +378,21 @@ def main() -> None:
     if args.retrieval_mode in ("bm25", "hybrid"):
         keyword_store = BM25sKeywordStore(index_path=Path(args.bm25_path))
 
+    rescorers = [SatisfactionRescorer(), ResolutionStatusRescorer()]
+
     retriever: Retriever
     if args.retrieval_mode == "hybrid":
         if vector_store is None or keyword_store is None:
             raise SystemExit("Error: hybrid mode requires both vector and keyword stores")
-        retriever = HybridRetriever(vector_store, keyword_store)
+        retriever = HybridRetriever(vector_store, keyword_store, rescorers=rescorers)
     elif args.retrieval_mode == "bm25":
         if keyword_store is None:
             raise SystemExit("Error: bm25 mode requires a keyword store")
-        retriever = BM25Retriever(keyword_store)
+        retriever = BM25Retriever(keyword_store, rescorers=rescorers)
     else:
         if vector_store is None:
             raise SystemExit("Error: semantic mode requires a vector store")
-        retriever = SemanticRetriever(vector_store)
+        retriever = SemanticRetriever(vector_store, rescorers=rescorers)
 
     gold_set = load_gold_set(Path(args.gold_set), Path(args.dataset))
 

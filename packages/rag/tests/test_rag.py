@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from unittest.mock import MagicMock, patch
 
 from omnia_support_rag.rag import (
@@ -9,6 +10,7 @@ from omnia_support_rag.rag import (
     HybridRetriever,
     RrfWeights,
     SemanticRetriever,
+    _apply_rescorers,
     _rrf_fuse,
     generate_answer,
     render_messages,
@@ -287,6 +289,150 @@ class TestRrfFuse:
         fused = _rrf_fuse((1.0, ranking), k=60, n_results=5)
 
         assert fused[0].distance > fused[1].distance
+
+
+class _BoostRescorer:
+    """Test rescorer that boosts distance by customer_satisfaction if present."""
+
+    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
+        sat = chunk.metadata.get("customer_satisfaction", 0.0)
+        return replace(chunk, distance=chunk.distance + sat)
+
+
+class _MultiplyRescorer:
+    def __init__(self, factor: float) -> None:
+        self._factor = factor
+
+    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
+        return replace(chunk, distance=chunk.distance * self._factor)
+
+
+class _AddRescorer:
+    def __init__(self, value: float) -> None:
+        self._value = value
+
+    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
+        return replace(chunk, distance=chunk.distance + self._value)
+
+
+class _IdentityRescorer:
+    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
+        return chunk
+
+
+class TestApplyRescorers:
+    def test_single_rescorer_modifies_distance(self):
+        records = [
+            _make_scored_record(document_id="d1", distance=1.0),
+            _make_scored_record(document_id="d2", distance=2.0),
+        ]
+
+        result = _apply_rescorers(records, [_MultiplyRescorer(10)])
+
+        assert result[0].distance == 20.0
+        assert result[1].distance == 10.0
+
+    def test_multiple_rescorers_applied_in_sequence(self):
+        records = [_make_scored_record(distance=1.0)]
+
+        result = _apply_rescorers(
+            records,
+            [_AddRescorer(10), _MultiplyRescorer(2)],
+        )
+
+        assert result[0].distance == 22.0
+
+    def test_results_sorted_descending_by_distance(self):
+        records = [
+            _make_scored_record(document_id="low", distance=1.0),
+            _make_scored_record(document_id="high", distance=10.0),
+        ]
+
+        result = _apply_rescorers(records, [_IdentityRescorer()])
+
+        assert result[0].metadata["document_id"] == "high"
+        assert result[1].metadata["document_id"] == "low"
+
+
+class TestSemanticRetrieverWithRescorers:
+    def test_rescorer_reorders_results(self):
+        store = MagicMock(spec=VectorStore)
+        low_sat = _make_scored_record(document_id="d1", chunk="low", distance=0.5)
+        low_sat.metadata["customer_satisfaction"] = 1.0
+        high_sat = _make_scored_record(document_id="d2", chunk="high", distance=0.5)
+        high_sat.metadata["customer_satisfaction"] = 5.0
+        store.query.return_value = [low_sat, high_sat]
+
+        retriever = SemanticRetriever(store, rescorers=[_BoostRescorer()])
+        result = retriever.retrieve("query", 2)
+
+        assert result[0]["metadata"]["document_id"] == "d2"
+        assert result[1]["metadata"]["document_id"] == "d1"
+
+    def test_no_rescorers_preserves_order(self):
+        store = MagicMock(spec=VectorStore)
+        store.query.return_value = [
+            _make_scored_record(document_id="d1", chunk="A", distance=0.1),
+            _make_scored_record(document_id="d2", chunk="B", distance=0.5),
+        ]
+
+        retriever = SemanticRetriever(store)
+        result = retriever.retrieve("query", 2)
+
+        assert result[0]["metadata"]["document_id"] == "d1"
+        assert result[1]["metadata"]["document_id"] == "d2"
+
+
+class TestBM25RetrieverWithRescorers:
+    def test_rescorer_reorders_results(self):
+        keyword_store = MagicMock(spec=KeywordStore)
+        low_sat = _make_scored_record(document_id="d1", chunk="low", distance=1.0)
+        low_sat.metadata["customer_satisfaction"] = 0.0
+        high_sat = _make_scored_record(document_id="d2", chunk="high", distance=1.0)
+        high_sat.metadata["customer_satisfaction"] = 5.0
+        keyword_store.query.return_value = [low_sat, high_sat]
+
+        retriever = BM25Retriever(keyword_store, rescorers=[_BoostRescorer()])
+        result = retriever.retrieve("query", 2)
+
+        assert result[0]["metadata"]["document_id"] == "d2"
+
+
+class TestHybridRetrieverWithRescorers:
+    def test_rescorer_influences_rrf_ranking(self):
+        vector_store = MagicMock(spec=VectorStore)
+        keyword_store = MagicMock(spec=KeywordStore)
+
+        low_sat = _make_scored_record(document_id="d1", chunk="low", distance=0.1)
+        low_sat.metadata["customer_satisfaction"] = 0.0
+        high_sat = _make_scored_record(document_id="d2", chunk="high", distance=0.9)
+        high_sat.metadata["customer_satisfaction"] = 100.0
+
+        vector_store.query.return_value = [low_sat, high_sat]
+        keyword_store.query.return_value = [low_sat, high_sat]
+
+        retriever = HybridRetriever(
+            vector_store,
+            keyword_store,
+            rescorers=[_BoostRescorer()],
+        )
+        result = retriever.retrieve("query", 2)
+
+        assert result[0]["metadata"]["document_id"] == "d2"
+
+    def test_no_rescorers_uses_original_ranks(self):
+        vector_store = MagicMock(spec=VectorStore)
+        keyword_store = MagicMock(spec=KeywordStore)
+        vector_store.query.return_value = [
+            _make_scored_record(document_id="d1", chunk="first"),
+        ]
+        keyword_store.query.return_value = []
+
+        retriever = HybridRetriever(vector_store, keyword_store)
+        result = retriever.retrieve("query", 5)
+
+        assert len(result) == 1
+        assert result[0]["metadata"]["document_id"] == "d1"
 
 
 class TestRenderMessages:
