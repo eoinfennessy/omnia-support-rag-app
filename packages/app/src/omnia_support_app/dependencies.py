@@ -14,17 +14,25 @@ from dotenv import load_dotenv
 from omnia_support_models import Dataset
 from omnia_support_rag import (
     BM25Retriever,
+    BM25ThresholdFilter,
+    CosineSimThresholdFilter,
     HybridRetriever,
+    LostInMiddleFormatter,
     ResolutionStatusRescorer,
+    RetrieverWeight,
     SatisfactionRescorer,
     SemanticRetriever,
+    TokenBudgetFormatter,
 )
 from omnia_support_store import BM25sKeywordStore, ChromaVectorStore
 
 from .session import InMemorySessionStore
 
 if TYPE_CHECKING:
-    from omnia_support_rag.rag import CompletionsClient, Retriever
+    from collections.abc import Sequence
+
+    from omnia_support_rag.context_formatting import ContextFormatter
+    from omnia_support_rag.rag import CompletionsClient, Rescorer, Retriever
 
     from .session import SessionStore
 
@@ -45,6 +53,8 @@ class AppState:
 
     config: AppConfig
     retriever: Retriever
+    rescorers: Sequence[Rescorer]
+    context_formatters: Sequence[ContextFormatter]
     completions_client: CompletionsClient
     dataset: Dataset
     sessions: SessionStore = field(default_factory=InMemorySessionStore)
@@ -78,20 +88,29 @@ def create_app_state() -> AppState:
         keyword_store = BM25sKeywordStore(index_path=Path(os.environ.get("BM25_INDEX_PATH", "data/bm25")))
 
     rescorers = [SatisfactionRescorer(), ResolutionStatusRescorer()]
+    semantic_filters = [CosineSimThresholdFilter()]
+    keyword_filters = [BM25ThresholdFilter()]
 
     retriever: Retriever
     if retrieval_mode == "hybrid":
         if vector_store is None or keyword_store is None:
             raise SystemExit("Error: hybrid mode requires both vector and keyword stores")
-        retriever = HybridRetriever(vector_store, keyword_store, rescorers=rescorers)
+        semantic = SemanticRetriever(vector_store, filters=semantic_filters)
+        keyword = BM25Retriever(keyword_store, filters=keyword_filters)
+        retriever = HybridRetriever(
+            RetrieverWeight(semantic, 1.0),
+            RetrieverWeight(keyword, 1.0),
+        )
     elif retrieval_mode == "bm25":
         if keyword_store is None:
             raise SystemExit("Error: bm25 mode requires a keyword store")
-        retriever = BM25Retriever(keyword_store, rescorers=rescorers)
+        retriever = BM25Retriever(keyword_store, filters=keyword_filters)
     else:
         if vector_store is None:
             raise SystemExit("Error: semantic mode requires a vector store")
-        retriever = SemanticRetriever(vector_store, rescorers=rescorers)
+        retriever = SemanticRetriever(vector_store, filters=semantic_filters)
+
+    context_formatters = [TokenBudgetFormatter(), LostInMiddleFormatter()]
 
     prompt_name = os.environ.get("PROMPT_NAME", "omnia_support_system")
     prompt_alias = os.environ.get("PROMPT_ALIAS", "production")
@@ -112,6 +131,8 @@ def create_app_state() -> AppState:
     return AppState(
         config=config,
         retriever=retriever,
+        rescorers=rescorers,
+        context_formatters=context_formatters,
         completions_client=openai.OpenAI().chat.completions,
         dataset=dataset,
     )

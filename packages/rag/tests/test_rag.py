@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 from omnia_support_rag.rag import (
     BM25Retriever,
     HybridRetriever,
-    RrfWeights,
+    RetrieverWeight,
     SemanticRetriever,
     _apply_rescorers,
     _rrf_fuse,
@@ -27,7 +27,7 @@ def _make_scored_record(
     chunk: str = "Some text",
     chunk_index: int = 0,
     total_chunks: int = 1,
-    distance: float = 0.1,
+    score: float = 0.1,
 ) -> ScoredChunk:
     metadata: ChunkMetadata = {
         "document_id": document_id,
@@ -42,31 +42,8 @@ def _make_scored_record(
         id=f"{document_id}-chunk-{chunk_index}",
         chunk=chunk,
         metadata=metadata,
-        distance=distance,
+        score=score,
     )
-
-
-def _make_retrieved_record(
-    *,
-    document_id: str = "doc-1",
-    chunk: str = "Some text",
-    chunk_index: int = 0,
-    total_chunks: int = 1,
-    distance: float = 0.1,
-) -> dict:
-    return {
-        "page_content": chunk,
-        "metadata": {
-            "document_id": document_id,
-            "type": "faq",
-            "category": "General",
-            "date": "2025-01-01",
-            "product_category": "laptops",
-            "chunk_index": chunk_index,
-            "total_chunks": total_chunks,
-        },
-        "distance": distance,
-    }
 
 
 def _make_prompt(template: list) -> MagicMock:
@@ -93,21 +70,21 @@ class TestRetrieveContext:
         assert len(result) == 1
         assert result[0]["page_content"] == "Some text"
         assert result[0]["metadata"]["document_id"] == "doc-1"
-        assert result[0]["distance"] == 0.1
+        assert result[0]["score"] == 0.1
         store.query.assert_called_once_with("test query", 3)
 
     def test_multiple_results_preserves_order(self):
         store = MagicMock(spec=VectorStore)
         store.query.return_value = [
-            _make_scored_record(chunk="A", document_id="d1", distance=0.1),
-            _make_scored_record(chunk="B", document_id="d2", distance=0.5),
-            _make_scored_record(chunk="C", document_id="d3", distance=0.9),
+            _make_scored_record(chunk="A", document_id="d1", score=0.1),
+            _make_scored_record(chunk="B", document_id="d2", score=0.5),
+            _make_scored_record(chunk="C", document_id="d3", score=0.9),
         ]
 
         result = retrieve_context(store, "query", 3)
 
         assert [r["page_content"] for r in result] == ["A", "B", "C"]
-        assert [r["distance"] for r in result] == [0.1, 0.5, 0.9]
+        assert [r["score"] for r in result] == [0.1, 0.5, 0.9]
 
     def test_empty_results(self):
         store = MagicMock(spec=VectorStore)
@@ -130,21 +107,21 @@ class TestRetrieveContext:
         assert meta["chunk_index"] == 2
         assert meta["total_chunks"] == 5
         assert meta["type"] == "faq"
-        assert result[0]["distance"] == 0.1
+        assert result[0]["score"] == 0.1
 
 
 class TestSemanticRetriever:
     def test_delegates_to_vector_store(self):
         store = MagicMock(spec=VectorStore)
-        store.query.return_value = [_make_scored_record(chunk="text", distance=0.2)]
+        store.query.return_value = [_make_scored_record(chunk="text", score=0.2)]
         retriever = SemanticRetriever(store)
 
         result = retriever.retrieve("query", 3)
 
         store.query.assert_called_once_with("query", 3)
         assert len(result) == 1
-        assert result[0]["page_content"] == "text"
-        assert result[0]["distance"] == 0.2
+        assert result[0].chunk == "text"
+        assert result[0].score == 0.2
 
     def test_returns_empty_list_when_no_results(self):
         store = MagicMock(spec=VectorStore)
@@ -159,15 +136,15 @@ class TestSemanticRetriever:
 class TestBM25Retriever:
     def test_delegates_to_keyword_store(self):
         keyword_store = MagicMock(spec=KeywordStore)
-        keyword_store.query.return_value = [_make_scored_record(chunk="bm25 text", distance=1.5)]
+        keyword_store.query.return_value = [_make_scored_record(chunk="bm25 text", score=1.5)]
         retriever = BM25Retriever(keyword_store)
 
         result = retriever.retrieve("query", 3)
 
         keyword_store.query.assert_called_once_with("query", 3)
         assert len(result) == 1
-        assert result[0]["page_content"] == "bm25 text"
-        assert result[0]["distance"] == 1.5
+        assert result[0].chunk == "bm25 text"
+        assert result[0].score == 1.5
 
     def test_returns_empty_list_when_no_results(self):
         keyword_store = MagicMock(spec=KeywordStore)
@@ -180,74 +157,68 @@ class TestBM25Retriever:
 
 
 class TestHybridRetriever:
-    def test_fuses_results_from_both_stores(self):
-        vector_store = MagicMock(spec=VectorStore)
-        keyword_store = MagicMock(spec=KeywordStore)
-        vector_store.query.return_value = [
-            _make_scored_record(document_id="d1", chunk="semantic A", distance=0.1),
-        ]
-        keyword_store.query.return_value = [
-            _make_scored_record(document_id="d2", chunk="keyword B", distance=1.5),
-        ]
-        retriever = HybridRetriever(vector_store, keyword_store)
+    def test_fuses_results_from_both_sources(self):
+        r1 = MagicMock()
+        r1.retrieve.return_value = [_make_scored_record(document_id="d1", chunk="semantic A", score=0.1)]
+        r2 = MagicMock()
+        r2.retrieve.return_value = [_make_scored_record(document_id="d2", chunk="keyword B", score=1.5)]
+        retriever = HybridRetriever(RetrieverWeight(r1, 1.0), RetrieverWeight(r2, 1.0))
 
         result = retriever.retrieve("query", 5)
 
         assert len(result) == 2
-        assert {r["metadata"]["document_id"] for r in result} == {"d1", "d2"}
+        assert {r.metadata["document_id"] for r in result} == {"d1", "d2"}
 
     def test_overlapping_doc_gets_higher_score(self):
         shared = _make_scored_record(document_id="shared", chunk="both")
-        only_semantic = _make_scored_record(document_id="sem-only", chunk="sem")
-        vector_store = MagicMock(spec=VectorStore)
-        keyword_store = MagicMock(spec=KeywordStore)
-        vector_store.query.return_value = [shared, only_semantic]
-        keyword_store.query.return_value = [
-            _make_scored_record(document_id="shared", chunk="both", distance=1.0),
-        ]
-        retriever = HybridRetriever(vector_store, keyword_store)
+        only_first = _make_scored_record(document_id="first-only", chunk="first")
+        r1 = MagicMock()
+        r1.retrieve.return_value = [shared, only_first]
+        r2 = MagicMock()
+        r2.retrieve.return_value = [_make_scored_record(document_id="shared", chunk="both", score=1.0)]
+        retriever = HybridRetriever(RetrieverWeight(r1, 1.0), RetrieverWeight(r2, 1.0))
 
         result = retriever.retrieve("query", 5)
 
-        shared_result = next(r for r in result if r["metadata"]["document_id"] == "shared")
-        sem_result = next(r for r in result if r["metadata"]["document_id"] == "sem-only")
-        assert shared_result["distance"] > sem_result["distance"]
+        shared_result = next(r for r in result if r.metadata["document_id"] == "shared")
+        first_result = next(r for r in result if r.metadata["document_id"] == "first-only")
+        assert shared_result.score > first_result.score
 
     def test_empty_results_from_both(self):
-        vector_store = MagicMock(spec=VectorStore)
-        keyword_store = MagicMock(spec=KeywordStore)
-        vector_store.query.return_value = []
-        keyword_store.query.return_value = []
-        retriever = HybridRetriever(vector_store, keyword_store)
+        r1 = MagicMock()
+        r1.retrieve.return_value = []
+        r2 = MagicMock()
+        r2.retrieve.return_value = []
+        retriever = HybridRetriever(RetrieverWeight(r1, 1.0), RetrieverWeight(r2, 1.0))
 
         result = retriever.retrieve("query", 5)
 
         assert result == []
 
     def test_one_source_empty(self):
-        vector_store = MagicMock(spec=VectorStore)
-        keyword_store = MagicMock(spec=KeywordStore)
-        vector_store.query.return_value = [_make_scored_record(chunk="only semantic")]
-        keyword_store.query.return_value = []
-        retriever = HybridRetriever(vector_store, keyword_store)
+        r1 = MagicMock()
+        r1.retrieve.return_value = [_make_scored_record(chunk="only source")]
+        r2 = MagicMock()
+        r2.retrieve.return_value = []
+        retriever = HybridRetriever(RetrieverWeight(r1, 1.0), RetrieverWeight(r2, 1.0))
 
         result = retriever.retrieve("query", 5)
 
         assert len(result) == 1
-        assert result[0]["page_content"] == "only semantic"
+        assert result[0].chunk == "only source"
 
     def test_custom_weights(self):
-        vector_store = MagicMock(spec=VectorStore)
-        keyword_store = MagicMock(spec=KeywordStore)
-        vector_store.query.return_value = [_make_scored_record(document_id="sem", chunk="s")]
-        keyword_store.query.return_value = [_make_scored_record(document_id="kw", chunk="k")]
-        retriever = HybridRetriever(vector_store, keyword_store, weights=RrfWeights(semantic=2.0, keyword=1.0))
+        r1 = MagicMock()
+        r1.retrieve.return_value = [_make_scored_record(document_id="heavy", chunk="h")]
+        r2 = MagicMock()
+        r2.retrieve.return_value = [_make_scored_record(document_id="light", chunk="l")]
+        retriever = HybridRetriever(RetrieverWeight(r1, 2.0), RetrieverWeight(r2, 1.0))
 
         result = retriever.retrieve("query", 5)
 
-        sem = next(r for r in result if r["metadata"]["document_id"] == "sem")
-        kw = next(r for r in result if r["metadata"]["document_id"] == "kw")
-        assert sem["distance"] > kw["distance"]
+        heavy = next(r for r in result if r.metadata["document_id"] == "heavy")
+        light = next(r for r in result if r.metadata["document_id"] == "light")
+        assert heavy.score > light.score
 
 
 class TestRrfFuse:
@@ -288,15 +259,15 @@ class TestRrfFuse:
 
         fused = _rrf_fuse((1.0, ranking), k=60, n_results=5)
 
-        assert fused[0].distance > fused[1].distance
+        assert fused[0].score > fused[1].score
 
 
 class _BoostRescorer:
-    """Test rescorer that boosts distance by customer_satisfaction if present."""
+    """Test rescorer that boosts score by customer_satisfaction if present."""
 
     def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
         sat = chunk.metadata.get("customer_satisfaction", 0.0)
-        return replace(chunk, distance=chunk.distance + sat)
+        return replace(chunk, score=chunk.score + sat)
 
 
 class _MultiplyRescorer:
@@ -304,7 +275,7 @@ class _MultiplyRescorer:
         self._factor = factor
 
     def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
-        return replace(chunk, distance=chunk.distance * self._factor)
+        return replace(chunk, score=chunk.score * self._factor)
 
 
 class _AddRescorer:
@@ -312,7 +283,7 @@ class _AddRescorer:
         self._value = value
 
     def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
-        return replace(chunk, distance=chunk.distance + self._value)
+        return replace(chunk, score=chunk.score + self._value)
 
 
 class _IdentityRescorer:
@@ -321,31 +292,31 @@ class _IdentityRescorer:
 
 
 class TestApplyRescorers:
-    def test_single_rescorer_modifies_distance(self):
+    def test_single_rescorer_modifies_score(self):
         records = [
-            _make_scored_record(document_id="d1", distance=1.0),
-            _make_scored_record(document_id="d2", distance=2.0),
+            _make_scored_record(document_id="d1", score=1.0),
+            _make_scored_record(document_id="d2", score=2.0),
         ]
 
         result = _apply_rescorers(records, [_MultiplyRescorer(10)])
 
-        assert result[0].distance == 20.0
-        assert result[1].distance == 10.0
+        assert result[0].score == 20.0
+        assert result[1].score == 10.0
 
     def test_multiple_rescorers_applied_in_sequence(self):
-        records = [_make_scored_record(distance=1.0)]
+        records = [_make_scored_record(score=1.0)]
 
         result = _apply_rescorers(
             records,
             [_AddRescorer(10), _MultiplyRescorer(2)],
         )
 
-        assert result[0].distance == 22.0
+        assert result[0].score == 22.0
 
-    def test_results_sorted_descending_by_distance(self):
+    def test_results_sorted_descending_by_score(self):
         records = [
-            _make_scored_record(document_id="low", distance=1.0),
-            _make_scored_record(document_id="high", distance=10.0),
+            _make_scored_record(document_id="low", score=1.0),
+            _make_scored_record(document_id="high", score=10.0),
         ]
 
         result = _apply_rescorers(records, [_IdentityRescorer()])
@@ -354,85 +325,31 @@ class TestApplyRescorers:
         assert result[1].metadata["document_id"] == "low"
 
 
-class TestSemanticRetrieverWithRescorers:
-    def test_rescorer_reorders_results(self):
-        store = MagicMock(spec=VectorStore)
-        low_sat = _make_scored_record(document_id="d1", chunk="low", distance=0.5)
-        low_sat.metadata["customer_satisfaction"] = 1.0
-        high_sat = _make_scored_record(document_id="d2", chunk="high", distance=0.5)
-        high_sat.metadata["customer_satisfaction"] = 5.0
-        store.query.return_value = [low_sat, high_sat]
-
-        retriever = SemanticRetriever(store, rescorers=[_BoostRescorer()])
-        result = retriever.retrieve("query", 2)
-
-        assert result[0]["metadata"]["document_id"] == "d2"
-        assert result[1]["metadata"]["document_id"] == "d1"
-
-    def test_no_rescorers_preserves_order(self):
+class TestRetrieverPreservesOrder:
+    def test_semantic_retriever_preserves_store_order(self):
         store = MagicMock(spec=VectorStore)
         store.query.return_value = [
-            _make_scored_record(document_id="d1", chunk="A", distance=0.1),
-            _make_scored_record(document_id="d2", chunk="B", distance=0.5),
+            _make_scored_record(document_id="d1", chunk="A", score=0.1),
+            _make_scored_record(document_id="d2", chunk="B", score=0.5),
         ]
 
         retriever = SemanticRetriever(store)
         result = retriever.retrieve("query", 2)
 
-        assert result[0]["metadata"]["document_id"] == "d1"
-        assert result[1]["metadata"]["document_id"] == "d2"
+        assert result[0].metadata["document_id"] == "d1"
+        assert result[1].metadata["document_id"] == "d2"
 
+    def test_hybrid_retriever_preserves_rrf_order(self):
+        r1 = MagicMock()
+        r1.retrieve.return_value = [_make_scored_record(document_id="d1", chunk="first")]
+        r2 = MagicMock()
+        r2.retrieve.return_value = []
 
-class TestBM25RetrieverWithRescorers:
-    def test_rescorer_reorders_results(self):
-        keyword_store = MagicMock(spec=KeywordStore)
-        low_sat = _make_scored_record(document_id="d1", chunk="low", distance=1.0)
-        low_sat.metadata["customer_satisfaction"] = 0.0
-        high_sat = _make_scored_record(document_id="d2", chunk="high", distance=1.0)
-        high_sat.metadata["customer_satisfaction"] = 5.0
-        keyword_store.query.return_value = [low_sat, high_sat]
-
-        retriever = BM25Retriever(keyword_store, rescorers=[_BoostRescorer()])
-        result = retriever.retrieve("query", 2)
-
-        assert result[0]["metadata"]["document_id"] == "d2"
-
-
-class TestHybridRetrieverWithRescorers:
-    def test_rescorer_influences_rrf_ranking(self):
-        vector_store = MagicMock(spec=VectorStore)
-        keyword_store = MagicMock(spec=KeywordStore)
-
-        low_sat = _make_scored_record(document_id="d1", chunk="low", distance=0.1)
-        low_sat.metadata["customer_satisfaction"] = 0.0
-        high_sat = _make_scored_record(document_id="d2", chunk="high", distance=0.9)
-        high_sat.metadata["customer_satisfaction"] = 100.0
-
-        vector_store.query.return_value = [low_sat, high_sat]
-        keyword_store.query.return_value = [low_sat, high_sat]
-
-        retriever = HybridRetriever(
-            vector_store,
-            keyword_store,
-            rescorers=[_BoostRescorer()],
-        )
-        result = retriever.retrieve("query", 2)
-
-        assert result[0]["metadata"]["document_id"] == "d2"
-
-    def test_no_rescorers_uses_original_ranks(self):
-        vector_store = MagicMock(spec=VectorStore)
-        keyword_store = MagicMock(spec=KeywordStore)
-        vector_store.query.return_value = [
-            _make_scored_record(document_id="d1", chunk="first"),
-        ]
-        keyword_store.query.return_value = []
-
-        retriever = HybridRetriever(vector_store, keyword_store)
+        retriever = HybridRetriever(RetrieverWeight(r1, 1.0), RetrieverWeight(r2, 1.0))
         result = retriever.retrieve("query", 5)
 
         assert len(result) == 1
-        assert result[0]["metadata"]["document_id"] == "d1"
+        assert result[0].metadata["document_id"] == "d1"
 
 
 class TestRenderMessages:
@@ -588,8 +505,8 @@ class TestRunRagPipeline:
         )
         retriever = MagicMock()
         retriever.retrieve.return_value = [
-            _make_retrieved_record(chunk="chunk A"),
-            _make_retrieved_record(chunk="chunk B", document_id="doc-2"),
+            _make_scored_record(chunk="chunk A"),
+            _make_scored_record(chunk="chunk B", document_id="doc-2"),
         ]
         client = MagicMock()
         client.create.return_value = _make_completion("answer text")
@@ -638,7 +555,7 @@ class TestRunRagPipeline:
             ]
         )
         retriever = MagicMock()
-        retriever.retrieve.return_value = [_make_retrieved_record(chunk="new chunk")]
+        retriever.retrieve.return_value = [_make_scored_record(chunk="new chunk")]
         client = MagicMock()
         client.create.return_value = _make_completion("answer")
         history = [
@@ -674,7 +591,7 @@ class TestRunRagPipeline:
             ]
         )
         retriever = MagicMock()
-        retriever.retrieve.return_value = [_make_retrieved_record(chunk="chunk")]
+        retriever.retrieve.return_value = [_make_scored_record(chunk="chunk")]
         client = MagicMock()
         client.create.return_value = _make_completion("answer")
         history = [
@@ -709,7 +626,7 @@ class TestRunRagPipeline:
             ]
         )
         retriever = MagicMock()
-        retriever.retrieve.return_value = [_make_retrieved_record(chunk="chunk")]
+        retriever.retrieve.return_value = [_make_scored_record(chunk="chunk")]
         client = MagicMock()
         client.create.return_value = _make_completion("answer")
 
@@ -732,9 +649,9 @@ class TestRunRagPipeline:
         )
         retriever = MagicMock()
         retriever.retrieve.return_value = [
-            _make_retrieved_record(chunk="first"),
-            _make_retrieved_record(chunk="second", document_id="doc-2"),
-            _make_retrieved_record(chunk="third", document_id="doc-3"),
+            _make_scored_record(chunk="first"),
+            _make_scored_record(chunk="second", document_id="doc-2"),
+            _make_scored_record(chunk="third", document_id="doc-3"),
         ]
         client = MagicMock()
         client.create.return_value = _make_completion()

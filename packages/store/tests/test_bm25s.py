@@ -64,7 +64,7 @@ class TestBM25sKeywordStore:
         assert len(results) > 0
         assert results[0].id == "doc-1-chunk-0"
         assert results[0].metadata["document_id"] == "doc-1"
-        assert results[0].distance > 0
+        assert results[0].score > 0
 
     def test_empty_index_returns_empty(self):
         store = BM25sKeywordStore()

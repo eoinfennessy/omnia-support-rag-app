@@ -12,10 +12,10 @@ if TYPE_CHECKING:
 
 
 class SatisfactionRescorer:
-    """Rescorer that multiplies distance by a satisfaction-derived factor.
+    """Rescorer that multiplies score by a satisfaction-derived factor.
 
     Uses a centered scale where 3.0 is neutral: scores above 3 amplify the
-    distance, scores below 3 reduce it. Chunks missing customer_satisfaction
+    score, scores below 3 reduce it. Chunks missing customer_satisfaction
     metadata are returned unchanged.
 
     The weight parameter controls the maximum adjustment magnitude. With the
@@ -32,11 +32,11 @@ class SatisfactionRescorer:
         if satisfaction is None:
             return chunk
         multiplier = 1.0 + self._weight * (satisfaction - 3.0) / 2.0
-        return replace(chunk, distance=chunk.distance * multiplier)
+        return replace(chunk, score=chunk.score * multiplier)
 
 
 class ResolutionStatusRescorer:
-    """Rescorer that multiplies distance by a per-status weight.
+    """Rescorer that multiplies score by a per-status weight.
 
     Chunks missing resolution_status metadata are returned unchanged.
     """
@@ -59,4 +59,4 @@ class ResolutionStatusRescorer:
         status = chunk.metadata.get("resolution_status")
         if status is None:
             return chunk
-        return replace(chunk, distance=chunk.distance * self._weights.get(status, 1.0))
+        return replace(chunk, score=chunk.score * self._weights.get(status, 1.0))

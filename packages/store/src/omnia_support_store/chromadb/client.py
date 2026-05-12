@@ -39,6 +39,7 @@ class ChromaVectorStore(VectorStore):
         self._collection: Collection = self._client.get_or_create_collection(
             name=self._collection_name,
             embedding_function=self._embedding_fn,
+            metadata={"hnsw:space": "cosine"},
         )
 
     @property
@@ -74,7 +75,7 @@ class ChromaVectorStore(VectorStore):
             return []
 
         return [
-            ScoredChunk(id=id_, chunk=doc, metadata=cast("ChunkMetadata", meta), distance=dist)
+            ScoredChunk(id=id_, chunk=doc, metadata=cast("ChunkMetadata", meta), score=1 - dist)
             for id_, doc, meta, dist in zip(
                 results["ids"][0],
                 results["documents"][0],

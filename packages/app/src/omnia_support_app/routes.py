@@ -64,6 +64,8 @@ def chat(
         model=cfg.llm_model,
         history=history,
         reformulate_prompt_uri=cfg.reformulate_prompt_uri,
+        rescorers=state.rescorers,
+        context_formatters=state.context_formatters,
     )
 
     state.sessions.add_messages(

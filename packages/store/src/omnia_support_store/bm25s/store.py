@@ -54,7 +54,7 @@ class BM25sKeywordStore(KeywordStore):
                 id=self._records[idx].id,
                 chunk=self._records[idx].chunk,
                 metadata=self._records[idx].metadata,
-                distance=float(score),
+                score=float(score),
             )
             for idx, score in zip(indices[0], scores[0], strict=True)
         ]

@@ -18,7 +18,9 @@ class TestChromaVectorStore:
         ChromaVectorStore(host="localhost", port=8000, embedding_fn=embedding_fn)
 
         mock_client.get_or_create_collection.assert_called_once_with(
-            name=DEFAULT_COLLECTION_NAME, embedding_function=embedding_fn
+            name=DEFAULT_COLLECTION_NAME,
+            embedding_function=embedding_fn,
+            metadata={"hnsw:space": "cosine"},
         )
 
     @patch("chromadb.HttpClient")

@@ -7,8 +7,7 @@ inspect RETRIEVER spans automatically.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, NamedTuple, Protocol
 
 import mlflow
 from jinja2 import Template
@@ -23,12 +22,15 @@ if TYPE_CHECKING:
 
     from omnia_support_store import KeywordStore, ScoredChunk, VectorStore
 
+    from .context_formatting import ContextFormatter
+    from .filters import RetrievalFilter
+
 
 class Rescorer(Protocol):
     """Protocol for a post-retrieval rescoring strategy."""
 
     def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
-        """Return a new ScoredChunk with an adjusted distance."""
+        """Return a new ScoredChunk with an adjusted score."""
         ...
 
 
@@ -49,7 +51,7 @@ class CompletionsClient(Protocol):
 class Retriever(Protocol):
     """Protocol for a retrieval strategy."""
 
-    def retrieve(self, query: str, n_results: int) -> list[dict]:
+    def retrieve(self, query: str, n_results: int) -> list[ScoredChunk]:
         """Retrieve relevant documents for the given query."""
         ...
 
@@ -58,10 +60,20 @@ def _apply_rescorers(
     records: list[ScoredChunk],
     rescorers: Sequence[Rescorer],
 ) -> list[ScoredChunk]:
-    """Apply rescorers in sequence and re-sort by distance (descending)."""
+    """Apply rescorers in sequence and re-sort by score (descending)."""
     for rescorer in rescorers:
         records = [rescorer.rescore(r) for r in records]
-    records.sort(key=lambda r: r.distance, reverse=True)
+    records.sort(key=lambda r: r.score, reverse=True)
+    return records
+
+
+def _apply_filters(
+    records: list[ScoredChunk],
+    filters: Sequence[RetrievalFilter],
+) -> list[ScoredChunk]:
+    """Apply filters in sequence, each narrowing the result set."""
+    for f in filters:
+        records = f.filter(records)
     return records
 
 
@@ -72,19 +84,19 @@ class SemanticRetriever:
         self,
         store: VectorStore,
         *,
-        rescorers: Sequence[Rescorer] | None = None,
+        filters: Sequence[RetrievalFilter] | None = None,
     ) -> None:
         """Wrap a vector store for pure semantic retrieval."""
         self._store = store
-        self._rescorers = rescorers
+        self._filters = filters
 
     @mlflow.trace(span_type="RETRIEVER")
-    def retrieve(self, query: str, n_results: int) -> list[dict]:
+    def retrieve(self, query: str, n_results: int) -> list[ScoredChunk]:
         """Retrieve documents using semantic similarity via the vector store."""
         records = self._store.query(query, n_results)
-        if self._rescorers:
-            records = _apply_rescorers(records, self._rescorers)
-        return [{"page_content": r.chunk, "metadata": r.metadata, "distance": r.distance} for r in records]
+        if self._filters:
+            records = _apply_filters(records, self._filters)
+        return records
 
 
 class BM25Retriever:
@@ -94,63 +106,45 @@ class BM25Retriever:
         self,
         keyword_store: KeywordStore,
         *,
-        rescorers: Sequence[Rescorer] | None = None,
+        filters: Sequence[RetrievalFilter] | None = None,
     ) -> None:
         """Wrap a keyword store for BM25 retrieval."""
         self._keyword_store = keyword_store
-        self._rescorers = rescorers
+        self._filters = filters
 
     @mlflow.trace(span_type="RETRIEVER")
-    def retrieve(self, query: str, n_results: int) -> list[dict]:
+    def retrieve(self, query: str, n_results: int) -> list[ScoredChunk]:
         """Retrieve documents using BM25 keyword matching."""
         records = self._keyword_store.query(query, n_results)
-        if self._rescorers:
-            records = _apply_rescorers(records, self._rescorers)
-        return [{"page_content": r.chunk, "metadata": r.metadata, "distance": r.distance} for r in records]
+        if self._filters:
+            records = _apply_filters(records, self._filters)
+        return records
 
 
-@dataclass(frozen=True)
-class RrfWeights:
-    """Weights for each ranking source in Reciprocal Rank Fusion."""
+class RetrieverWeight(NamedTuple):
+    """A retriever paired with its RRF fusion weight."""
 
-    semantic: float = 1.0
-    keyword: float = 1.0
+    retriever: Retriever
+    weight: float = 1.0
 
 
 class HybridRetriever:
-    """Retriever combining dense and BM25 results via Reciprocal Rank Fusion."""
+    """Retriever combining multiple sources via Reciprocal Rank Fusion."""
 
     def __init__(
         self,
-        vector_store: VectorStore,
-        keyword_store: KeywordStore,
-        *,
+        *sources: RetrieverWeight,
         rrf_k: int = 60,
-        weights: RrfWeights | None = None,
-        rescorers: Sequence[Rescorer] | None = None,
     ) -> None:
-        """Wrap a vector store and keyword store for hybrid retrieval."""
-        self._vector_store = vector_store
-        self._keyword_store = keyword_store
+        """Fuse multiple weighted retriever sources via RRF."""
+        self._sources = sources
         self._rrf_k = rrf_k
-        self._weights = weights or RrfWeights()
-        self._rescorers = rescorers
 
     @mlflow.trace(span_type="RETRIEVER")
-    def retrieve(self, query: str, n_results: int) -> list[dict]:
-        """Retrieve documents using RRF fusion of semantic and BM25 results."""
-        semantic = self._vector_store.query(query, n_results)
-        keyword = self._keyword_store.query(query, n_results)
-        if self._rescorers:
-            semantic = _apply_rescorers(semantic, self._rescorers)
-            keyword = _apply_rescorers(keyword, self._rescorers)
-        fused = _rrf_fuse(
-            (self._weights.semantic, semantic),
-            (self._weights.keyword, keyword),
-            k=self._rrf_k,
-            n_results=n_results,
-        )
-        return [{"page_content": r.chunk, "metadata": r.metadata, "distance": r.distance} for r in fused]
+    def retrieve(self, query: str, n_results: int) -> list[ScoredChunk]:
+        """Retrieve documents using RRF fusion of multiple retriever sources."""
+        rankings = [(source.weight, source.retriever.retrieve(query, n_results)) for source in self._sources]
+        return _rrf_fuse(*rankings, k=self._rrf_k, n_results=n_results)
 
 
 def _rrf_fuse(
@@ -169,7 +163,7 @@ def _rrf_fuse(
             records.setdefault(record.id, record)
     sorted_ids = sorted(scores, key=scores.__getitem__, reverse=True)[:n_results]
     return [
-        _ScoredChunk(id=rid, chunk=records[rid].chunk, metadata=records[rid].metadata, distance=scores[rid])
+        _ScoredChunk(id=rid, chunk=records[rid].chunk, metadata=records[rid].metadata, score=scores[rid])
         for rid in sorted_ids
     ]
 
@@ -182,7 +176,7 @@ def retrieve_context(
 ) -> list[dict]:
     """Query the vector store and return results as dicts for MLflow scorers."""
     records = store.query(query, n_results)
-    return [{"page_content": r.chunk, "metadata": r.metadata, "distance": r.distance} for r in records]
+    return [{"page_content": r.chunk, "metadata": r.metadata, "score": r.score} for r in records]
 
 
 def render_messages(
@@ -220,6 +214,11 @@ def generate_answer(
     return response.choices[0].message.content or ""
 
 
+def _to_dicts(records: list[ScoredChunk]) -> list[dict]:
+    """Convert ScoredChunks to the dict format used downstream."""
+    return [{"page_content": r.chunk, "metadata": r.metadata, "score": r.score} for r in records]
+
+
 @mlflow.trace(name="rag_pipeline")
 def run_rag_pipeline(
     question: str,
@@ -231,8 +230,10 @@ def run_rag_pipeline(
     model: str,
     history: list[ChatCompletionMessageParam] | None = None,
     reformulate_prompt_uri: str | None = None,
+    rescorers: Sequence[Rescorer] | None = None,
+    context_formatters: Sequence[ContextFormatter] | None = None,
 ) -> dict:
-    """Run the full RAG pipeline: reformulate -> retrieve -> build prompt -> generate."""
+    """Run the full RAG pipeline: reformulate -> retrieve -> rescore -> format -> build prompt -> generate."""
     if reformulate_prompt_uri:
         question = reformulate_query(
             history or [],
@@ -243,7 +244,12 @@ def run_rag_pipeline(
         )
 
     prompt = mlflow.genai.load_prompt(prompt_uri)
-    records = retriever.retrieve(question, n_results)
+    scored_chunks = retriever.retrieve(question, n_results)
+    if rescorers:
+        scored_chunks = _apply_rescorers(scored_chunks, rescorers)
+    records = _to_dicts(scored_chunks)
+    for formatter in context_formatters or ():
+        records = formatter.format(records)
     chunks = [r["page_content"] for r in records]
     context = "\n---\n".join(chunks)
     rendered = render_messages(prompt, history=history, context=context, question=question)

@@ -37,16 +37,21 @@ from omnia_support_models import Dataset, TestQuery
 from omnia_support_rag import (
     BM25Retriever,
     CompletionsClient,
+    ContextFormatter,
     HybridRetriever,
+    LostInMiddleFormatter,
+    Rescorer,
     ResolutionStatusRescorer,
+    RetrieverWeight,
     SatisfactionRescorer,
     SemanticRetriever,
+    TokenBudgetFormatter,
     run_rag_pipeline,
 )
 from omnia_support_store import BM25sKeywordStore, ChromaVectorStore
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
 
     from mlflow.genai.datasets import EvaluationDataset
 
@@ -64,6 +69,8 @@ class RunEvaluationConfig:
     prompt_version: int | None
     prompt_alias: str
     retriever: Retriever
+    rescorers: Sequence[Rescorer]
+    context_formatters: Sequence[ContextFormatter]
     collection_name: str
     embedding_model: str
     completions_client: CompletionsClient
@@ -192,6 +199,8 @@ def make_predict_fn(
     prompt_uri: str,
     n_results: int,
     model: str,
+    rescorers: Sequence[Rescorer] | None = None,
+    context_formatters: Sequence[ContextFormatter] | None = None,
 ) -> Callable[[str], str]:
     """Create a predict function for mlflow.genai.evaluate()."""
 
@@ -203,6 +212,8 @@ def make_predict_fn(
             prompt_uri=prompt_uri,
             n_results=n_results,
             model=model,
+            rescorers=rescorers,
+            context_formatters=context_formatters,
         )
         return result["answer"]
 
@@ -241,6 +252,8 @@ def run_evaluation(config: RunEvaluationConfig) -> None:
         prompt_uri=prompt_uri,
         n_results=config.n_results,
         model=config.llm_model,
+        rescorers=config.rescorers,
+        context_formatters=config.context_formatters,
     )
 
     with mlflow.start_run():
@@ -378,21 +391,27 @@ def main() -> None:
     if args.retrieval_mode in ("bm25", "hybrid"):
         keyword_store = BM25sKeywordStore(index_path=Path(args.bm25_path))
 
-    rescorers = [SatisfactionRescorer(), ResolutionStatusRescorer()]
+    rescorers: list[Rescorer] = [SatisfactionRescorer(), ResolutionStatusRescorer()]
+    context_formatters: list[ContextFormatter] = [TokenBudgetFormatter(), LostInMiddleFormatter()]
 
     retriever: Retriever
     if args.retrieval_mode == "hybrid":
         if vector_store is None or keyword_store is None:
             raise SystemExit("Error: hybrid mode requires both vector and keyword stores")
-        retriever = HybridRetriever(vector_store, keyword_store, rescorers=rescorers)
+        semantic = SemanticRetriever(vector_store)
+        keyword = BM25Retriever(keyword_store)
+        retriever = HybridRetriever(
+            RetrieverWeight(semantic, 1.0),
+            RetrieverWeight(keyword, 1.0),
+        )
     elif args.retrieval_mode == "bm25":
         if keyword_store is None:
             raise SystemExit("Error: bm25 mode requires a keyword store")
-        retriever = BM25Retriever(keyword_store, rescorers=rescorers)
+        retriever = BM25Retriever(keyword_store)
     else:
         if vector_store is None:
             raise SystemExit("Error: semantic mode requires a vector store")
-        retriever = SemanticRetriever(vector_store, rescorers=rescorers)
+        retriever = SemanticRetriever(vector_store)
 
     gold_set = load_gold_set(Path(args.gold_set), Path(args.dataset))
 
@@ -402,6 +421,8 @@ def main() -> None:
         prompt_version=args.prompt_version,
         prompt_alias=args.prompt_alias,
         retriever=retriever,
+        rescorers=rescorers,
+        context_formatters=context_formatters,
         collection_name=vector_store.collection_name if vector_store else "n/a",
         embedding_model=args.embedding_model,
         completions_client=openai.OpenAI().chat.completions,

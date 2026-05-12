@@ -32,6 +32,6 @@ class Chunk:
 
 @dataclass(frozen=True)
 class ScoredChunk(Chunk):
-    """A Chunk returned from a query, with a distance score."""
+    """A Chunk returned from a query, with a relevance score (higher = better)."""
 
-    distance: float = 0.0
+    score: float = 0.0
