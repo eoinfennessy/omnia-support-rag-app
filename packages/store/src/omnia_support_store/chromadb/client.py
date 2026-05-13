@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import contextlib
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 
 from chromadb.errors import NotFoundError
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from chromadb import ClientAPI, Collection
     from chromadb.api.types import Embeddable, EmbeddingFunction
 
-    from ..models import Chunk
+    from ..models import Chunk, WhereFilter
 
 DEFAULT_COLLECTION_NAME = "omnia_support"
 
@@ -62,7 +62,7 @@ class ChromaVectorStore(VectorStore):
         self,
         query_text: str,
         n_results: int,
-        where: dict[str, Any] | None = None,
+        where: WhereFilter | None = None,
     ) -> list[ScoredChunk]:
         results = self._collection.query(
             query_texts=[query_text],

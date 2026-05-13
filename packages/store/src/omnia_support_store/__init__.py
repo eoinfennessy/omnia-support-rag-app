@@ -10,6 +10,7 @@ from omnia_support_store.models import (
     Chunk,
     ChunkMetadata,
     ScoredChunk,
+    WhereFilter,
 )
 from omnia_support_store.vector_store import VectorStore
 
@@ -22,4 +23,5 @@ __all__ = [
     "KeywordStore",
     "ScoredChunk",
     "VectorStore",
+    "WhereFilter",
 ]

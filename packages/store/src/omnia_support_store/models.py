@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import NotRequired, TypedDict
 
+WhereFilter = dict[str, str | dict[str, list[str]]]
+
 
 class ChunkMetadata(TypedDict):
     """Metadata stored alongside each chunk."""

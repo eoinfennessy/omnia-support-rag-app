@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from omnia_support_rag.rescorers import ResolutionStatusRescorer, SatisfactionRescorer
+from omnia_support_rag.query_interpretation import DocumentTypeRelevance
+from omnia_support_rag.rescorers import DocumentTypeRescorer, ResolutionStatusRescorer, SatisfactionRescorer
 from omnia_support_store.models import ChunkMetadata, ScoredChunk
 
 
@@ -112,3 +113,78 @@ class TestResolutionStatusRescorer:
         result = rescorer.rescore(chunk)
 
         assert result.score == 2.0
+
+
+class TestDocumentTypeRescorer:
+    def test_high_relevance_boosts_score(self):
+        relevance = DocumentTypeRelevance(policy=5, faq=5, support_ticket=10)
+        chunk = _make_chunk(score=1.0)
+        rescorer = DocumentTypeRescorer(relevance)
+
+        result = rescorer.rescore(chunk)
+
+        assert result.score == 1.0 * (1.0 + 0.3 * (10 - 5) / 5)
+        assert result.score > chunk.score
+
+    def test_low_relevance_reduces_score(self):
+        relevance = DocumentTypeRelevance(policy=5, faq=5, support_ticket=0)
+        chunk = _make_chunk(score=1.0)
+        rescorer = DocumentTypeRescorer(relevance)
+
+        result = rescorer.rescore(chunk)
+
+        assert result.score == 1.0 * (1.0 + 0.3 * (0 - 5) / 5)
+        assert result.score < chunk.score
+
+    def test_neutral_relevance_unchanged(self):
+        relevance = DocumentTypeRelevance(policy=5, faq=5, support_ticket=5)
+        chunk = _make_chunk(score=1.0)
+        rescorer = DocumentTypeRescorer(relevance)
+
+        result = rescorer.rescore(chunk)
+
+        assert result.score == chunk.score
+
+    def test_missing_type_returns_unchanged(self):
+        relevance = DocumentTypeRelevance(policy=10, faq=10, support_ticket=10)
+        metadata: ChunkMetadata = {  # ty: ignore[missing-typed-dict-key]
+            "document_id": "doc-1",
+            "category": "General",
+            "date": "2025-01-01",
+            "product_category": "laptops",
+            "chunk_index": 0,
+            "total_chunks": 1,
+        }
+        chunk = ScoredChunk(id="doc-1-chunk-0", chunk="text", metadata=metadata, score=1.0)
+        rescorer = DocumentTypeRescorer(relevance)
+
+        result = rescorer.rescore(chunk)
+
+        assert result is chunk
+
+    def test_unknown_type_returns_unchanged(self):
+        relevance = DocumentTypeRelevance(policy=10, faq=10, support_ticket=10)
+        metadata: ChunkMetadata = {
+            "document_id": "doc-1",
+            "type": "unknown_type",
+            "category": "General",
+            "date": "2025-01-01",
+            "product_category": "laptops",
+            "chunk_index": 0,
+            "total_chunks": 1,
+        }
+        chunk = ScoredChunk(id="doc-1-chunk-0", chunk="text", metadata=metadata, score=1.0)
+        rescorer = DocumentTypeRescorer(relevance)
+
+        result = rescorer.rescore(chunk)
+
+        assert result is chunk
+
+    def test_custom_weight(self):
+        relevance = DocumentTypeRelevance(policy=5, faq=5, support_ticket=10)
+        chunk = _make_chunk(score=1.0)
+        rescorer = DocumentTypeRescorer(relevance, weight=0.5)
+
+        result = rescorer.rescore(chunk)
+
+        assert result.score == 1.0 * (1.0 + 0.5 * (10 - 5) / 5)

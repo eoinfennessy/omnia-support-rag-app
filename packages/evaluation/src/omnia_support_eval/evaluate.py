@@ -39,6 +39,7 @@ from omnia_support_rag import (
     CompletionsClient,
     ContextFormatter,
     HybridRetriever,
+    LLMQueryInterpreter,
     LostInMiddleFormatter,
     Rescorer,
     ResolutionStatusRescorer,
@@ -56,6 +57,7 @@ if TYPE_CHECKING:
     from mlflow.genai.datasets import EvaluationDataset
 
     from omnia_support_rag import Retriever
+    from omnia_support_rag.query_interpretation import QueryInterpreter
 
 DATASET_NAME = "omnia-support-gold-set"
 
@@ -77,6 +79,7 @@ class RunEvaluationConfig:
     n_results: int
     llm_model: str
     experiment_name: str
+    query_interpreter: QueryInterpreter | None = None
 
 
 class GoldSetEntry(TestQuery):
@@ -201,6 +204,7 @@ def make_predict_fn(
     model: str,
     rescorers: Sequence[Rescorer] | None = None,
     context_formatters: Sequence[ContextFormatter] | None = None,
+    query_interpreter: QueryInterpreter | None = None,
 ) -> Callable[[str], str]:
     """Create a predict function for mlflow.genai.evaluate()."""
 
@@ -214,6 +218,7 @@ def make_predict_fn(
             model=model,
             rescorers=rescorers,
             context_formatters=context_formatters,
+            query_interpreter=query_interpreter,
         )
         return result["answer"]
 
@@ -254,6 +259,7 @@ def run_evaluation(config: RunEvaluationConfig) -> None:
         model=config.llm_model,
         rescorers=config.rescorers,
         context_formatters=config.context_formatters,
+        query_interpreter=config.query_interpreter,
     )
 
     with mlflow.start_run():
@@ -333,8 +339,8 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model",
-        default="gpt-4.1-mini",
-        help="LLM model for generation (default: gpt-4.1-mini)",
+        default="gpt-5.4-mini",
+        help="LLM model for generation (default: gpt-5.4-mini)",
     )
     parser.add_argument(
         "--chroma-host",
@@ -362,6 +368,16 @@ def _parse_args() -> argparse.Namespace:
         "--bm25-path",
         default=os.environ.get("BM25_INDEX_PATH", "data/bm25"),
         help="Path to BM25 keyword index (default: $BM25_INDEX_PATH or data/bm25)",
+    )
+    parser.add_argument(
+        "--interpret-query-prompt-name",
+        default="interpret_query",
+        help="MLflow prompt name for query interpretation (default: interpret_query)",
+    )
+    parser.add_argument(
+        "--interpret-query-prompt-alias",
+        default="production",
+        help="MLflow prompt alias for query interpretation (default: production)",
     )
     return parser.parse_args()
 
@@ -415,6 +431,12 @@ def main() -> None:
 
     gold_set = load_gold_set(Path(args.gold_set), Path(args.dataset))
 
+    query_interpreter = LLMQueryInterpreter(
+        completions_client=openai.OpenAI().chat.completions,
+        model=args.model,
+        prompt_uri=f"prompts:/{args.interpret_query_prompt_name}@{args.interpret_query_prompt_alias}",
+    )
+
     config = RunEvaluationConfig(
         gold_set=gold_set,
         prompt_name=args.prompt_name,
@@ -429,5 +451,6 @@ def main() -> None:
         n_results=args.n_results,
         llm_model=args.model,
         experiment_name=args.experiment_name,
+        query_interpreter=query_interpreter,
     )
     run_evaluation(config)

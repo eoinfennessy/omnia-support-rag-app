@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from chromadb.errors import NotFoundError
 
-from omnia_support_store import DEFAULT_COLLECTION_NAME, ChromaVectorStore
+from omnia_support_store import DEFAULT_COLLECTION_NAME, ChromaVectorStore, WhereFilter
 
 
 class TestChromaVectorStore:
@@ -49,7 +49,7 @@ class TestChromaVectorStore:
         mock_client.get_or_create_collection.return_value = mock_collection
 
         store = ChromaVectorStore(host="localhost", port=8000, embedding_fn=MagicMock())
-        where = {"type": "policy"}
+        where: WhereFilter = {"type": "policy"}
         results = store.query("return policy", 5, where=where)
 
         mock_collection.query.assert_called_once_with(

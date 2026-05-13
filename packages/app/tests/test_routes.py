@@ -81,7 +81,6 @@ def _create_test_app() -> tuple[FastAPI, AppState]:
     state = AppState(
         config=AppConfig(
             prompt_uri="prompts:/test@prod",
-            reformulate_prompt_uri="prompts:/reformulate@prod",
             n_results=3,
             llm_model="gpt-4",
         ),
@@ -157,7 +156,7 @@ class TestChatEndpoint:
         assert data["answer"] == "Our return policy is..."
         assert data["session_id"] == "s1"
 
-    def test_passes_reformulate_prompt_uri_to_pipeline(self, mock_pipeline):
+    def test_passes_query_interpreter_to_pipeline(self, mock_pipeline):
         mock_pipeline.return_value = {
             "answer": "answer",
             "retrieved_context": "context",
@@ -171,7 +170,7 @@ class TestChatEndpoint:
             json={"session_id": "s1", "message": "question"},
         )
 
-        assert mock_pipeline.call_args.kwargs["reformulate_prompt_uri"] == "prompts:/reformulate@prod"
+        assert mock_pipeline.call_args.kwargs["query_interpreter"] is None
 
     def test_second_message_passes_history(self, mock_pipeline):
         mock_pipeline.return_value = {

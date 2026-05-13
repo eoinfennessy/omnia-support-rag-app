@@ -17,6 +17,7 @@ from omnia_support_rag import (
     BM25ThresholdFilter,
     CosineSimThresholdFilter,
     HybridRetriever,
+    LLMQueryInterpreter,
     LostInMiddleFormatter,
     ResolutionStatusRescorer,
     RetrieverWeight,
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from omnia_support_rag.context_formatting import ContextFormatter
+    from omnia_support_rag.query_interpretation import QueryInterpreter
     from omnia_support_rag.rag import CompletionsClient, Rescorer, Retriever
 
     from .session import SessionStore
@@ -42,7 +44,6 @@ class AppConfig:
     """Application configuration loaded from environment."""
 
     prompt_uri: str
-    reformulate_prompt_uri: str
     n_results: int
     llm_model: str
 
@@ -57,6 +58,7 @@ class AppState:
     context_formatters: Sequence[ContextFormatter]
     completions_client: CompletionsClient
     dataset: Dataset
+    query_interpreter: QueryInterpreter | None = None
     sessions: SessionStore = field(default_factory=InMemorySessionStore)
 
 
@@ -114,13 +116,21 @@ def create_app_state() -> AppState:
 
     prompt_name = os.environ.get("PROMPT_NAME", "omnia_support_system")
     prompt_alias = os.environ.get("PROMPT_ALIAS", "production")
-    reformulate_prompt_name = os.environ.get("REFORMULATE_PROMPT_NAME", "reformulate_query")
+    llm_model = os.environ.get("LLM_MODEL", "gpt-5.4-mini")
 
     config = AppConfig(
         prompt_uri=f"prompts:/{prompt_name}@{prompt_alias}",
-        reformulate_prompt_uri=f"prompts:/{reformulate_prompt_name}@{prompt_alias}",
         n_results=int(os.environ.get("N_RESULTS", "5")),
-        llm_model=os.environ.get("LLM_MODEL", "gpt-4.1-mini"),
+        llm_model=llm_model,
+    )
+
+    interpret_query_prompt_name = os.environ.get("INTERPRET_QUERY_PROMPT_NAME", "interpret_query")
+    interpret_query_prompt_alias = os.environ.get("INTERPRET_QUERY_PROMPT_ALIAS", "production")
+
+    query_interpreter = LLMQueryInterpreter(
+        completions_client=openai.OpenAI().chat.completions,
+        model=llm_model,
+        prompt_uri=f"prompts:/{interpret_query_prompt_name}@{interpret_query_prompt_alias}",
     )
 
     dataset_path = Path(
@@ -135,4 +145,5 @@ def create_app_state() -> AppState:
         context_formatters=context_formatters,
         completions_client=openai.OpenAI().chat.completions,
         dataset=dataset,
+        query_interpreter=query_interpreter,
     )

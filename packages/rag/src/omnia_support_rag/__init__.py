@@ -10,6 +10,12 @@ from omnia_support_rag.filters import (
     CosineSimThresholdFilter,
     RetrievalFilter,
 )
+from omnia_support_rag.query_interpretation import (
+    DocumentTypeRelevance,
+    InterpretedQuery,
+    LLMQueryInterpreter,
+    QueryInterpreter,
+)
 from omnia_support_rag.rag import (
     BM25Retriever,
     CompletionsClient,
@@ -23,11 +29,12 @@ from omnia_support_rag.rag import (
     retrieve_context,
     run_rag_pipeline,
 )
-from omnia_support_rag.reformulate import reformulate_query
 from omnia_support_rag.rescorers import (
+    DocumentTypeRescorer,
     ResolutionStatusRescorer,
     SatisfactionRescorer,
 )
+from omnia_support_store import WhereFilter
 
 __all__ = [
     "BM25Retriever",
@@ -35,8 +42,13 @@ __all__ = [
     "CompletionsClient",
     "ContextFormatter",
     "CosineSimThresholdFilter",
+    "DocumentTypeRelevance",
+    "DocumentTypeRescorer",
     "HybridRetriever",
+    "InterpretedQuery",
+    "LLMQueryInterpreter",
     "LostInMiddleFormatter",
+    "QueryInterpreter",
     "Rescorer",
     "ResolutionStatusRescorer",
     "RetrievalFilter",
@@ -45,8 +57,8 @@ __all__ = [
     "SatisfactionRescorer",
     "SemanticRetriever",
     "TokenBudgetFormatter",
+    "WhereFilter",
     "generate_answer",
-    "reformulate_query",
     "render_messages",
     "retrieve_context",
     "run_rag_pipeline",

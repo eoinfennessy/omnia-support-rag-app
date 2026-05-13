@@ -7,12 +7,13 @@ inspect RETRIEVER spans automatically.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, NamedTuple, Protocol
+from typing import TYPE_CHECKING, Any, NamedTuple, Protocol
 
 import mlflow
 from jinja2 import Template
 
-from .reformulate import reformulate_query
+from .query_interpretation import QueryInterpreter  # noqa: TC001 — needed at runtime
+from .rescorers import DocumentTypeRescorer
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
     from mlflow.entities.model_registry.prompt_version import PromptVersion
     from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
-    from omnia_support_store import KeywordStore, ScoredChunk, VectorStore
+    from omnia_support_store import KeywordStore, ScoredChunk, VectorStore, WhereFilter
 
     from .context_formatting import ContextFormatter
     from .filters import RetrievalFilter
@@ -43,6 +44,7 @@ class CompletionsClient(Protocol):
         model: str,
         messages: list[ChatCompletionMessageParam],
         temperature: float,
+        response_format: Any = None,
     ) -> ChatCompletion:
         """Create a chat completion."""
         ...
@@ -51,7 +53,7 @@ class CompletionsClient(Protocol):
 class Retriever(Protocol):
     """Protocol for a retrieval strategy."""
 
-    def retrieve(self, query: str, n_results: int) -> list[ScoredChunk]:
+    def retrieve(self, query: str, n_results: int, where: WhereFilter | None = None) -> list[ScoredChunk]:
         """Retrieve relevant documents for the given query."""
         ...
 
@@ -91,9 +93,9 @@ class SemanticRetriever:
         self._filters = filters
 
     @mlflow.trace(span_type="RETRIEVER")
-    def retrieve(self, query: str, n_results: int) -> list[ScoredChunk]:
+    def retrieve(self, query: str, n_results: int, where: WhereFilter | None = None) -> list[ScoredChunk]:
         """Retrieve documents using semantic similarity via the vector store."""
-        records = self._store.query(query, n_results)
+        records = self._store.query(query, n_results, where=where)
         if self._filters:
             records = _apply_filters(records, self._filters)
         return records
@@ -113,9 +115,9 @@ class BM25Retriever:
         self._filters = filters
 
     @mlflow.trace(span_type="RETRIEVER")
-    def retrieve(self, query: str, n_results: int) -> list[ScoredChunk]:
+    def retrieve(self, query: str, n_results: int, where: WhereFilter | None = None) -> list[ScoredChunk]:
         """Retrieve documents using BM25 keyword matching."""
-        records = self._keyword_store.query(query, n_results)
+        records = self._keyword_store.query(query, n_results, where=where)
         if self._filters:
             records = _apply_filters(records, self._filters)
         return records
@@ -141,9 +143,11 @@ class HybridRetriever:
         self._rrf_k = rrf_k
 
     @mlflow.trace(span_type="RETRIEVER")
-    def retrieve(self, query: str, n_results: int) -> list[ScoredChunk]:
+    def retrieve(self, query: str, n_results: int, where: WhereFilter | None = None) -> list[ScoredChunk]:
         """Retrieve documents using RRF fusion of multiple retriever sources."""
-        rankings = [(source.weight, source.retriever.retrieve(query, n_results)) for source in self._sources]
+        rankings = [
+            (source.weight, source.retriever.retrieve(query, n_results, where=where)) for source in self._sources
+        ]
         return _rrf_fuse(*rankings, k=self._rrf_k, n_results=n_results)
 
 
@@ -219,6 +223,15 @@ def _to_dicts(records: list[ScoredChunk]) -> list[dict]:
     return [{"page_content": r.chunk, "metadata": r.metadata, "score": r.score} for r in records]
 
 
+def _build_where_filter(product_categories: Sequence[str]) -> WhereFilter | None:
+    """Build a where filter from product categories."""
+    if not product_categories:
+        return None
+    if len(product_categories) == 1:
+        return {"product_category": product_categories[0]}
+    return {"product_category": {"$in": list(product_categories)}}
+
+
 @mlflow.trace(name="rag_pipeline")
 def run_rag_pipeline(
     question: str,
@@ -229,24 +242,24 @@ def run_rag_pipeline(
     n_results: int,
     model: str,
     history: list[ChatCompletionMessageParam] | None = None,
-    reformulate_prompt_uri: str | None = None,
+    query_interpreter: QueryInterpreter | None = None,
     rescorers: Sequence[Rescorer] | None = None,
     context_formatters: Sequence[ContextFormatter] | None = None,
 ) -> dict:
-    """Run the full RAG pipeline: reformulate -> retrieve -> rescore -> format -> build prompt -> generate."""
-    if reformulate_prompt_uri:
-        question = reformulate_query(
-            history or [],
-            question,
-            completions_client=completions_client,
-            model=model,
-            prompt_uri=reformulate_prompt_uri,
-        )
+    """Run the full RAG pipeline: interpret -> retrieve -> rescore -> format -> build prompt -> generate."""
+    where: WhereFilter | None = None
+    all_rescorers: list[Rescorer] = list(rescorers or [])
+
+    if query_interpreter:
+        intent = query_interpreter.interpret(question, history or [])
+        question = intent.query
+        where = _build_where_filter(intent.product_categories)
+        all_rescorers.insert(0, DocumentTypeRescorer(intent.doc_type_relevance))
 
     prompt = mlflow.genai.load_prompt(prompt_uri)
-    scored_chunks = retriever.retrieve(question, n_results)
-    if rescorers:
-        scored_chunks = _apply_rescorers(scored_chunks, rescorers)
+    scored_chunks = retriever.retrieve(question, n_results, where=where)
+    if all_rescorers:
+        scored_chunks = _apply_rescorers(scored_chunks, all_rescorers)
     records = _to_dicts(scored_chunks)
     for formatter in context_formatters or ():
         records = formatter.format(records)

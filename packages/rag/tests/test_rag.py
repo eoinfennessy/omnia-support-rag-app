@@ -17,7 +17,7 @@ from omnia_support_rag.rag import (
     retrieve_context,
     run_rag_pipeline,
 )
-from omnia_support_store import KeywordStore, VectorStore
+from omnia_support_store import KeywordStore, VectorStore, WhereFilter
 from omnia_support_store.models import ChunkMetadata, ScoredChunk
 
 
@@ -118,7 +118,7 @@ class TestSemanticRetriever:
 
         result = retriever.retrieve("query", 3)
 
-        store.query.assert_called_once_with("query", 3)
+        store.query.assert_called_once_with("query", 3, where=None)
         assert len(result) == 1
         assert result[0].chunk == "text"
         assert result[0].score == 0.2
@@ -132,6 +132,16 @@ class TestSemanticRetriever:
 
         assert result == []
 
+    def test_passes_where_to_store(self):
+        store = MagicMock(spec=VectorStore)
+        store.query.return_value = []
+        retriever = SemanticRetriever(store)
+        where: WhereFilter = {"product_category": "laptops"}
+
+        retriever.retrieve("query", 3, where=where)
+
+        store.query.assert_called_once_with("query", 3, where=where)
+
 
 class TestBM25Retriever:
     def test_delegates_to_keyword_store(self):
@@ -141,7 +151,7 @@ class TestBM25Retriever:
 
         result = retriever.retrieve("query", 3)
 
-        keyword_store.query.assert_called_once_with("query", 3)
+        keyword_store.query.assert_called_once_with("query", 3, where=None)
         assert len(result) == 1
         assert result[0].chunk == "bm25 text"
         assert result[0].score == 1.5
@@ -154,6 +164,16 @@ class TestBM25Retriever:
         result = retriever.retrieve("query", 5)
 
         assert result == []
+
+    def test_passes_where_to_store(self):
+        keyword_store = MagicMock(spec=KeywordStore)
+        keyword_store.query.return_value = []
+        retriever = BM25Retriever(keyword_store)
+        where: WhereFilter = {"product_category": {"$in": ["laptops", "monitors"]}}
+
+        retriever.retrieve("query", 3, where=where)
+
+        keyword_store.query.assert_called_once_with("query", 3, where=where)
 
 
 class TestHybridRetriever:
@@ -219,6 +239,19 @@ class TestHybridRetriever:
         heavy = next(r for r in result if r.metadata["document_id"] == "heavy")
         light = next(r for r in result if r.metadata["document_id"] == "light")
         assert heavy.score > light.score
+
+    def test_passes_where_to_child_retrievers(self):
+        r1 = MagicMock()
+        r1.retrieve.return_value = []
+        r2 = MagicMock()
+        r2.retrieve.return_value = []
+        retriever = HybridRetriever(RetrieverWeight(r1, 1.0), RetrieverWeight(r2, 1.0))
+        where: WhereFilter = {"product_category": "laptops"}
+
+        retriever.retrieve("query", 5, where=where)
+
+        r1.retrieve.assert_called_once_with("query", 5, where=where)
+        r2.retrieve.assert_called_once_with("query", 5, where=where)
 
 
 class TestRrfFuse:
@@ -582,9 +615,7 @@ class TestRunRagPipeline:
         assert messages[4] == {"role": "developer", "content": "new chunk"}
         assert messages[5] == {"role": "user", "content": "new q"}
 
-    @patch("omnia_support_rag.rag.reformulate_query")
-    def test_reformulates_question_when_prompt_uri_provided(self, mock_reformulate, mock_load_prompt):
-        mock_reformulate.return_value = "standalone question"
+    def test_uses_query_interpreter_when_provided(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(
             [
                 {"role": "user", "content": "{{context}} {{question}}"},
@@ -594,6 +625,12 @@ class TestRunRagPipeline:
         retriever.retrieve.return_value = [_make_scored_record(chunk="chunk")]
         client = MagicMock()
         client.create.return_value = _make_completion("answer")
+        interpreter = MagicMock()
+        interpreter.interpret.return_value = MagicMock(
+            query="standalone question",
+            product_categories=["laptops"],
+            doc_type_relevance=MagicMock(policy=5, faq=8, support_ticket=3),
+        )
         history = [
             {"role": "user", "content": "prior"},
             {"role": "assistant", "content": "reply"},
@@ -607,19 +644,17 @@ class TestRunRagPipeline:
             n_results=1,
             model="gpt-4",
             history=history,  # ty: ignore[invalid-argument-type]
-            reformulate_prompt_uri="prompts:/reformulate@prod",
+            query_interpreter=interpreter,
         )
 
-        mock_reformulate.assert_called_once_with(
-            history,
-            "follow-up",
-            completions_client=client,
-            model="gpt-4",
-            prompt_uri="prompts:/reformulate@prod",
+        interpreter.interpret.assert_called_once_with("follow-up", history)
+        retriever.retrieve.assert_called_once_with(
+            "standalone question",
+            1,
+            where={"product_category": "laptops"},
         )
-        retriever.retrieve.assert_called_once_with("standalone question", 1)
 
-    def test_skips_reformulation_without_prompt_uri(self, mock_load_prompt):
+    def test_skips_interpretation_without_interpreter(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(
             [
                 {"role": "user", "content": "{{context}} {{question}}"},
@@ -639,7 +674,69 @@ class TestRunRagPipeline:
             model="gpt-4",
         )
 
-        retriever.retrieve.assert_called_once_with("my question", 1)
+        retriever.retrieve.assert_called_once_with("my question", 1, where=None)
+
+    def test_interpreter_multiple_categories_builds_in_filter(self, mock_load_prompt):
+        mock_load_prompt.return_value = _make_prompt(
+            [
+                {"role": "user", "content": "{{context}} {{question}}"},
+            ]
+        )
+        retriever = MagicMock()
+        retriever.retrieve.return_value = []
+        client = MagicMock()
+        client.create.return_value = _make_completion("answer")
+        interpreter = MagicMock()
+        interpreter.interpret.return_value = MagicMock(
+            query="question",
+            product_categories=["laptops", "monitors"],
+            doc_type_relevance=MagicMock(policy=5, faq=5, support_ticket=5),
+        )
+
+        run_rag_pipeline(
+            "question",
+            completions_client=client,
+            retriever=retriever,
+            prompt_uri="prompts:/p@prod",
+            n_results=1,
+            model="gpt-4",
+            query_interpreter=interpreter,
+        )
+
+        retriever.retrieve.assert_called_once_with(
+            "question",
+            1,
+            where={"product_category": {"$in": ["laptops", "monitors"]}},
+        )
+
+    def test_interpreter_empty_categories_no_filter(self, mock_load_prompt):
+        mock_load_prompt.return_value = _make_prompt(
+            [
+                {"role": "user", "content": "{{context}} {{question}}"},
+            ]
+        )
+        retriever = MagicMock()
+        retriever.retrieve.return_value = []
+        client = MagicMock()
+        client.create.return_value = _make_completion("answer")
+        interpreter = MagicMock()
+        interpreter.interpret.return_value = MagicMock(
+            query="general question",
+            product_categories=[],
+            doc_type_relevance=MagicMock(policy=5, faq=5, support_ticket=5),
+        )
+
+        run_rag_pipeline(
+            "general question",
+            completions_client=client,
+            retriever=retriever,
+            prompt_uri="prompts:/p@prod",
+            n_results=1,
+            model="gpt-4",
+            query_interpreter=interpreter,
+        )
+
+        retriever.retrieve.assert_called_once_with("general question", 1, where=None)
 
     def test_context_joined_with_separator(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(

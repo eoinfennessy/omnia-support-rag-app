@@ -11,11 +11,29 @@ from ..keyword_store import KeywordStore
 from ..models import ScoredChunk
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from pathlib import Path
 
-    from ..models import Chunk
+    from ..models import Chunk, WhereFilter
 
 _RECORDS_FILENAME = "records.json"
+
+
+def _matches_where(metadata: Mapping[str, Any], where: WhereFilter) -> bool:
+    """Check if metadata matches all where-clause conditions.
+
+    Supports exact equality and ``$in`` membership:
+    - ``{"key": "value"}`` — exact match
+    - ``{"key": {"$in": ["a", "b"]}}`` — membership check
+    """
+    for key, condition in where.items():
+        value = metadata.get(key)
+        if isinstance(condition, dict) and "$in" in condition:
+            if value not in condition["$in"]:
+                return False
+        elif value != condition:
+            return False
+    return True
 
 
 class BM25sKeywordStore(KeywordStore):
@@ -42,7 +60,7 @@ class BM25sKeywordStore(KeywordStore):
         self,
         query_text: str,
         n_results: int,
-        where: dict[str, Any] | None = None,
+        where: WhereFilter | None = None,
     ) -> list[ScoredChunk]:
         if not self._retriever or not self._records:
             return []
@@ -59,7 +77,7 @@ class BM25sKeywordStore(KeywordStore):
             for idx, score in zip(indices[0], scores[0], strict=True)
         ]
         if where:
-            scored = [r for r in scored if all(r.metadata.get(key) == val for key, val in where.items())]
+            scored = [r for r in scored if _matches_where(r.metadata, where)]
         return scored[:n_results]
 
     def reset(self) -> None:  # noqa: D102

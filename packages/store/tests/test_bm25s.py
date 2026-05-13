@@ -125,3 +125,20 @@ class TestBM25sKeywordStore:
         results = store.query("delivery", 5, where={"type": "faq"})
 
         assert all(r.metadata["type"] == "faq" for r in results)
+
+    def test_where_filter_in_operator(self):
+        store = BM25sKeywordStore()
+        store.index(_make_chunks())
+
+        results = store.query("delivery policy", 5, where={"product_category": {"$in": ["laptops", "monitors"]}})
+
+        assert all(r.metadata["product_category"] in ("laptops", "monitors") for r in results)
+        assert len(results) > 0
+
+    def test_where_filter_in_excludes_non_matching(self):
+        store = BM25sKeywordStore()
+        store.index(_make_chunks())
+
+        results = store.query("return policy", 5, where={"product_category": {"$in": ["laptops"]}})
+
+        assert all(r.metadata["product_category"] == "laptops" for r in results)

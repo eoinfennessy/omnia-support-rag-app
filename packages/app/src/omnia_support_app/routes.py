@@ -63,7 +63,7 @@ def chat(
         n_results=cfg.n_results,
         model=cfg.llm_model,
         history=history,
-        reformulate_prompt_uri=cfg.reformulate_prompt_uri,
+        query_interpreter=state.query_interpreter,
         rescorers=state.rescorers,
         context_formatters=state.context_formatters,
     )

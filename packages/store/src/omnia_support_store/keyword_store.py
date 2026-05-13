@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .models import Chunk, ScoredChunk
+    from .models import Chunk, ScoredChunk, WhereFilter
 
 
 class KeywordStore(ABC):
@@ -21,7 +21,7 @@ class KeywordStore(ABC):
         self,
         query_text: str,
         n_results: int,
-        where: dict[str, Any] | None = None,
+        where: WhereFilter | None = None,
     ) -> list[ScoredChunk]:
         """Return the most relevant records for the query text."""
 

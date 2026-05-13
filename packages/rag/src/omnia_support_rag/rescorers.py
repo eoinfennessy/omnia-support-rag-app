@@ -10,6 +10,8 @@ from omnia_support_models import ResolutionStatus
 if TYPE_CHECKING:
     from omnia_support_store import ScoredChunk
 
+    from .query_interpretation import DocumentTypeRelevance
+
 
 class SatisfactionRescorer:
     """Rescorer that multiplies score by a satisfaction-derived factor.
@@ -60,3 +62,30 @@ class ResolutionStatusRescorer:
         if status is None:
             return chunk
         return replace(chunk, score=chunk.score * self._weights.get(status, 1.0))
+
+
+class DocumentTypeRescorer:
+    """Rescorer that adjusts scores based on document type relevance.
+
+    Maps 0-10 integer relevance scores (centered at 5) into score
+    multipliers. With the default weight of 0.3: score=10 gives 1.3x,
+    score=5 gives 1.0x (neutral), score=0 gives 0.7x. Chunks with
+    no type metadata or an unknown type are returned unchanged.
+    """
+
+    def __init__(self, doc_type_relevance: DocumentTypeRelevance, *, weight: float = 0.3) -> None:
+        """Create a document type rescorer from query interpretation relevance."""
+        self._doc_type_relevance = doc_type_relevance
+        self._weight = weight
+
+    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:  # noqa: D102
+        doc_type = chunk.metadata.get("type")
+        if doc_type is None:
+            return chunk
+
+        relevance = getattr(self._doc_type_relevance, doc_type, None)
+        if relevance is None:
+            return chunk
+
+        multiplier = 1.0 + self._weight * (relevance - 5) / 5
+        return replace(chunk, score=chunk.score * multiplier)
