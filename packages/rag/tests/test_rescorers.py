@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from omnia_support_rag.query_interpretation import DocumentTypeRelevance
+from omnia_support_rag.query_interpretation import DocumentTypeRelevance, InterpretedQuery
 from omnia_support_rag.rescorers import DocumentTypeRescorer, ResolutionStatusRescorer, SatisfactionRescorer
 from omnia_support_store.models import ChunkMetadata, ScoredChunk
 
@@ -115,38 +115,53 @@ class TestResolutionStatusRescorer:
         assert result.score == 2.0
 
 
+def _make_intent(*, policy: int = 5, faq: int = 5, support_ticket: int = 5) -> InterpretedQuery:
+    return InterpretedQuery(
+        query="test",
+        doc_type_relevance=DocumentTypeRelevance(policy=policy, faq=faq, support_ticket=support_ticket),
+    )
+
+
 class TestDocumentTypeRescorer:
     def test_high_relevance_boosts_score(self):
-        relevance = DocumentTypeRelevance(policy=5, faq=5, support_ticket=10)
+        intent = _make_intent(support_ticket=10)
         chunk = _make_chunk(score=1.0)
-        rescorer = DocumentTypeRescorer(relevance)
+        rescorer = DocumentTypeRescorer()
 
-        result = rescorer.rescore(chunk)
+        result = rescorer.rescore(chunk, intent)
 
         assert result.score == 1.0 * (1.0 + 0.3 * (10 - 5) / 5)
         assert result.score > chunk.score
 
     def test_low_relevance_reduces_score(self):
-        relevance = DocumentTypeRelevance(policy=5, faq=5, support_ticket=0)
+        intent = _make_intent(support_ticket=0)
         chunk = _make_chunk(score=1.0)
-        rescorer = DocumentTypeRescorer(relevance)
+        rescorer = DocumentTypeRescorer()
 
-        result = rescorer.rescore(chunk)
+        result = rescorer.rescore(chunk, intent)
 
         assert result.score == 1.0 * (1.0 + 0.3 * (0 - 5) / 5)
         assert result.score < chunk.score
 
     def test_neutral_relevance_unchanged(self):
-        relevance = DocumentTypeRelevance(policy=5, faq=5, support_ticket=5)
+        intent = _make_intent(support_ticket=5)
         chunk = _make_chunk(score=1.0)
-        rescorer = DocumentTypeRescorer(relevance)
+        rescorer = DocumentTypeRescorer()
 
-        result = rescorer.rescore(chunk)
+        result = rescorer.rescore(chunk, intent)
 
         assert result.score == chunk.score
 
+    def test_no_intent_returns_unchanged(self):
+        chunk = _make_chunk(score=1.0)
+        rescorer = DocumentTypeRescorer()
+
+        result = rescorer.rescore(chunk)
+
+        assert result is chunk
+
     def test_missing_type_returns_unchanged(self):
-        relevance = DocumentTypeRelevance(policy=10, faq=10, support_ticket=10)
+        intent = _make_intent(policy=10, faq=10, support_ticket=10)
         metadata: ChunkMetadata = {  # ty: ignore[missing-typed-dict-key]
             "document_id": "doc-1",
             "category": "General",
@@ -156,14 +171,14 @@ class TestDocumentTypeRescorer:
             "total_chunks": 1,
         }
         chunk = ScoredChunk(id="doc-1-chunk-0", chunk="text", metadata=metadata, score=1.0)
-        rescorer = DocumentTypeRescorer(relevance)
+        rescorer = DocumentTypeRescorer()
 
-        result = rescorer.rescore(chunk)
+        result = rescorer.rescore(chunk, intent)
 
         assert result is chunk
 
     def test_unknown_type_returns_unchanged(self):
-        relevance = DocumentTypeRelevance(policy=10, faq=10, support_ticket=10)
+        intent = _make_intent(policy=10, faq=10, support_ticket=10)
         metadata: ChunkMetadata = {
             "document_id": "doc-1",
             "type": "unknown_type",
@@ -174,17 +189,17 @@ class TestDocumentTypeRescorer:
             "total_chunks": 1,
         }
         chunk = ScoredChunk(id="doc-1-chunk-0", chunk="text", metadata=metadata, score=1.0)
-        rescorer = DocumentTypeRescorer(relevance)
+        rescorer = DocumentTypeRescorer()
 
-        result = rescorer.rescore(chunk)
+        result = rescorer.rescore(chunk, intent)
 
         assert result is chunk
 
     def test_custom_weight(self):
-        relevance = DocumentTypeRelevance(policy=5, faq=5, support_ticket=10)
+        intent = _make_intent(support_ticket=10)
         chunk = _make_chunk(score=1.0)
-        rescorer = DocumentTypeRescorer(relevance, weight=0.5)
+        rescorer = DocumentTypeRescorer(weight=0.5)
 
-        result = rescorer.rescore(chunk)
+        result = rescorer.rescore(chunk, intent)
 
         assert result.score == 1.0 * (1.0 + 0.5 * (10 - 5) / 5)

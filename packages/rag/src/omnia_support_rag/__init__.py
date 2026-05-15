@@ -1,32 +1,29 @@
 """RAG pipeline for Omnia Support."""
 
-from omnia_support_rag.context_formatting import (
-    ContextFormatter,
+from omnia_support_rag.context_processing import (
+    ContextProcessor,
     LostInMiddleFormatter,
     TokenBudgetFormatter,
 )
 from omnia_support_rag.filters import (
     BM25ThresholdFilter,
     CosineSimThresholdFilter,
-    RetrievalFilter,
 )
 from omnia_support_rag.query_interpretation import (
     DocumentTypeRelevance,
     InterpretedQuery,
     LLMQueryInterpreter,
+    PassthroughQueryInterpreter,
     QueryInterpreter,
 )
 from omnia_support_rag.rag import (
-    BM25Retriever,
     CompletionsClient,
-    HybridRetriever,
+    RagResult,
     Rescorer,
     Retriever,
-    RetrieverWeight,
-    SemanticRetriever,
     generate_answer,
+    join_records,
     render_messages,
-    retrieve_context,
     run_rag_pipeline,
 )
 from omnia_support_rag.rescorers import (
@@ -34,13 +31,20 @@ from omnia_support_rag.rescorers import (
     ResolutionStatusRescorer,
     SatisfactionRescorer,
 )
+from omnia_support_rag.retrievers import (
+    BM25Retriever,
+    HybridRetriever,
+    RetrievalFilter,
+    RetrieverWeight,
+    SemanticRetriever,
+)
 from omnia_support_store import WhereFilter
 
 __all__ = [
     "BM25Retriever",
     "BM25ThresholdFilter",
     "CompletionsClient",
-    "ContextFormatter",
+    "ContextProcessor",
     "CosineSimThresholdFilter",
     "DocumentTypeRelevance",
     "DocumentTypeRescorer",
@@ -48,7 +52,9 @@ __all__ = [
     "InterpretedQuery",
     "LLMQueryInterpreter",
     "LostInMiddleFormatter",
+    "PassthroughQueryInterpreter",
     "QueryInterpreter",
+    "RagResult",
     "Rescorer",
     "ResolutionStatusRescorer",
     "RetrievalFilter",
@@ -59,7 +65,7 @@ __all__ = [
     "TokenBudgetFormatter",
     "WhereFilter",
     "generate_answer",
+    "join_records",
     "render_messages",
-    "retrieve_context",
     "run_rag_pipeline",
 ]

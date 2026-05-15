@@ -10,7 +10,7 @@ from omnia_support_models import ResolutionStatus
 if TYPE_CHECKING:
     from omnia_support_store import ScoredChunk
 
-    from .query_interpretation import DocumentTypeRelevance
+    from .query_interpretation import InterpretedQuery
 
 
 class SatisfactionRescorer:
@@ -29,7 +29,7 @@ class SatisfactionRescorer:
         """Create a satisfaction rescorer with the given weight."""
         self._weight = weight
 
-    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:  # noqa: D102
+    def rescore(self, chunk: ScoredChunk, intent: InterpretedQuery | None = None) -> ScoredChunk:  # noqa: ARG002, D102
         satisfaction = chunk.metadata.get("customer_satisfaction")
         if satisfaction is None:
             return chunk
@@ -57,7 +57,7 @@ class ResolutionStatusRescorer:
             ResolutionStatus.PENDING: pending_weight,
         }
 
-    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:  # noqa: D102
+    def rescore(self, chunk: ScoredChunk, intent: InterpretedQuery | None = None) -> ScoredChunk:  # noqa: ARG002, D102
         status = chunk.metadata.get("resolution_status")
         if status is None:
             return chunk
@@ -71,19 +71,24 @@ class DocumentTypeRescorer:
     multipliers. With the default weight of 0.3: score=10 gives 1.3x,
     score=5 gives 1.0x (neutral), score=0 gives 0.7x. Chunks with
     no type metadata or an unknown type are returned unchanged.
+
+    Reads relevance scores from the InterpretedQuery passed at rescore
+    time. Returns chunks unchanged when no intent is available.
     """
 
-    def __init__(self, doc_type_relevance: DocumentTypeRelevance, *, weight: float = 0.3) -> None:
-        """Create a document type rescorer from query interpretation relevance."""
-        self._doc_type_relevance = doc_type_relevance
+    def __init__(self, *, weight: float = 0.3) -> None:
+        """Create a document type rescorer with the given weight."""
         self._weight = weight
 
-    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:  # noqa: D102
+    def rescore(self, chunk: ScoredChunk, intent: InterpretedQuery | None = None) -> ScoredChunk:  # noqa: D102
+        if intent is None:
+            return chunk
+
         doc_type = chunk.metadata.get("type")
         if doc_type is None:
             return chunk
 
-        relevance = getattr(self._doc_type_relevance, doc_type, None)
+        relevance = getattr(intent.doc_type_relevance, doc_type, None)
         if relevance is None:
             return chunk
 

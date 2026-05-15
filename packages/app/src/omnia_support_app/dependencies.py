@@ -16,6 +16,7 @@ from omnia_support_rag import (
     BM25Retriever,
     BM25ThresholdFilter,
     CosineSimThresholdFilter,
+    DocumentTypeRescorer,
     HybridRetriever,
     LLMQueryInterpreter,
     LostInMiddleFormatter,
@@ -32,7 +33,7 @@ from .session import InMemorySessionStore
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from omnia_support_rag.context_formatting import ContextFormatter
+    from omnia_support_rag.context_processing import ContextProcessor
     from omnia_support_rag.query_interpretation import QueryInterpreter
     from omnia_support_rag.rag import CompletionsClient, Rescorer, Retriever
 
@@ -55,10 +56,10 @@ class AppState:
     config: AppConfig
     retriever: Retriever
     rescorers: Sequence[Rescorer]
-    context_formatters: Sequence[ContextFormatter]
+    context_processors: Sequence[ContextProcessor]
     completions_client: CompletionsClient
     dataset: Dataset
-    query_interpreter: QueryInterpreter | None = None
+    query_interpreter: QueryInterpreter
     sessions: SessionStore = field(default_factory=InMemorySessionStore)
 
 
@@ -89,7 +90,7 @@ def create_app_state() -> AppState:
     if retrieval_mode in ("bm25", "hybrid"):
         keyword_store = BM25sKeywordStore(index_path=Path(os.environ.get("BM25_INDEX_PATH", "data/bm25")))
 
-    rescorers = [SatisfactionRescorer(), ResolutionStatusRescorer()]
+    rescorers = [DocumentTypeRescorer(), SatisfactionRescorer(), ResolutionStatusRescorer()]
     semantic_filters = [CosineSimThresholdFilter()]
     keyword_filters = [BM25ThresholdFilter()]
 
@@ -112,7 +113,7 @@ def create_app_state() -> AppState:
             raise SystemExit("Error: semantic mode requires a vector store")
         retriever = SemanticRetriever(vector_store, filters=semantic_filters)
 
-    context_formatters = [TokenBudgetFormatter(), LostInMiddleFormatter()]
+    context_processors = [TokenBudgetFormatter(), LostInMiddleFormatter()]
 
     prompt_name = os.environ.get("PROMPT_NAME", "omnia_support_system")
     prompt_alias = os.environ.get("PROMPT_ALIAS", "production")
@@ -142,7 +143,7 @@ def create_app_state() -> AppState:
         config=config,
         retriever=retriever,
         rescorers=rescorers,
-        context_formatters=context_formatters,
+        context_processors=context_processors,
         completions_client=openai.OpenAI().chat.completions,
         dataset=dataset,
         query_interpreter=query_interpreter,

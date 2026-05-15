@@ -37,7 +37,8 @@ from omnia_support_models import Dataset, TestQuery
 from omnia_support_rag import (
     BM25Retriever,
     CompletionsClient,
-    ContextFormatter,
+    ContextProcessor,
+    DocumentTypeRescorer,
     HybridRetriever,
     LLMQueryInterpreter,
     LostInMiddleFormatter,
@@ -72,14 +73,14 @@ class RunEvaluationConfig:
     prompt_alias: str
     retriever: Retriever
     rescorers: Sequence[Rescorer]
-    context_formatters: Sequence[ContextFormatter]
+    context_processors: Sequence[ContextProcessor]
     collection_name: str
     embedding_model: str
     completions_client: CompletionsClient
     n_results: int
     llm_model: str
     experiment_name: str
-    query_interpreter: QueryInterpreter | None = None
+    query_interpreter: QueryInterpreter
 
 
 class GoldSetEntry(TestQuery):
@@ -203,8 +204,8 @@ def make_predict_fn(
     n_results: int,
     model: str,
     rescorers: Sequence[Rescorer] | None = None,
-    context_formatters: Sequence[ContextFormatter] | None = None,
-    query_interpreter: QueryInterpreter | None = None,
+    context_processors: Sequence[ContextProcessor] | None = None,
+    query_interpreter: QueryInterpreter,
 ) -> Callable[[str], str]:
     """Create a predict function for mlflow.genai.evaluate()."""
 
@@ -217,10 +218,10 @@ def make_predict_fn(
             n_results=n_results,
             model=model,
             rescorers=rescorers,
-            context_formatters=context_formatters,
+            context_processors=context_processors,
             query_interpreter=query_interpreter,
         )
-        return result["answer"]
+        return result.answer
 
     return predict
 
@@ -258,7 +259,7 @@ def run_evaluation(config: RunEvaluationConfig) -> None:
         n_results=config.n_results,
         model=config.llm_model,
         rescorers=config.rescorers,
-        context_formatters=config.context_formatters,
+        context_processors=config.context_processors,
         query_interpreter=config.query_interpreter,
     )
 
@@ -407,8 +408,8 @@ def main() -> None:
     if args.retrieval_mode in ("bm25", "hybrid"):
         keyword_store = BM25sKeywordStore(index_path=Path(args.bm25_path))
 
-    rescorers: list[Rescorer] = [SatisfactionRescorer(), ResolutionStatusRescorer()]
-    context_formatters: list[ContextFormatter] = [TokenBudgetFormatter(), LostInMiddleFormatter()]
+    rescorers: list[Rescorer] = [DocumentTypeRescorer(), SatisfactionRescorer(), ResolutionStatusRescorer()]
+    context_processors: list[ContextProcessor] = [TokenBudgetFormatter(), LostInMiddleFormatter()]
 
     retriever: Retriever
     if args.retrieval_mode == "hybrid":
@@ -444,7 +445,7 @@ def main() -> None:
         prompt_alias=args.prompt_alias,
         retriever=retriever,
         rescorers=rescorers,
-        context_formatters=context_formatters,
+        context_processors=context_processors,
         collection_name=vector_store.collection_name if vector_store else "n/a",
         embedding_model=args.embedding_model,
         completions_client=openai.OpenAI().chat.completions,

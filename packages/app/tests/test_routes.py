@@ -21,6 +21,8 @@ from omnia_support_models import (
     ProductCategory,
     ResolutionStatus,
 )
+from omnia_support_rag import PassthroughQueryInterpreter, RagResult
+from omnia_support_store.models import ChunkMetadata, ScoredChunk
 
 _TEST_DATASET = Dataset(
     dataset_metadata=DatasetMetadata(
@@ -86,63 +88,72 @@ def _create_test_app() -> tuple[FastAPI, AppState]:
         ),
         retriever=MagicMock(),
         rescorers=[],
-        context_formatters=[],
+        context_processors=[],
         completions_client=MagicMock(),
         dataset=_TEST_DATASET,
+        query_interpreter=PassthroughQueryInterpreter(),
         sessions=InMemorySessionStore(),
     )
     app.state.app_state = state
     return app, state
 
 
-_POLICY_RECORD = {
-    "page_content": "Return policy content",
-    "metadata": {
-        "document_id": "policy_001",
-        "type": "policy",
-        "category": "returns",
+def _make_record(
+    *,
+    document_id: str,
+    chunk: str,
+    doc_type: str,
+    category: str,
+    product_category: str = "all",
+    chunk_index: int = 0,
+) -> ScoredChunk:
+    metadata: ChunkMetadata = {
+        "document_id": document_id,
+        "type": doc_type,
+        "category": category,
         "date": "2024-01-01",
-        "product_category": "all",
-        "chunk_index": 0,
+        "product_category": product_category,
+        "chunk_index": chunk_index,
         "total_chunks": 1,
-    },
-}
+    }
+    return ScoredChunk(
+        id=f"{document_id}-chunk-{chunk_index}",
+        chunk=chunk,
+        metadata=metadata,
+        score=0.5,
+    )
 
-_FAQ_RECORD = {
-    "page_content": "FAQ content",
-    "metadata": {
-        "document_id": "faq_001",
-        "type": "faq",
-        "category": "general",
-        "date": "2024-01-01",
-        "product_category": "all",
-        "chunk_index": 0,
-        "total_chunks": 1,
-    },
-}
 
-_TICKET_RECORD = {
-    "page_content": "Ticket content",
-    "metadata": {
-        "document_id": "ticket_001",
-        "type": "support_ticket",
-        "category": "delivery_issue",
-        "date": "2024-01-01",
-        "product_category": "laptops",
-        "chunk_index": 0,
-        "total_chunks": 1,
-    },
-}
+_POLICY_RECORD = _make_record(
+    document_id="policy_001",
+    chunk="Return policy content",
+    doc_type="policy",
+    category="returns",
+)
+
+_FAQ_RECORD = _make_record(
+    document_id="faq_001",
+    chunk="FAQ content",
+    doc_type="faq",
+    category="general",
+)
+
+_TICKET_RECORD = _make_record(
+    document_id="ticket_001",
+    chunk="Ticket content",
+    doc_type="support_ticket",
+    category="delivery_issue",
+    product_category="laptops",
+)
 
 
 @patch("omnia_support_app.routes.run_rag_pipeline")
 class TestChatEndpoint:
     def test_returns_answer(self, mock_pipeline):
-        mock_pipeline.return_value = {
-            "answer": "Our return policy is...",
-            "retrieved_context": "policy content",
-            "retrieved_records": [_POLICY_RECORD],
-        }
+        mock_pipeline.return_value = RagResult(
+            answer="Our return policy is...",
+            retrieved_chunks=[_POLICY_RECORD],
+        )
         app, _ = _create_test_app()
         client = TestClient(app)
 
@@ -157,11 +168,10 @@ class TestChatEndpoint:
         assert data["session_id"] == "s1"
 
     def test_passes_query_interpreter_to_pipeline(self, mock_pipeline):
-        mock_pipeline.return_value = {
-            "answer": "answer",
-            "retrieved_context": "context",
-            "retrieved_records": [_POLICY_RECORD],
-        }
+        mock_pipeline.return_value = RagResult(
+            answer="answer",
+            retrieved_chunks=[_POLICY_RECORD],
+        )
         app, _ = _create_test_app()
         client = TestClient(app)
 
@@ -170,14 +180,13 @@ class TestChatEndpoint:
             json={"session_id": "s1", "message": "question"},
         )
 
-        assert mock_pipeline.call_args.kwargs["query_interpreter"] is None
+        assert isinstance(mock_pipeline.call_args.kwargs["query_interpreter"], PassthroughQueryInterpreter)
 
     def test_second_message_passes_history(self, mock_pipeline):
-        mock_pipeline.return_value = {
-            "answer": "answer",
-            "retrieved_context": "context",
-            "retrieved_records": [_POLICY_RECORD],
-        }
+        mock_pipeline.return_value = RagResult(
+            answer="answer",
+            retrieved_chunks=[_POLICY_RECORD],
+        )
         app, _state = _create_test_app()
         client = TestClient(app)
 
@@ -198,11 +207,10 @@ class TestChatEndpoint:
         assert history[2]["role"] == "assistant"
 
     def test_stores_developer_user_assistant_triple(self, mock_pipeline):
-        mock_pipeline.return_value = {
-            "answer": "the answer",
-            "retrieved_context": "the context",
-            "retrieved_records": [_POLICY_RECORD],
-        }
+        mock_pipeline.return_value = RagResult(
+            answer="the answer",
+            retrieved_chunks=[_POLICY_RECORD],
+        )
         app, state = _create_test_app()
         client = TestClient(app)
 
@@ -213,28 +221,22 @@ class TestChatEndpoint:
 
         history = state.sessions.get_history("s1")
         assert len(history) == 3
-        assert history[0] == {"role": "developer", "content": "the context"}
+        assert history[0] == {"role": "developer", "content": "Return policy content"}
         assert history[1] == {"role": "user", "content": "my question"}
         assert history[2] == {"role": "assistant", "content": "the answer"}
 
     def test_returns_deduplicated_sources(self, mock_pipeline):
-        duplicate_record = {
-            "page_content": "Another chunk from same policy",
-            "metadata": {
-                "document_id": "policy_001",
-                "type": "policy",
-                "category": "returns",
-                "date": "2024-01-01",
-                "product_category": "all",
-                "chunk_index": 1,
-                "total_chunks": 1,
-            },
-        }
-        mock_pipeline.return_value = {
-            "answer": "answer",
-            "retrieved_context": "context",
-            "retrieved_records": [_POLICY_RECORD, duplicate_record, _FAQ_RECORD],
-        }
+        duplicate_record = _make_record(
+            document_id="policy_001",
+            chunk="Another chunk from same policy",
+            doc_type="policy",
+            category="returns",
+            chunk_index=1,
+        )
+        mock_pipeline.return_value = RagResult(
+            answer="answer",
+            retrieved_chunks=[_POLICY_RECORD, duplicate_record, _FAQ_RECORD],
+        )
         app, _ = _create_test_app()
         client = TestClient(app)
 
@@ -249,11 +251,10 @@ class TestChatEndpoint:
         assert sources[1] == {"url": "/faqs/faq_001", "title": "faq_001 - General", "type": "faq"}
 
     def test_excludes_support_tickets_from_sources(self, mock_pipeline):
-        mock_pipeline.return_value = {
-            "answer": "answer",
-            "retrieved_context": "context",
-            "retrieved_records": [_TICKET_RECORD, _POLICY_RECORD],
-        }
+        mock_pipeline.return_value = RagResult(
+            answer="answer",
+            retrieved_chunks=[_TICKET_RECORD, _POLICY_RECORD],
+        )
         app, _ = _create_test_app()
         client = TestClient(app)
 
@@ -270,11 +271,10 @@ class TestChatEndpoint:
 @patch("omnia_support_app.routes.run_rag_pipeline")
 class TestClearSessionEndpoint:
     def test_clears_session(self, mock_pipeline):
-        mock_pipeline.return_value = {
-            "answer": "a",
-            "retrieved_context": "c",
-            "retrieved_records": [_POLICY_RECORD],
-        }
+        mock_pipeline.return_value = RagResult(
+            answer="a",
+            retrieved_chunks=[_POLICY_RECORD],
+        )
         app, state = _create_test_app()
         client = TestClient(app)
 

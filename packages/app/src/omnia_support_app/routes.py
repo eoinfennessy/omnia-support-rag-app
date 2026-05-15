@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
 from omnia_support_models import Document, DocumentType
-from omnia_support_rag import run_rag_pipeline
+from omnia_support_rag import join_records, run_rag_pipeline
 
 from .dependencies import AppState  # noqa: TC001 — needed at runtime for FastAPI Depends
 
@@ -65,26 +65,26 @@ def chat(
         history=history,
         query_interpreter=state.query_interpreter,
         rescorers=state.rescorers,
-        context_formatters=state.context_formatters,
+        context_processors=state.context_processors,
     )
 
     state.sessions.add_messages(
         body.session_id,
         [
-            {"role": "developer", "content": result["retrieved_context"]},
+            {"role": "developer", "content": join_records(result.retrieved_chunks)},
             {"role": "user", "content": body.message},
-            {"role": "assistant", "content": result["answer"]},
+            {"role": "assistant", "content": result.answer},
         ],
     )
 
     seen: set[str] = set()
     sources: list[Source] = []
-    for record in result["retrieved_records"]:
-        doc_id = record["metadata"]["document_id"]
-        doc_type = record["metadata"]["type"]
+    for record in result.retrieved_chunks:
+        doc_id = record.metadata["document_id"]
+        doc_type = record.metadata["type"]
         if doc_id not in seen and doc_type in ("policy", "faq"):
             seen.add(doc_id)
-            category = record["metadata"]["category"]
+            category = record.metadata["category"]
             title = _to_title_case(category)
             if doc_type == "faq":
                 title = f"{doc_id} - {title}"
@@ -98,7 +98,7 @@ def chat(
 
     return ChatResponse(
         session_id=body.session_id,
-        answer=result["answer"],
+        answer=result.answer,
         sources=sources,
     )
 

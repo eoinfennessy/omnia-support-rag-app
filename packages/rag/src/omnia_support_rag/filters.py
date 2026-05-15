@@ -2,22 +2,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from omnia_support_store import ScoredChunk
 
 
-class RetrievalFilter(Protocol):
-    """Protocol for a post-retrieval filter on raw store results."""
-
-    def filter(self, results: list[ScoredChunk]) -> list[ScoredChunk]:
-        """Return a filtered subset of results."""
-        ...
-
-
 class CosineSimThresholdFilter:
-    """Drop results below a cosine similarity threshold.
+    """Drop chunks below a cosine similarity threshold.
 
     Default of 0.27 chosen empirically: relevant queries scored >= 0.31
     cosine similarity while out-of-scope queries scored <= 0.23, placing
@@ -28,12 +20,12 @@ class CosineSimThresholdFilter:
         """Create a cosine similarity threshold filter."""
         self._min_similarity = min_similarity
 
-    def filter(self, results: list[ScoredChunk]) -> list[ScoredChunk]:  # noqa: D102
-        return [r for r in results if r.score >= self._min_similarity]
+    def filter(self, chunks: list[ScoredChunk]) -> list[ScoredChunk]:  # noqa: D102
+        return [r for r in chunks if r.score >= self._min_similarity]
 
 
 class BM25ThresholdFilter:
-    """Drop results below a minimum BM25 score.
+    """Drop chunks below a minimum BM25 score.
 
     Default of 1.5 chosen empirically: relevant queries produced top
     BM25 scores ≥ 1.66 while out-of-scope queries with zero term overlap
@@ -45,5 +37,5 @@ class BM25ThresholdFilter:
         """Create a BM25 score threshold filter."""
         self._min_score = min_score
 
-    def filter(self, results: list[ScoredChunk]) -> list[ScoredChunk]:  # noqa: D102
-        return [r for r in results if r.score >= self._min_score]
+    def filter(self, chunks: list[ScoredChunk]) -> list[ScoredChunk]:  # noqa: D102
+        return [r for r in chunks if r.score >= self._min_score]

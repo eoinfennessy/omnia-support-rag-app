@@ -6,16 +6,18 @@ from dataclasses import replace
 from unittest.mock import MagicMock, patch
 
 from omnia_support_rag.rag import (
+    _apply_rescorers,
+    _reorder_by_score,
+    generate_answer,
+    render_messages,
+    run_rag_pipeline,
+)
+from omnia_support_rag.retrievers import (
     BM25Retriever,
     HybridRetriever,
     RetrieverWeight,
     SemanticRetriever,
-    _apply_rescorers,
     _rrf_fuse,
-    generate_answer,
-    render_messages,
-    retrieve_context,
-    run_rag_pipeline,
 )
 from omnia_support_store import KeywordStore, VectorStore, WhereFilter
 from omnia_support_store.models import ChunkMetadata, ScoredChunk
@@ -57,57 +59,6 @@ def _make_completion(content: str | None = "The answer") -> MagicMock:
     response.choices = [MagicMock()]
     response.choices[0].message.content = content
     return response
-
-
-class TestRetrieveContext:
-    def test_returns_page_content_and_metadata(self):
-        store = MagicMock(spec=VectorStore)
-        record = _make_scored_record()
-        store.query.return_value = [record]
-
-        result = retrieve_context(store, "test query", 3)
-
-        assert len(result) == 1
-        assert result[0]["page_content"] == "Some text"
-        assert result[0]["metadata"]["document_id"] == "doc-1"
-        assert result[0]["score"] == 0.1
-        store.query.assert_called_once_with("test query", 3)
-
-    def test_multiple_results_preserves_order(self):
-        store = MagicMock(spec=VectorStore)
-        store.query.return_value = [
-            _make_scored_record(chunk="A", document_id="d1", score=0.1),
-            _make_scored_record(chunk="B", document_id="d2", score=0.5),
-            _make_scored_record(chunk="C", document_id="d3", score=0.9),
-        ]
-
-        result = retrieve_context(store, "query", 3)
-
-        assert [r["page_content"] for r in result] == ["A", "B", "C"]
-        assert [r["score"] for r in result] == [0.1, 0.5, 0.9]
-
-    def test_empty_results(self):
-        store = MagicMock(spec=VectorStore)
-        store.query.return_value = []
-
-        result = retrieve_context(store, "query", 5)
-
-        assert result == []
-
-    def test_metadata_passed_through(self):
-        store = MagicMock(spec=VectorStore)
-        store.query.return_value = [
-            _make_scored_record(document_id="policy-001", chunk_index=2, total_chunks=5),
-        ]
-
-        result = retrieve_context(store, "query", 1)
-
-        meta = result[0]["metadata"]
-        assert meta["document_id"] == "policy-001"
-        assert meta["chunk_index"] == 2
-        assert meta["total_chunks"] == 5
-        assert meta["type"] == "faq"
-        assert result[0]["score"] == 0.1
 
 
 class TestSemanticRetriever:
@@ -298,7 +249,7 @@ class TestRrfFuse:
 class _BoostRescorer:
     """Test rescorer that boosts score by customer_satisfaction if present."""
 
-    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
+    def rescore(self, chunk: ScoredChunk, intent=None) -> ScoredChunk:  # noqa: ARG002
         sat = chunk.metadata.get("customer_satisfaction", 0.0)
         return replace(chunk, score=chunk.score + sat)
 
@@ -307,7 +258,7 @@ class _MultiplyRescorer:
     def __init__(self, factor: float) -> None:
         self._factor = factor
 
-    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
+    def rescore(self, chunk: ScoredChunk, intent=None) -> ScoredChunk:  # noqa: ARG002
         return replace(chunk, score=chunk.score * self._factor)
 
 
@@ -315,12 +266,12 @@ class _AddRescorer:
     def __init__(self, value: float) -> None:
         self._value = value
 
-    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
+    def rescore(self, chunk: ScoredChunk, intent=None) -> ScoredChunk:  # noqa: ARG002
         return replace(chunk, score=chunk.score + self._value)
 
 
 class _IdentityRescorer:
-    def rescore(self, chunk: ScoredChunk) -> ScoredChunk:
+    def rescore(self, chunk: ScoredChunk, intent=None) -> ScoredChunk:  # noqa: ARG002
         return chunk
 
 
@@ -333,8 +284,8 @@ class TestApplyRescorers:
 
         result = _apply_rescorers(records, [_MultiplyRescorer(10)])
 
-        assert result[0].score == 20.0
-        assert result[1].score == 10.0
+        assert result[0].score == 10.0
+        assert result[1].score == 20.0
 
     def test_multiple_rescorers_applied_in_sequence(self):
         records = [_make_scored_record(score=1.0)]
@@ -346,7 +297,7 @@ class TestApplyRescorers:
 
         assert result[0].score == 22.0
 
-    def test_results_sorted_descending_by_score(self):
+    def test_does_not_reorder(self):
         records = [
             _make_scored_record(document_id="low", score=1.0),
             _make_scored_record(document_id="high", score=10.0),
@@ -354,8 +305,32 @@ class TestApplyRescorers:
 
         result = _apply_rescorers(records, [_IdentityRescorer()])
 
+        assert result[0].metadata["document_id"] == "low"
+        assert result[1].metadata["document_id"] == "high"
+
+
+class TestReorderByScore:
+    def test_sorts_descending(self):
+        records = [
+            _make_scored_record(document_id="low", score=1.0),
+            _make_scored_record(document_id="high", score=10.0),
+        ]
+
+        result = _reorder_by_score(records)
+
         assert result[0].metadata["document_id"] == "high"
         assert result[1].metadata["document_id"] == "low"
+
+    def test_preserves_order_when_already_sorted(self):
+        records = [
+            _make_scored_record(document_id="first", score=10.0),
+            _make_scored_record(document_id="second", score=5.0),
+        ]
+
+        result = _reorder_by_score(records)
+
+        assert result[0].metadata["document_id"] == "first"
+        assert result[1].metadata["document_id"] == "second"
 
 
 class TestRetrieverPreservesOrder:
@@ -402,7 +377,7 @@ class TestRenderMessages:
             ]
         )
 
-        result = render_messages(prompt, context="some context", question="What?")
+        result = render_messages(prompt, records=[_make_scored_record(chunk="some context")], question="What?")
 
         assert len(result) == 3
         assert result[0]["content"] == "You are a helper."
@@ -450,7 +425,12 @@ class TestRenderMessages:
             {"role": "assistant", "content": "old answer"},
         ]
 
-        result = render_messages(prompt, history=history, context="new context", question="new question")  # ty: ignore[invalid-argument-type]
+        result = render_messages(
+            prompt,
+            history=history,  # ty: ignore[invalid-argument-type]
+            records=[_make_scored_record(chunk="new context")],
+            question="new question",
+        )
 
         assert len(result) == 6
         assert result[0] == {"role": "system", "content": "System prompt"}
@@ -553,9 +533,8 @@ class TestRunRagPipeline:
             model="gpt-4",
         )
 
-        assert result["answer"] == "answer text"
-        assert result["retrieved_context"] == "chunk A\n---\nchunk B"
-        assert len(result["retrieved_records"]) == 2
+        assert result.answer == "answer text"
+        assert len(result.retrieved_chunks) == 2
 
     def test_calls_load_prompt_with_uri(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(
@@ -564,7 +543,7 @@ class TestRunRagPipeline:
             ]
         )
         retriever = MagicMock()
-        retriever.retrieve.return_value = []
+        retriever.retrieve.return_value = [_make_scored_record(chunk="chunk")]
         client = MagicMock()
         client.create.return_value = _make_completion()
 
@@ -648,13 +627,10 @@ class TestRunRagPipeline:
         )
 
         interpreter.interpret.assert_called_once_with("follow-up", history)
-        retriever.retrieve.assert_called_once_with(
-            "standalone question",
-            1,
-            where={"product_category": "laptops"},
-        )
+        where_arg = retriever.retrieve.call_args.kwargs["where"]
+        assert set(where_arg["product_category"]["$in"]) == {"laptops", "all", "none"}
 
-    def test_skips_interpretation_without_interpreter(self, mock_load_prompt):
+    def test_passthrough_interpreter_preserves_query_with_no_filter(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(
             [
                 {"role": "user", "content": "{{context}} {{question}}"},
@@ -703,11 +679,8 @@ class TestRunRagPipeline:
             query_interpreter=interpreter,
         )
 
-        retriever.retrieve.assert_called_once_with(
-            "question",
-            1,
-            where={"product_category": {"$in": ["laptops", "monitors"]}},
-        )
+        where_arg = retriever.retrieve.call_args.kwargs["where"]
+        assert set(where_arg["product_category"]["$in"]) == {"laptops", "monitors", "all", "none"}
 
     def test_interpreter_empty_categories_no_filter(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(
@@ -762,4 +735,4 @@ class TestRunRagPipeline:
             model="gpt-4",
         )
 
-        assert result["retrieved_context"] == "first\n---\nsecond\n---\nthird"
+        assert [r.chunk for r in result.retrieved_chunks] == ["first", "second", "third"]

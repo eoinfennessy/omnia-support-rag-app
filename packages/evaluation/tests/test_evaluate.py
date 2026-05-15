@@ -207,8 +207,8 @@ class TestRetrievalPrecision:
 
     def test_perfect_precision(self):
         outputs = [
-            {"page_content": "text", "metadata": {"document_id": "doc-1"}},
-            {"page_content": "text", "metadata": {"document_id": "doc-2"}},
+            {"id": "doc-1-chunk-0", "chunk": "text", "metadata": {"document_id": "doc-1"}, "score": 0.9},
+            {"id": "doc-2-chunk-0", "chunk": "text", "metadata": {"document_id": "doc-2"}, "score": 0.8},
         ]
         trace = _make_trace(outputs)
 
@@ -221,7 +221,7 @@ class TestRetrievalPrecision:
 
     def test_partial_precision(self):
         outputs = [
-            {"page_content": "text", "metadata": {"document_id": "doc-1"}},
+            {"id": "doc-1-chunk-0", "chunk": "text", "metadata": {"document_id": "doc-1"}, "score": 0.9},
         ]
         trace = _make_trace(outputs)
 
@@ -235,11 +235,11 @@ class TestRetrievalPrecision:
     def test_uses_last_retriever_span(self):
         wrong_span = MagicMock()
         wrong_span.outputs = [
-            {"page_content": "x", "metadata": {"document_id": "wrong"}},
+            {"id": "wrong-chunk-0", "chunk": "x", "metadata": {"document_id": "wrong"}, "score": 0.5},
         ]
         right_span = MagicMock()
         right_span.outputs = [
-            {"page_content": "x", "metadata": {"document_id": "doc-1"}},
+            {"id": "doc-1-chunk-0", "chunk": "x", "metadata": {"document_id": "doc-1"}, "score": 0.9},
         ]
         trace = MagicMock()
         trace.search_spans.return_value = [wrong_span, right_span]
@@ -254,7 +254,7 @@ class TestRetrievalPrecision:
     def test_handles_non_dict_outputs(self):
         outputs = [
             "not a dict",
-            {"page_content": "x", "metadata": {"document_id": "doc-1"}},
+            {"id": "doc-1-chunk-0", "chunk": "x", "metadata": {"document_id": "doc-1"}, "score": 0.9},
             42,
         ]
         trace = _make_trace(outputs)

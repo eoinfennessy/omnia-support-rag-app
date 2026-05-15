@@ -25,9 +25,9 @@ FilterableCategory = Literal[
 class DocumentTypeRelevance(BaseModel):
     """Per-document-type relevance weights returned by query interpretation."""
 
-    policy: int = Field(ge=0, le=10)
-    faq: int = Field(ge=0, le=10)
-    support_ticket: int = Field(ge=0, le=10)
+    policy: int = Field(default=5, ge=0, le=10)
+    faq: int = Field(default=5, ge=0, le=10)
+    support_ticket: int = Field(default=5, ge=0, le=10)
 
 
 class InterpretedQuery(BaseModel):
@@ -35,7 +35,7 @@ class InterpretedQuery(BaseModel):
 
     query: str
     product_categories: list[FilterableCategory] = Field(default_factory=list)
-    doc_type_relevance: DocumentTypeRelevance
+    doc_type_relevance: DocumentTypeRelevance = Field(default_factory=DocumentTypeRelevance)
 
 
 class QueryInterpreter(Protocol):
@@ -48,6 +48,18 @@ class QueryInterpreter(Protocol):
     ) -> InterpretedQuery:
         """Interpret a user question, returning a rewritten query with metadata."""
         ...
+
+
+class PassthroughQueryInterpreter:
+    """QueryInterpreter that returns the query unchanged with neutral defaults."""
+
+    def interpret(
+        self,
+        question: str,
+        history: list[ChatCompletionMessageParam],  # noqa: ARG002
+    ) -> InterpretedQuery:
+        """Return the question as-is with neutral relevance scores."""
+        return InterpretedQuery(query=question)
 
 
 class LLMQueryInterpreter:
