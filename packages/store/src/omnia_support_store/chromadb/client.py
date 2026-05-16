@@ -54,7 +54,7 @@ class ChromaVectorStore(VectorStore):
     def upload(self, records: list[Chunk]) -> None:  # noqa: D102 - docstring on ABC
         self._collection.upsert(
             ids=[r.id for r in records],
-            documents=[r.chunk for r in records],
+            documents=[r.page_content for r in records],
             metadatas=[r.metadata for r in records],  # ty: ignore[invalid-argument-type]
         )
 
@@ -75,7 +75,7 @@ class ChromaVectorStore(VectorStore):
             return []
 
         return [
-            ScoredChunk(id=id_, chunk=doc, metadata=cast("ChunkMetadata", meta), score=1 - dist)
+            ScoredChunk(id=id_, page_content=doc, metadata=cast("ChunkMetadata", meta), score=1 - dist)
             for id_, doc, meta, dist in zip(
                 results["ids"][0],
                 results["documents"][0],

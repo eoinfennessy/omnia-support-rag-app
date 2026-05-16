@@ -46,12 +46,26 @@ def _make_intent_json(
     )
 
 
+class TestInterpretedQuery:
+    def test_effective_retrieval_query_falls_back_to_query(self):
+        iq = InterpretedQuery(query="clean question")
+        assert iq.effective_retrieval_query == "clean question"
+
+    def test_effective_retrieval_query_uses_retrieval_query_when_set(self):
+        iq = InterpretedQuery(query="clean question", retrieval_query="clean question synonyms related terms")
+        assert iq.effective_retrieval_query == "clean question synonyms related terms"
+
+    def test_effective_retrieval_query_falls_back_when_empty_string(self):
+        iq = InterpretedQuery(query="clean question", retrieval_query="")
+        assert iq.effective_retrieval_query == "clean question"
+
+
 class TestLLMQueryInterpreter:
     @patch("omnia_support_rag.query_interpretation.mlflow.genai.load_prompt")
     def test_returns_interpreted_query(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(_PROMPT_TEMPLATE)
         client = MagicMock()
-        client.create.return_value = _make_completion(
+        client.parse.return_value = _make_completion(
             _make_intent_json(
                 query="What is the return policy for laptops?",
                 product_categories=["laptops"],
@@ -79,7 +93,7 @@ class TestLLMQueryInterpreter:
     def test_always_calls_llm_even_without_history(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(_PROMPT_TEMPLATE)
         client = MagicMock()
-        client.create.return_value = _make_completion(_make_intent_json())
+        client.parse.return_value = _make_completion(_make_intent_json())
         interpreter = LLMQueryInterpreter(
             completions_client=client,
             model="gpt-4",
@@ -88,13 +102,13 @@ class TestLLMQueryInterpreter:
 
         interpreter.interpret("first question", [])
 
-        client.create.assert_called_once()
+        client.parse.assert_called_once()
 
     @patch("omnia_support_rag.query_interpretation.mlflow.genai.load_prompt")
     def test_filters_history_to_user_and_assistant(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(_PROMPT_TEMPLATE)
         client = MagicMock()
-        client.create.return_value = _make_completion(_make_intent_json())
+        client.parse.return_value = _make_completion(_make_intent_json())
         interpreter = LLMQueryInterpreter(
             completions_client=client,
             model="gpt-4",
@@ -108,7 +122,7 @@ class TestLLMQueryInterpreter:
 
         interpreter.interpret("follow-up", history)  # ty: ignore[invalid-argument-type]
 
-        messages = client.create.call_args.kwargs["messages"]
+        messages = client.parse.call_args.kwargs["messages"]
         roles = [m["role"] for m in messages]
         assert "developer" not in roles
         assert roles == ["system", "user", "assistant", "user"]
@@ -117,7 +131,7 @@ class TestLLMQueryInterpreter:
     def test_empty_product_categories(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(_PROMPT_TEMPLATE)
         client = MagicMock()
-        client.create.return_value = _make_completion(
+        client.parse.return_value = _make_completion(
             _make_intent_json(query="general question", product_categories=[]),
         )
         interpreter = LLMQueryInterpreter(
@@ -134,7 +148,7 @@ class TestLLMQueryInterpreter:
     def test_passes_response_format(self, mock_load_prompt):
         mock_load_prompt.return_value = _make_prompt(_PROMPT_TEMPLATE)
         client = MagicMock()
-        client.create.return_value = _make_completion(_make_intent_json())
+        client.parse.return_value = _make_completion(_make_intent_json())
         interpreter = LLMQueryInterpreter(
             completions_client=client,
             model="gpt-4",
@@ -143,4 +157,4 @@ class TestLLMQueryInterpreter:
 
         interpreter.interpret("question", [])
 
-        assert client.create.call_args.kwargs["response_format"] is InterpretedQuery
+        assert client.parse.call_args.kwargs["response_format"] is InterpretedQuery

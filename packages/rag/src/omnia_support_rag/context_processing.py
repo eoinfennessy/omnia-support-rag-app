@@ -36,7 +36,7 @@ class TokenBudgetFormatter:
         selected: list[ScoredChunk] = []
         token_count = 0
         for chunk in chunks:
-            tokens = len(self._encoding.encode(chunk.chunk))
+            tokens = len(self._encoding.encode(chunk.page_content))
             if token_count + tokens > self._max_tokens:
                 break
             selected.append(chunk)

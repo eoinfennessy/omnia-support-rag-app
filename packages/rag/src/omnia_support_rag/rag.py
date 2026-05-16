@@ -66,6 +66,17 @@ class CompletionsClient(Protocol):
         """Create a chat completion."""
         ...
 
+    def parse(
+        self,
+        *,
+        model: str,
+        messages: list[ChatCompletionMessageParam],
+        temperature: float,
+        response_format: Any = None,
+    ) -> ChatCompletion:
+        """Create a chat completion with structured output parsing."""
+        ...
+
 
 class Retriever(Protocol):
     """Protocol for a retrieval strategy."""
@@ -86,6 +97,7 @@ def _apply_rescorers(
     return chunks
 
 
+@mlflow.trace(name="reorder_by_score")
 def _reorder_by_score(chunks: list[ScoredChunk]) -> list[ScoredChunk]:
     """Sort chunks by score descending."""
     return sorted(chunks, key=lambda r: r.score, reverse=True)
@@ -130,7 +142,7 @@ def generate_answer(
 
 def join_records(records: Sequence[ScoredChunk]) -> str:
     """Join chunk contents into a single context string."""
-    return "\n---\n".join(r.chunk for r in records)
+    return "\n---\n".join(r.page_content for r in records)
 
 
 def _build_where_filter(product_categories: Sequence[str]) -> WhereFilter | None:
@@ -154,6 +166,7 @@ def run_rag_pipeline(
     query_interpreter: QueryInterpreter = PassthroughQueryInterpreter(),  # noqa: B008 — stateless
     rescorers: Sequence[Rescorer] | None = None,
     context_processors: Sequence[ContextProcessor] | None = None,
+    use_metadata_filter: bool = True,
 ) -> RagResult:
     """Run the full RAG pipeline.
 
@@ -167,7 +180,8 @@ def run_rag_pipeline(
     """
     intent = query_interpreter.interpret(question, history or [])
 
-    chunks = retriever.retrieve(intent.query, n_results, where=_build_where_filter(intent.product_categories))
+    where = _build_where_filter(intent.product_categories) if use_metadata_filter else None
+    chunks = retriever.retrieve(intent.effective_retrieval_query, n_results, where=where)
 
     if not chunks:
         return RagResult(answer=FALLBACK_ANSWER, retrieved_chunks=[])

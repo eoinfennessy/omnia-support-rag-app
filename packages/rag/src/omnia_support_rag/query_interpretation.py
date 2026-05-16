@@ -34,8 +34,14 @@ class InterpretedQuery(BaseModel):
     """Structured result of query interpretation."""
 
     query: str
+    retrieval_query: str | None = None
     product_categories: list[FilterableCategory] = Field(default_factory=list)
     doc_type_relevance: DocumentTypeRelevance = Field(default_factory=DocumentTypeRelevance)
+
+    @property
+    def effective_retrieval_query(self) -> str:
+        """Return retrieval_query if set, otherwise fall back to query."""
+        return self.retrieval_query or self.query
 
 
 class QueryInterpreter(Protocol):
@@ -96,7 +102,7 @@ class LLMQueryInterpreter:
             *user_assistant_turns,
             {"role": "user", "content": question},
         ]
-        response = self._client.create(
+        response = self._client.parse(
             model=self._model,
             messages=messages,
             temperature=0,

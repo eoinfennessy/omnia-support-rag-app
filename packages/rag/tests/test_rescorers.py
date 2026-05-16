@@ -26,7 +26,7 @@ def _make_chunk(
         metadata["customer_satisfaction"] = customer_satisfaction
     if resolution_status is not None:
         metadata["resolution_status"] = resolution_status
-    return ScoredChunk(id="doc-1-chunk-0", chunk="text", metadata=metadata, score=score)
+    return ScoredChunk(id="doc-1-chunk-0", page_content="text", metadata=metadata, score=score)
 
 
 class TestSatisfactionRescorer:
@@ -170,7 +170,7 @@ class TestDocumentTypeRescorer:
             "chunk_index": 0,
             "total_chunks": 1,
         }
-        chunk = ScoredChunk(id="doc-1-chunk-0", chunk="text", metadata=metadata, score=1.0)
+        chunk = ScoredChunk(id="doc-1-chunk-0", page_content="text", metadata=metadata, score=1.0)
         rescorer = DocumentTypeRescorer()
 
         result = rescorer.rescore(chunk, intent)
@@ -188,7 +188,7 @@ class TestDocumentTypeRescorer:
             "chunk_index": 0,
             "total_chunks": 1,
         }
-        chunk = ScoredChunk(id="doc-1-chunk-0", chunk="text", metadata=metadata, score=1.0)
+        chunk = ScoredChunk(id="doc-1-chunk-0", page_content="text", metadata=metadata, score=1.0)
         rescorer = DocumentTypeRescorer()
 
         result = rescorer.rescore(chunk, intent)

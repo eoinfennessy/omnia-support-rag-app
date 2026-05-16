@@ -87,7 +87,7 @@ def build_records(documents: list[Document]) -> list[Chunk]:
         result.extend(
             Chunk(
                 id=f"{doc.document_id}-chunk-{i}",
-                chunk=build_embed_text(doc, text),
+                page_content=build_embed_text(doc, text),
                 metadata=_build_record_metadata(doc, chunk_index=i, total_chunks=total_chunks),
             )
             for i, text in enumerate(text_chunks)

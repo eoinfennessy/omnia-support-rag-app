@@ -49,7 +49,7 @@ class BM25sKeywordStore(KeywordStore):
 
     def index(self, records: list[Chunk]) -> None:  # noqa: D102
         self._records = list(records)
-        corpus = [r.chunk for r in records]
+        corpus = [r.page_content for r in records]
         corpus_tokens = bm25s.tokenize(corpus, stopwords="en")
         self._retriever = bm25s.BM25()
         self._retriever.index(corpus_tokens)
@@ -70,7 +70,7 @@ class BM25sKeywordStore(KeywordStore):
         scored = [
             ScoredChunk(
                 id=self._records[idx].id,
-                chunk=self._records[idx].chunk,
+                page_content=self._records[idx].page_content,
                 metadata=self._records[idx].metadata,
                 score=float(score),
             )
@@ -95,7 +95,7 @@ class BM25sKeywordStore(KeywordStore):
         records_path = self._index_path / _RECORDS_FILENAME
         records_path.write_text(
             json.dumps(
-                [{"id": r.id, "chunk": r.chunk, "metadata": dict(r.metadata)} for r in self._records],
+                [{"id": r.id, "page_content": r.page_content, "metadata": dict(r.metadata)} for r in self._records],
             ),
             encoding="utf-8",
         )
@@ -111,7 +111,7 @@ class BM25sKeywordStore(KeywordStore):
         self._records = [
             Chunk(
                 id=entry["id"],
-                chunk=entry["chunk"],
+                page_content=entry["page_content"],
                 metadata=ChunkMetadata(**entry["metadata"]),
             )
             for entry in raw

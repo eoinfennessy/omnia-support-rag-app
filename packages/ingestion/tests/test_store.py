@@ -55,7 +55,7 @@ class TestUploadRecords:
         return [
             Chunk(
                 id=f"id-{i}",
-                chunk=f"chunk {i}",
+                page_content=f"chunk {i}",
                 metadata={
                     "document_id": f"doc-{i}",
                     "type": "faq",

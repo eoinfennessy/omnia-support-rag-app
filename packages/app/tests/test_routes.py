@@ -101,7 +101,7 @@ def _create_test_app() -> tuple[FastAPI, AppState]:
 def _make_record(
     *,
     document_id: str,
-    chunk: str,
+    page_content: str,
     doc_type: str,
     category: str,
     product_category: str = "all",
@@ -118,7 +118,7 @@ def _make_record(
     }
     return ScoredChunk(
         id=f"{document_id}-chunk-{chunk_index}",
-        chunk=chunk,
+        page_content=page_content,
         metadata=metadata,
         score=0.5,
     )
@@ -126,21 +126,21 @@ def _make_record(
 
 _POLICY_RECORD = _make_record(
     document_id="policy_001",
-    chunk="Return policy content",
+    page_content="Return policy content",
     doc_type="policy",
     category="returns",
 )
 
 _FAQ_RECORD = _make_record(
     document_id="faq_001",
-    chunk="FAQ content",
+    page_content="FAQ content",
     doc_type="faq",
     category="general",
 )
 
 _TICKET_RECORD = _make_record(
     document_id="ticket_001",
-    chunk="Ticket content",
+    page_content="Ticket content",
     doc_type="support_ticket",
     category="delivery_issue",
     product_category="laptops",
@@ -228,7 +228,7 @@ class TestChatEndpoint:
     def test_returns_deduplicated_sources(self, mock_pipeline):
         duplicate_record = _make_record(
             document_id="policy_001",
-            chunk="Another chunk from same policy",
+            page_content="Another chunk from same policy",
             doc_type="policy",
             category="returns",
             chunk_index=1,

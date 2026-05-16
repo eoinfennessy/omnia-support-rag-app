@@ -14,7 +14,7 @@ def _make_chunks() -> list[Chunk]:
     return [
         Chunk(
             id="doc-1-chunk-0",
-            chunk="The return policy allows refunds within 30 days of purchase",
+            page_content="The return policy allows refunds within 30 days of purchase",
             metadata=ChunkMetadata(
                 document_id="doc-1",
                 type="policy",
@@ -27,7 +27,7 @@ def _make_chunks() -> list[Chunk]:
         ),
         Chunk(
             id="doc-2-chunk-0",
-            chunk="Shipping takes 3 to 5 business days for standard delivery",
+            page_content="Shipping takes 3 to 5 business days for standard delivery",
             metadata=ChunkMetadata(
                 document_id="doc-2",
                 type="policy",
@@ -40,7 +40,7 @@ def _make_chunks() -> list[Chunk]:
         ),
         Chunk(
             id="doc-3-chunk-0",
-            chunk="How do I track my laptop order status and delivery date",
+            page_content="How do I track my laptop order status and delivery date",
             metadata=ChunkMetadata(
                 document_id="doc-3",
                 type="faq",

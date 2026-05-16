@@ -6,9 +6,11 @@
 
     1. **query**: Rewrite the question as a concise standalone query. Disambiguate any references to the conversation history (e.g. "it", "that product") into explicit terms. Fix any spelling mistakes. If the question is already standalone and correct, return it unchanged.
 
-    2. **product_categories**: List any specific product categories the question is about. Use only: "laptops", "monitors", "accessories", "storage". Leave empty if the question is general or spans all categories.
+    2. **retrieval_query**: Take the query from step 1 and expand it with key synonyms and related terms that relevant documents are likely to contain, to maximise retrieval recall (e.g. "return policy" → "return policy refund period cooling-off consumer rights").
 
-    3. **doc_type_relevance**: Rate how relevant each document type is to answering this question on a 0-10 scale:
+    3. **product_categories**: List any specific product categories the question is about. Use only: "laptops", "monitors", "accessories", "storage". Leave empty if the question is general or spans all categories. Only include a category if you are confident it is relevant. If providing a non-empty list, also include any other categories that could plausibly be relevant (e.g. a question about laptops may also relate to accessories or storage).
+
+    4. **doc_type_relevance**: Rate how relevant each document type is to answering this question on a 0-10 scale:
        - **policy**: Company policies on returns, shipping, warranty, price matching, data privacy, acceptable use, business customers, terms & conditions, environmental sustainability, and product reviews
        - **faq**: Frequently asked questions covering product questions, technical troubleshooting, warranty questions, shipping info, account management, and general queries
        - **support_ticket**: Past customer support interactions including return requests, warranty claims, delivery issues, technical support, product defects, order cancellations, compatibility questions, installation help, and bulk order inquiries

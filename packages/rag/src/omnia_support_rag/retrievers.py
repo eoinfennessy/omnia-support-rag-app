@@ -48,7 +48,7 @@ def _rrf_fuse(
             records.setdefault(record.id, record)
     sorted_ids = sorted(scores, key=scores.__getitem__, reverse=True)[:n_results]
     return [
-        ScoredChunk(id=rid, chunk=records[rid].chunk, metadata=records[rid].metadata, score=scores[rid])
+        ScoredChunk(id=rid, page_content=records[rid].page_content, metadata=records[rid].metadata, score=scores[rid])
         for rid in sorted_ids
     ]
 
@@ -61,18 +61,21 @@ class SemanticRetriever:
         store: VectorStore,
         *,
         filters: Sequence[RetrievalFilter] | None = None,
+        overfetch_factor: int = 3,
     ) -> None:
         """Wrap a vector store for pure semantic retrieval."""
         self._store = store
         self._filters = filters
+        self._overfetch_factor = overfetch_factor
 
     @mlflow.trace(span_type="RETRIEVER")
     def retrieve(self, query: str, n_results: int, where: WhereFilter | None = None) -> list[ScoredChunk]:
         """Retrieve documents using semantic similarity via the vector store."""
-        records = self._store.query(query, n_results, where=where)
+        fetch_n = n_results * self._overfetch_factor if self._filters else n_results
+        records = self._store.query(query, fetch_n, where=where)
         if self._filters:
             records = _apply_filters(records, self._filters)
-        return records
+        return records[:n_results]
 
 
 class BM25Retriever:
@@ -83,18 +86,21 @@ class BM25Retriever:
         keyword_store: KeywordStore,
         *,
         filters: Sequence[RetrievalFilter] | None = None,
+        overfetch_factor: int = 3,
     ) -> None:
         """Wrap a keyword store for BM25 retrieval."""
         self._keyword_store = keyword_store
         self._filters = filters
+        self._overfetch_factor = overfetch_factor
 
     @mlflow.trace(span_type="RETRIEVER")
     def retrieve(self, query: str, n_results: int, where: WhereFilter | None = None) -> list[ScoredChunk]:
         """Retrieve documents using BM25 keyword matching."""
-        records = self._keyword_store.query(query, n_results, where=where)
+        fetch_n = n_results * self._overfetch_factor if self._filters else n_results
+        records = self._keyword_store.query(query, fetch_n, where=where)
         if self._filters:
             records = _apply_filters(records, self._filters)
-        return records
+        return records[:n_results]
 
 
 class RetrieverWeight(NamedTuple):

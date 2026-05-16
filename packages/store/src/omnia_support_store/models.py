@@ -28,7 +28,7 @@ class Chunk:
     """A chunk of text with its ID and metadata."""
 
     id: str
-    chunk: str
+    page_content: str
     metadata: ChunkMetadata
 
 
