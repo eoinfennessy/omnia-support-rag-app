@@ -35,7 +35,7 @@ services:
       FORCE_INGESTION: "${FORCE_INGESTION:-false}"
       BM25_INDEX_PATH: /data/bm25
     volumes:
-      - ./data/bm25:/data/bm25
+      - ./data:/data
     depends_on:
       chromadb:
         condition: service_healthy
@@ -54,7 +54,7 @@ services:
       RETRIEVAL_MODE: "${RETRIEVAL_MODE:-hybrid}"
       BM25_INDEX_PATH: /data/bm25
     volumes:
-      - ./data/bm25:/data/bm25
+      - ./data:/data
     depends_on:
       chromadb:
         condition: service_healthy
@@ -69,7 +69,11 @@ services:
     build:
       context: .
       dockerfile: packages/evaluation/Dockerfile
-    command: ["register-prompt"]
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        uv run --no-sync --package omnia-support-eval register-prompt --prompt-path prompts/omnia_support_system.yaml --prompt-name omnia_support_system &&
+        uv run --no-sync --package omnia-support-eval register-prompt --prompt-path prompts/interpret_query.yaml --prompt-name interpret_query
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
     depends_on:
@@ -87,6 +91,9 @@ services:
       CHROMA_HOST: chromadb
       CHROMA_PORT: 8000
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      BM25_INDEX_PATH: /data/bm25
+    volumes:
+      - ./data:/data
     depends_on:
       chromadb:
         condition: service_healthy

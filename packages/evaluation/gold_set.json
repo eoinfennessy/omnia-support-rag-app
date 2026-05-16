@@ -1,14 +1,14 @@
 {
   "expected_answers": {
-    "TQ-001": "Omnia Retail offers a 14-day cooling off period in line with EU consumer rights regulations. If you changed your mind about a product, you can return it within 14 days of delivery for a full refund, provided the item is in its original condition and packaging.",
-    "TQ-002": "Unexpected shutdowns are commonly caused by overheating (thermal shutdown) or system errors (BSOD). Try cleaning the vents, ensuring adequate airflow, updating drivers, and running hardware diagnostics. If the issue persists, contact Omnia Support for warranty assessment.",
-    "TQ-003": "For video editing, 16GB of RAM is the recommended minimum, though 32GB is ideal for working with 4K footage or complex projects. The RAM guide and processor FAQs cover this in detail, and pre-sales consultations can help match your needs to the right configuration.",
-    "TQ-004": "If tracking shows delivered but you haven't received the item, contact Omnia Support immediately. They will open an investigation with the courier, check delivery photos if available, and arrange a replacement or refund. Check with neighbours and any safe places first.",
+    "TQ-001": "For a change-of-mind return, consumers have a 14-day cooling-off period under the EU Consumer Rights Directive. You must notify Omnia Retail within 14 days of delivery and return the item within 14 days of notification. Return shipping for change-of-mind is at your expense unless the item is defective. Refunds are processed within 14 days of receiving the returned goods.",
+    "TQ-002": "Unexpected shutdowns are often caused by overheating. Use the laptop on a hard, flat surface to avoid blocking vents. Check Event Viewer for Event ID 41 (Kernel-Power) entries around the shutdown times. Run built-in diagnostics including battery and thermal tests.",
+    "TQ-003": "For video editing, 32GB of RAM is the recommended choice, especially for Premiere Pro, DaVinci Resolve, and 4K workflows. 16GB can work for lighter editing but is more of a minimum than ideal. 64GB or more is needed for professional 4K/8K multicam editing and heavy effects work.",
+    "TQ-004": "If tracking shows delivered but you haven't received the item, first check with neighbours and any safe places where the courier may have left it. Then contact Omnia Retail support with your order number. They will contact the carrier on your behalf and open a trace request if the parcel cannot be located.",
     "TQ-005": "Under Irish and EU consumer law, you have statutory warranty rights for up to two years. A fault developing within 10 months is well within this period, and the burden of proof is on the retailer. Omnia Retail will offer repair, replacement, or refund depending on the nature of the defect.",
-    "TQ-006": "Yes, Omnia Retail offers business pricing and dedicated account management for bulk orders. Contact the business sales team to discuss volume discounts, delivery scheduling, and any specific requirements for your organisation.",
-    "TQ-007": "NVMe SSDs connect via the M.2 slot and offer significantly faster read/write speeds (up to 7000 MB/s) compared to SATA SSDs (up to 550 MB/s). NVMe uses the PCIe interface while SATA uses the older AHCI protocol. NVMe is recommended for boot drives and demanding workloads.",
-    "TQ-008": "For a budget home office, prioritise a comfortable monitor (24-27 inch), a reliable keyboard and mouse, and good ergonomics. Omnia Retail's home office accessories FAQ covers recommended setups at various price points, and monitor comparisons can help you choose the best value display.",
-    "TQ-009": "A clicking noise from an external hard drive typically indicates a physical failure of the read/write heads or motor. Stop using the drive immediately to prevent further data loss. The drive likely needs professional data recovery or warranty replacement.",
+    "TQ-006": "Yes, Omnia Retail offers business pricing with volume discounts for bulk orders. Contact the business sales team for more details.",
+    "TQ-007": "NVMe SSDs use PCIe lanes with the NVMe protocol, offering much faster speeds than SATA SSDs. SATA SSDs offer around 500-550 MB/s read speeds, while NVMe Gen 3 reaches 3,000-3,500 MB/s and Gen 4 reaches 5,000-7,000 MB/s. NVMe is recommended as the primary drive for operating system, applications, and active files. SATA SSDs are good for budget upgrades and secondary storage where cost per GB matters more than speed.",
+    "TQ-008": "For a budget home office, prioritise an external monitor first (27-inch 1440p is the best value), then a laptop stand with an external keyboard and mouse for ergonomics, followed by a USB-C hub or dock for connectivity.",
+    "TQ-009": "A clicking noise from an external hard drive typically indicates a physical drive failure. Stop using the drive immediately to prevent further data loss. Do not attempt to open the drive. Contact a professional data recovery service if the data is important, or pursue a warranty replacement.",
     "TQ-010": "Yes, Omnia Retail participates in the WEEE (Waste Electrical and Electronic Equipment) scheme. Customers can return old electronics when purchasing a new equivalent product, free of charge. This is in compliance with Irish WEEE regulations."
   },
   "additional_queries": [
@@ -19,6 +19,50 @@
       "expected_document_ids": [],
       "category": "no_result",
       "notes": "Out-of-domain query with no relevant documents. Tests fallback handling when retrieval returns no useful results."
+    }
+  ],
+  "conversations": [
+    {
+      "conversation_id": "CONV-001",
+      "turns": [
+        {
+          "query_id": "CONV-001-T1",
+          "query": "What is Omnia Retail's return policy?",
+          "expected_answer": "Omnia Retail offers a 30-day standard return period from delivery date. For change-of-mind returns, consumers also have a 14-day cooling-off period under the EU Consumer Rights Directive. Items must be in original condition with all packaging. Return shipping for change-of-mind is at your expense unless the item is defective.",
+          "expected_document_ids": ["policy_001"],
+          "category": "returns",
+          "notes": "First turn establishes the returns topic"
+        },
+        {
+          "query_id": "CONV-001-T2",
+          "query": "What if the product is faulty?",
+          "expected_answer": "If a product is faulty or defective, you are entitled to a repair, replacement, or refund under your statutory warranty rights. The return shipping cost is covered by Omnia Retail for defective items. You should contact support with your order number and a description of the fault.",
+          "expected_document_ids": ["policy_001", "faq_009"],
+          "category": "returns",
+          "notes": "Tests coreference — 'the product' refers to a returned product from prior context"
+        }
+      ]
+    },
+    {
+      "conversation_id": "CONV-002",
+      "turns": [
+        {
+          "query_id": "CONV-002-T1",
+          "query": "How much RAM do I need for video editing?",
+          "expected_answer": "For video editing, 32GB of RAM is the recommended choice, especially for Premiere Pro, DaVinci Resolve, and 4K workflows. 16GB can work for lighter editing but is more of a minimum than ideal. 64GB or more is needed for professional 4K/8K multicam editing and heavy effects work.",
+          "expected_document_ids": ["faq_006", "faq_010", "ticket_020"],
+          "category": "products",
+          "notes": "First turn asks about RAM for video editing"
+        },
+        {
+          "query_id": "CONV-002-T2",
+          "query": "What about storage? Should I get an SSD?",
+          "expected_answer": "Yes, an SSD is strongly recommended for video editing. NVMe SSDs are the best choice as they offer much faster read and write speeds than SATA SSDs — NVMe Gen 3 reaches 3,000-3,500 MB/s compared to 500-550 MB/s for SATA. Use an NVMe SSD as your primary drive for the operating system, applications, and active project files.",
+          "expected_document_ids": ["faq_012", "faq_005"],
+          "category": "products",
+          "notes": "Tests topic continuation — follows up on hardware for the same use case"
+        }
+      ]
     }
   ]
 }

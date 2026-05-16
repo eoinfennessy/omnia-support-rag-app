@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-evaluate = "omnia_support_eval.evaluate:main"
+evaluate = "omnia_support_eval.cli:main"
 register-prompt = "omnia_support_eval.register_prompt:main"
 
 [tool.uv.sources]

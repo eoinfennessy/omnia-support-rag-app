@@ -1,0 +1,33 @@
+# Evaluation pipeline configuration
+# CLI arguments override any values set here.
+
+# Data paths
+gold_set: packages/evaluation/gold_set.json
+dataset: dataset/omnia_retail_knowledge_base.json
+
+# Prompt settings
+prompt_name: omnia_support_system
+prompt_alias: production
+
+# Query interpretation prompt
+interpret_query_prompt_name: interpret_query
+interpret_query_prompt_alias: production
+
+# Model settings
+model: gpt-5.4-mini
+embedding_model: text-embedding-3-small
+
+# Retrieval
+retrieval_mode: hybrid
+n_results: 8
+
+# Filter thresholds
+cosine_threshold: 0.23
+bm25_threshold: 1.5
+
+# Hybrid RRF fusion weights
+semantic_weight: 0.6
+bm25_weight: 0.4
+
+# MLflow
+experiment_name: omnia-support-eval
