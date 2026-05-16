@@ -19,6 +19,126 @@
       "expected_document_ids": [],
       "category": "no_result",
       "notes": "Out-of-domain query with no relevant documents. Tests fallback handling when retrieval returns no useful results."
+    },
+    {
+      "query_id": "AQ-002",
+      "query": "How long does delivery take within Ireland?",
+      "expected_answer": "Within Ireland, standard delivery takes 2-4 business days after dispatch. Express delivery offers next business day delivery if ordered before 14:00. Saturday delivery is also available if ordered by 14:00 on Friday.",
+      "expected_document_ids": ["policy_003", "faq_007"],
+      "category": "shipping",
+      "notes": "Tests shipping policy retrieval"
+    },
+    {
+      "query_id": "AQ-003",
+      "query": "Do you accept Klarna or buy now pay later?",
+      "expected_answer": "Yes, Omnia Retail accepts Klarna as a buy now, pay later option with Pay in 3 and Pay in 30 days, available on orders from €50 to €3,000 and subject to Klarna credit approval.",
+      "expected_document_ids": ["faq_002"],
+      "category": "payment",
+      "notes": "Tests payment methods FAQ"
+    },
+    {
+      "query_id": "AQ-004",
+      "query": "Should I get an Intel or AMD processor for my laptop?",
+      "expected_answer": "Both Intel and AMD are excellent choices. AMD typically offers better value, battery efficiency, and multi-core performance, making it ideal for productivity and budget-conscious buyers. Intel has a slight edge in single-threaded performance and Thunderbolt 4 support. For most users doing office work, browsing, and streaming, either is fine — the specific model and generation matters more than the brand.",
+      "expected_document_ids": ["faq_003", "faq_010"],
+      "category": "products",
+      "notes": "Tests product comparison FAQ"
+    },
+    {
+      "query_id": "AQ-005",
+      "query": "I bought a monitor from you last week and found it cheaper at another shop. Can I get a refund of the difference?",
+      "expected_answer": "Yes, Omnia Retail offers a price match within 7 days of purchase. You need to provide your order number, proof of purchase, and evidence of the competitor's current price for an identical product (same model, SKU, and specifications). The competitor item must be in stock and available for purchase. If approved, the difference is refunded to your original payment method.",
+      "expected_document_ids": ["policy_004", "ticket_012"],
+      "category": "price_match",
+      "notes": "Tests price match policy"
+    },
+    {
+      "query_id": "AQ-006",
+      "query": "My monitor arrived with a cracked screen. The box was damaged too.",
+      "expected_answer": "Contact Omnia Retail support as soon as possible with your order number and photos of the damaged box and screen. Keep all packaging and the monitor as received. If the damage occurred in transit, a replacement can typically be arranged.",
+      "expected_document_ids": ["ticket_004", "policy_001"],
+      "category": "damaged_delivery",
+      "notes": "Tests damaged delivery handling"
+    },
+    {
+      "query_id": "AQ-007",
+      "query": "Can I cancel my order if it hasn't shipped yet?",
+      "expected_answer": "Yes, you can cancel your order before it has been dispatched. A contract is formed when the dispatch confirmation email is sent, so cancellation is possible before that point.",
+      "expected_document_ids": ["ticket_003", "policy_009"],
+      "category": "order_mgmt",
+      "notes": "Tests order cancellation"
+    },
+    {
+      "query_id": "AQ-008",
+      "query": "What size and resolution monitor should I get for working from home?",
+      "expected_answer": "For working from home, a 27-inch 1440p (QHD) monitor is the recommended sweet spot. It offers sharp text for productivity, good screen real estate, and strong value. 1080p is acceptable on 24-inch or smaller screens but looks pixelated at 27 inches. 4K is excellent on 27-32 inch monitors but costs more and requires a stronger GPU.",
+      "expected_document_ids": ["faq_004", "faq_011", "faq_015"],
+      "category": "products",
+      "notes": "Tests monitor selection advice"
+    },
+    {
+      "query_id": "AQ-009",
+      "query": "How do I delete my account and what happens to my data?",
+      "expected_answer": "To delete your Omnia Retail account, contact privacy@omniaretail.ie. Account deletion is processed within 30 days in accordance with GDPR. Note that orders, invoices, and transaction records may be retained for up to 7 years for legal and financial compliance, but retained data is not used for marketing.",
+      "expected_document_ids": ["faq_013", "policy_005"],
+      "category": "account_mgmt",
+      "notes": "Tests account management and data privacy crossover"
+    },
+    {
+      "query_id": "AQ-010",
+      "query": "my laptap keep shutting down and its very hot all the time what do i do",
+      "expected_answer": "Overheating is a common cause of unexpected shutdowns. Use the laptop on a hard, flat surface to ensure air vents are not blocked. Clean any dust from the vents. Check what processes are consuming excessive CPU or memory. If the problem persists after these steps, contact support for further diagnosis.",
+      "expected_document_ids": ["ticket_006", "faq_008", "faq_016"],
+      "category": "technical_support",
+      "notes": "Poor grammar, misspelling, no capitalisation, run-on sentence"
+    },
+    {
+      "query_id": "AQ-011",
+      "query": "waht is the diference between wifi 5 and wifi 6 wich one shoud I get",
+      "expected_answer": "Wi-Fi 6 (802.11ax) is the newer standard offering higher efficiency in congested environments, better performance with many devices connected simultaneously, and improved power management. Wi-Fi 5 (802.11ac) is still adequate for most home and office use. For a new router or mesh system, Wi-Fi 6 is the minimum recommendation as prices are competitive and it offers better longevity.",
+      "expected_document_ids": ["faq_021"],
+      "category": "products",
+      "notes": "Multiple misspellings — tests query interpretation robustness"
+    },
+    {
+      "query_id": "AQ-012",
+      "query": "I need to return it",
+      "expected_answer": "Omnia Retail has a 30-day standard return period from delivery date. You also have a 14-day cooling-off period under the EU Consumer Rights Directive. To start a return, contact customer support to get an RMA number, pack the item securely with the RMA number marked on the package, and use the prepaid return label.",
+      "expected_document_ids": ["policy_001"],
+      "category": "returns",
+      "notes": "Ambiguous — no product context, vague pronoun 'it'"
+    },
+    {
+      "query_id": "AQ-013",
+      "query": "Is it compatible?",
+      "expected_answer": "I need more detail to answer that — what product are you asking about, and what device or setup do you want to use it with?",
+      "expected_document_ids": ["ticket_007"],
+      "category": "ambiguous",
+      "notes": "Completely decontextualised — no subject, no referent. Pipeline asks for clarification but offers relevant examples."
+    },
+    {
+      "query_id": "AQ-014",
+      "query": "What's the best recipe for sourdough bread?",
+      "expected_answer": "I can't help with sourdough bread recipes because I only have Omnia Retail support information. I can help with anything related to Omnia Retail products, orders, returns, warranties, price matching, or technical support.",
+      "expected_document_ids": [],
+      "category": "no_result",
+      "notes": "Completely off-topic — tests out-of-domain handling"
+    },
+    {
+      "query_id": "AQ-015",
+      "query": "Can you help me book a flight to Barcelona?",
+      "expected_answer": "Omnia Retail is a consumer electronics retailer and doesn't offer travel booking services. Our product range covers laptops, monitors, storage devices, and accessories. Is there anything technology-related I can help with?",
+      "expected_document_ids": [],
+      "category": "no_result",
+      "notes": "Different domain entirely — tests out-of-domain handling"
+    },
+    {
+      "query_id": "AQ-016",
+      "query": "I want a refund but I broke it on purpose. What's the fastest way to get my money back?",
+      "expected_answer": "Intentional damage is not covered under return or warranty policies. Standard warranties cover manufacturing defects only, not accidental or deliberate damage. Making a false claim about damage would be considered fraudulent.",
+      "expected_document_ids": ["policy_001", "faq_017"],
+      "category": "adversarial",
+      "notes": "Adversarial — tests whether pipeline correctly surfaces damage exclusions"
     }
   ],
   "conversations": [
@@ -57,7 +177,7 @@
         {
           "query_id": "CONV-002-T2",
           "query": "What about storage? Should I get an SSD?",
-          "expected_answer": "Yes, an SSD is strongly recommended for video editing. NVMe SSDs are the best choice as they offer much faster read and write speeds than SATA SSDs — NVMe Gen 3 reaches 3,000-3,500 MB/s compared to 500-550 MB/s for SATA. Use an NVMe SSD as your primary drive for the operating system, applications, and active project files.",
+          "expected_answer": "Yes, an SSD is strongly recommended for video editing. NVMe SSDs offer the best performance with much faster speeds than SATA SSDs. Use an NVMe SSD as your primary drive for the operating system, applications, and active project files.",
           "expected_document_ids": ["faq_012", "faq_005"],
           "category": "products",
           "notes": "Tests topic continuation — follows up on hardware for the same use case"
