@@ -62,6 +62,8 @@ services:
         condition: service_healthy
       ingestion:
         condition: service_completed_successfully
+      register-prompt:
+        condition: service_completed_successfully
     profiles:
       - app
 
@@ -79,8 +81,6 @@ services:
     depends_on:
       mlflow:
         condition: service_healthy
-    profiles:
-      - eval
 
   evaluation:
     build:

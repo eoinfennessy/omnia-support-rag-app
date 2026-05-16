@@ -42,12 +42,13 @@ register-prompt: ## Register all prompts to MLflow
 		--prompt-path prompts/interpret_query.yaml \
 		--prompt-name interpret_query
 
-eval-local: ## Run evaluation locally
+eval-local: register-prompt ## Run evaluation locally
 	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
-		uv run --package omnia-support-eval evaluate --retrieval-mode $(RETRIEVAL_MODE)
+	MLFLOW_GENAI_EVALUATION_MAX_WORKERS=1 \
+		uv run --package omnia-support-eval evaluate --config packages/evaluation/eval_config.yaml --retrieval-mode $(RETRIEVAL_MODE)
 
 eval-docker: ## Run evaluation in Docker
-	docker compose --profile eval run evaluation
+	docker compose --profile eval run --rm evaluation
 
 ##@ Application
 frontend-build: ## Build the SvelteKit frontend
