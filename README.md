@@ -6,7 +6,7 @@ Student Number: 20100018
 
 Github Repo URL: https://github.com/setu-ibm/ai-assistant-eoinfennessy
 
-Youtube (or other) URL: An unlisted youtube video of you walking through the feature set of your assignment.  Voice over a screenshare is fine.  MAXIMUM 8 minutes.  Videos longer than this will be stopped at 8 minutes and the rest ignored.  Maybe break your video into the 4 sections outlined below (chapters are not required, just might be a useful script).
+Youtube (or other) URL: https://youtu.be/Ft4hb1KT89c sorry - the video is a bit long. Please watch in 1.5 or 2x speed :)
 
 ----
 
