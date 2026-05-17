@@ -53,6 +53,7 @@ _DEFAULTS: dict[str, Any] = {
     "semantic_weight": 0.6,
     "bm25_weight": 0.4,
     "interpret_query_prompt_name": "interpret_query",
+    "interpret_query_prompt_version": None,
     "interpret_query_prompt_alias": "production",
     "no_interpret_query": False,
     "no_metadata_filter": False,
@@ -97,7 +98,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--semantic-weight", type=float, help="Semantic retriever weight in hybrid RRF fusion")
     parser.add_argument("--bm25-weight", type=float, help="BM25 retriever weight in hybrid RRF fusion")
     parser.add_argument("--interpret-query-prompt-name", help="MLflow prompt name for query interpretation")
-    parser.add_argument("--interpret-query-prompt-alias", help="MLflow prompt alias for query interpretation")
+
+    iq_version_group = parser.add_mutually_exclusive_group()
+    iq_version_group.add_argument(
+        "--interpret-query-prompt-version", type=int, help="Specific interpret query prompt version number"
+    )
+    iq_version_group.add_argument("--interpret-query-prompt-alias", help="Interpret query prompt alias to load")
     parser.add_argument(
         "--no-interpret-query",
         action="store_true",
@@ -190,11 +196,16 @@ def main() -> None:
 
     if args.no_interpret_query:
         query_interpreter = PassthroughQueryInterpreter()
+        iq_prompt_uri = None
     else:
+        if args.interpret_query_prompt_version is not None:
+            iq_prompt_uri = f"prompts:/{args.interpret_query_prompt_name}/{args.interpret_query_prompt_version}"
+        else:
+            iq_prompt_uri = f"prompts:/{args.interpret_query_prompt_name}@{args.interpret_query_prompt_alias}"
         query_interpreter = LLMQueryInterpreter(
             completions_client=openai.OpenAI().chat.completions,
             model=args.model,
-            prompt_uri=f"prompts:/{args.interpret_query_prompt_name}@{args.interpret_query_prompt_alias}",
+            prompt_uri=iq_prompt_uri,
         )
 
     config = RunEvaluationConfig(
@@ -218,5 +229,7 @@ def main() -> None:
         semantic_weight=args.semantic_weight,
         bm25_weight=args.bm25_weight,
         use_metadata_filter=not args.no_metadata_filter,
+        interpret_query=not args.no_interpret_query,
+        interpret_query_prompt_uri=iq_prompt_uri,
     )
     run_evaluation(config)

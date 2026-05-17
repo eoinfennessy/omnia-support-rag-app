@@ -55,6 +55,8 @@ class RunEvaluationConfig:
     semantic_weight: float
     bm25_weight: float
     use_metadata_filter: bool
+    interpret_query: bool
+    interpret_query_prompt_uri: str | None
 
 
 def make_predict_fn(
@@ -104,6 +106,12 @@ def run_evaluation(config: RunEvaluationConfig) -> None:
     prompt = mlflow.genai.load_prompt(prompt_uri)
     print(f"Loaded prompt '{config.prompt_name}' version {prompt.version}")
 
+    iq_prompt_version = None
+    if config.interpret_query and config.interpret_query_prompt_uri:
+        iq_prompt = mlflow.genai.load_prompt(config.interpret_query_prompt_uri)
+        iq_prompt_version = iq_prompt.version
+        print(f"Loaded interpret_query prompt version {iq_prompt_version}")
+
     print(f"Connected to vector store '{config.collection_name}'")
 
     print(f"Loaded {len(config.gold_set)} gold set entries")
@@ -143,6 +151,8 @@ def run_evaluation(config: RunEvaluationConfig) -> None:
                 "bm25_threshold": config.bm25_threshold,
                 "semantic_weight": config.semantic_weight,
                 "bm25_weight": config.bm25_weight,
+                "interpret_query": config.interpret_query,
+                "interpret_query_prompt_version": iq_prompt_version,
             }
         )
 

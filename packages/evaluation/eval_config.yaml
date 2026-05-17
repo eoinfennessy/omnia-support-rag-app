@@ -29,5 +29,8 @@ bm25_threshold: 1.5
 semantic_weight: 0.6
 bm25_weight: 0.4
 
+# Query interpretation
+no_interpret_query: false
+
 # MLflow
 experiment_name: omnia-support-eval
