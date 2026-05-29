@@ -11,7 +11,7 @@ dependencies = []
 
 [dependency-groups]
 dev = ["ruff>=0.15.0", "ty>=0.0.31"]
-test = ["pytest>=9.0", "omnia-support-ingestion", "omnia-support-rag", "omnia-support-eval", "omnia-support-app"]
+test = ["pytest>=9.0", "omnia-support-ingestion", "omnia-support-rag", "omnia-support-eval", "omnia-support-app", "omnia-support-mcp"]
 
 [tool.uv.sources]
 omnia-support-ingestion = { workspace = true }
@@ -20,6 +20,7 @@ omnia-support-rag = { workspace = true }
 omnia-support-eval = { workspace = true }
 omnia-support-models = { workspace = true }
 omnia-support-app = { workspace = true }
+omnia-support-mcp = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]
@@ -66,7 +67,7 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["omnia_support_models", "omnia_support_store", "omnia_support_ingestion", "omnia_support_app", "omnia_support_eval", "omnia_support_rag"]
+known-first-party = ["omnia_support_models", "omnia_support_store", "omnia_support_ingestion", "omnia_support_app", "omnia_support_eval", "omnia_support_rag", "omnia_support_mcp"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["D", "S101"]

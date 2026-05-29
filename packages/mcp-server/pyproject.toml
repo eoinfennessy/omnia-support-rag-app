@@ -1,0 +1,19 @@
+[project]
+name = "omnia-support-mcp"
+version = "0.1.0"
+description = "MCP server with mock backend tools for Omnia Support"
+requires-python = ">=3.14"
+dependencies = [
+    "mcp[cli]>=1.9.4",
+    "omnia-support-models",
+]
+
+[project.scripts]
+omnia-support-mcp = "omnia_support_mcp.server:main"
+
+[tool.uv.sources]
+omnia-support-models = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.11.7,<0.12.0"]
+build-backend = "uv_build"

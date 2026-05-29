@@ -40,6 +40,16 @@ services:
       chromadb:
         condition: service_healthy
 
+  mcp-server:
+    build:
+      context: .
+      dockerfile: packages/mcp-server/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      MCP_TRANSPORT: sse
+      MCP_PORT: "8081"
+
   app:
     build:
       context: .
@@ -53,6 +63,7 @@ services:
       MLFLOW_TRACKING_URI: http://mlflow:5000
       RETRIEVAL_MODE: "${RETRIEVAL_MODE:-hybrid}"
       BM25_INDEX_PATH: /data/bm25
+      MCP_SERVER_URL: http://mcp-server:8081/sse
     volumes:
       - ./data:/data
     depends_on:

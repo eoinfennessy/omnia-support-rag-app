@@ -1,7 +1,7 @@
 MLFLOW_TRACKING_URI ?= http://localhost:5000
 RETRIEVAL_MODE ?= hybrid
 
-.PHONY: help lint lint-fix format format-check type-check check fix install-hooks up down infra-local infra-docker ingest test register-prompt eval-local eval-docker frontend-build app
+.PHONY: help lint lint-fix format format-check type-check check fix install-hooks up down infra-local infra-docker ingest test register-prompt eval-local eval-docker frontend-build app mcp-local mcp-docker mcp-inspect
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$|^##@' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; /^##@/ {printf "\n\033[1m%s\033[0m\n", substr($$0, 5); next} {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -56,6 +56,16 @@ frontend-build: ## Build the SvelteKit frontend
 
 app: frontend-build ## Start the app server locally
 	RETRIEVAL_MODE=$(RETRIEVAL_MODE) uv run omnia-support-app
+
+##@ MCP Server
+mcp-local: ## Run the MCP server locally (stdio)
+	uv run omnia-support-mcp
+
+mcp-docker: ## Run the MCP server in Docker (SSE on port 8081)
+	docker compose up --build mcp-server
+
+mcp-inspect: ## Launch the MCP inspector
+	npx @modelcontextprotocol/inspector -- uv run omnia-support-mcp
 
 ##@ Code quality
 lint: ## Run ruff linter
