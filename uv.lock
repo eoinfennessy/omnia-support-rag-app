@@ -5,6 +5,7 @@ requires-python = ">=3.14"
 [manifest]
 members = [
     "omnia-support",
+    "omnia-support-agents",
     "omnia-support-app",
     "omnia-support-eval",
     "omnia-support-ingestion",
@@ -1472,6 +1473,7 @@ dev = [
     { name = "ty" },
 ]
 test = [
+    { name = "omnia-support-agents" },
     { name = "omnia-support-app" },
     { name = "omnia-support-eval" },
     { name = "omnia-support-ingestion" },
@@ -1488,12 +1490,28 @@ dev = [
     { name = "ty", specifier = ">=0.0.31" },
 ]
 test = [
+    { name = "omnia-support-agents", editable = "packages/agents" },
     { name = "omnia-support-app", editable = "packages/app" },
     { name = "omnia-support-eval", editable = "packages/evaluation" },
     { name = "omnia-support-ingestion", editable = "packages/ingestion" },
     { name = "omnia-support-mcp", editable = "packages/mcp-server" },
     { name = "omnia-support-rag", editable = "packages/rag" },
     { name = "pytest", specifier = ">=9.0" },
+]
+
+[[package]]
+name = "omnia-support-agents"
+version = "0.1.0"
+source = { editable = "packages/agents" }
+dependencies = [
+    { name = "omnia-support-store" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "omnia-support-store", editable = "packages/store" },
+    { name = "pydantic", specifier = ">=2.13.2" },
 ]
 
 [[package]]
