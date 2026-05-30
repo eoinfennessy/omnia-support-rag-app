@@ -41,6 +41,10 @@ register-prompt: ## Register all prompts to MLflow
 		uv run --package omnia-support-eval register-prompt \
 		--prompt-path prompts/interpret_query.yaml \
 		--prompt-name interpret_query
+	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
+		uv run --package omnia-support-eval register-prompt \
+		--prompt-path prompts/triage.yaml \
+		--prompt-name triage
 
 eval-local: register-prompt ## Run evaluation locally
 	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \

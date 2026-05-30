@@ -11,6 +11,7 @@ from omnia_support_agents.models import (
     TriageDecision,
     Urgency,
 )
+from omnia_support_agents.triage import TriageAgent
 
 __all__ = [
     "ActionResult",
@@ -20,6 +21,7 @@ __all__ = [
     "SubQuery",
     "SubQueryResult",
     "ToolCallResult",
+    "TriageAgent",
     "TriageDecision",
     "Urgency",
 ]

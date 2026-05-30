@@ -1504,12 +1504,16 @@ name = "omnia-support-agents"
 version = "0.1.0"
 source = { editable = "packages/agents" }
 dependencies = [
+    { name = "mlflow" },
+    { name = "omnia-support-rag" },
     { name = "omnia-support-store" },
     { name = "pydantic" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "mlflow", specifier = ">=3.11.1" },
+    { name = "omnia-support-rag", editable = "packages/rag" },
     { name = "omnia-support-store", editable = "packages/store" },
     { name = "pydantic", specifier = ">=2.13.2" },
 ]
