@@ -88,7 +88,8 @@ services:
         uv run --no-sync --package omnia-support-eval register-prompt --prompt-path prompts/omnia_support_system.yaml --prompt-name omnia_support_system &&
         uv run --no-sync --package omnia-support-eval register-prompt --prompt-path prompts/interpret_query.yaml --prompt-name interpret_query &&
         uv run --no-sync --package omnia-support-eval register-prompt --prompt-path prompts/triage.yaml --prompt-name triage &&
-        uv run --no-sync --package omnia-support-eval register-prompt --prompt-path prompts/action.yaml --prompt-name action
+        uv run --no-sync --package omnia-support-eval register-prompt --prompt-path prompts/action.yaml --prompt-name action &&
+        uv run --no-sync --package omnia-support-eval register-prompt --prompt-path prompts/aggregate.yaml --prompt-name aggregate
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
     depends_on:
