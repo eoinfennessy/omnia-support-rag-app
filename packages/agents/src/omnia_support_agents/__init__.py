@@ -1,6 +1,7 @@
 """Agent models and orchestration for Omnia Support."""
 
 from omnia_support_agents.action import extract_tool_calls
+from omnia_support_agents.information import InformationAgent
 from omnia_support_agents.models import (
     ActionResult,
     AgentResult,
@@ -21,6 +22,7 @@ __all__ = [
     "ActionResult",
     "AgentResult",
     "AgentType",
+    "InformationAgent",
     "InformationResult",
     "SubQuery",
     "SubQueryResult",

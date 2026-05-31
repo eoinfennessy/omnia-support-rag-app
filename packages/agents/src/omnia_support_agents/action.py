@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, NamedTuple
 
+from agents.items import ToolCallItem, ToolCallOutputItem
+
 from .models import ToolCall, ToolCallResultErr, ToolCallResultOk
 
 if TYPE_CHECKING:
@@ -42,8 +44,6 @@ def _parse_output(output: Any) -> JsonValue:
 
 def extract_tool_calls(result: RunResult) -> list[ToolCall]:
     """Extract ToolCall objects from an Agents SDK RunResult."""
-    from agents.items import ToolCallItem, ToolCallOutputItem
-
     call_info: dict[str, _CallInfo] = {}
     completed: set[str] = set()
     tool_calls: list[ToolCall] = []
