@@ -6,8 +6,9 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
-from omnia_support_agents.models import AgentType, TriageDecision, Urgency
+from omnia_support_agents.models import AgentType, TriageResult, Urgency
 from omnia_support_agents.triage import TriageAgent
 
 _PROMPT_TEMPLATE = [{"role": "system", "content": "You are a triage agent."}]
@@ -62,7 +63,7 @@ class TestTriageAgent:
 
         result = _make_agent(client).triage("What is your return policy?", [])
 
-        assert isinstance(result, TriageDecision)
+        assert isinstance(result, TriageResult)
         assert result.urgency == Urgency.LOW
         assert len(result.sub_queries) == 1
         assert result.sub_queries[0].query == "return policy"
@@ -137,7 +138,7 @@ class TestTriageAgent:
 
         _make_agent(client).triage("question", [])
 
-        assert client.parse.call_args.kwargs["response_format"] is TriageDecision
+        assert client.parse.call_args.kwargs["response_format"] is TriageResult
 
     @patch("omnia_support_agents.triage.mlflow.genai.load_prompt")
     def test_uses_temperature_zero(self, mock_load_prompt):
@@ -160,3 +161,9 @@ class TestTriageAgent:
 
         with pytest.raises(ValueError, match="empty content"):
             _make_agent(client).triage("question", [])
+
+
+class TestTriageResult:
+    def test_rejects_empty_sub_queries(self):
+        with pytest.raises(ValidationError):
+            TriageResult(urgency=Urgency.LOW, sub_queries=[])

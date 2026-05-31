@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import TYPE_CHECKING, Protocol
 
-from pydantic import BaseModel, JsonValue
+from pydantic import BaseModel, Field, JsonValue
 
 if TYPE_CHECKING:
     from omnia_support_store import ScoredChunk
@@ -36,11 +36,11 @@ class SubQuery(BaseModel):
     agent: AgentType
 
 
-class TriageDecision(BaseModel):
+class TriageResult(BaseModel):
     """Result of the triage agent's classification and decomposition of a query."""
 
     urgency: Urgency
-    sub_queries: list[SubQuery]
+    sub_queries: list[SubQuery] = Field(min_length=1)
 
 
 class ToolCallResultOk(BaseModel):

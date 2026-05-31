@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 import mlflow
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from openai.types.chat import ChatCompletionMessageParam
 
     from omnia_support_rag.rag import CompletionsClient
@@ -32,7 +34,7 @@ class AggregatorAgent:
         self._prompt_uri = prompt_uri
 
     @mlflow.trace(name="aggregate")
-    def aggregate(self, results: list[SubQueryResult]) -> str:
+    def aggregate(self, results: Sequence[SubQueryResult]) -> str:
         """Aggregate sub-query results into a single answer."""
         if not results:
             raise ValueError("Aggregator received no results")

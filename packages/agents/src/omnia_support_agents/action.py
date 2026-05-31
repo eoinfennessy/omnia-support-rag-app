@@ -9,6 +9,10 @@ from agents.items import ToolCallItem, ToolCallOutputItem
 
 from .models import ToolCall, ToolCallResultErr, ToolCallResultOk
 
+UNAVAILABLE_MESSAGE = (
+    "I'm sorry, I'm unable to perform that action right now. Please try again later or contact support."
+)
+
 if TYPE_CHECKING:
     from agents.result import RunResult
     from pydantic import JsonValue

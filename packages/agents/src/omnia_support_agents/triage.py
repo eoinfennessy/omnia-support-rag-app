@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import mlflow
 
-from .models import TriageDecision
+from .models import TriageResult
 
 if TYPE_CHECKING:
     from openai.types.chat import ChatCompletionMessageParam
@@ -34,7 +34,7 @@ class TriageAgent:
         self,
         question: str,
         history: list[ChatCompletionMessageParam],
-    ) -> TriageDecision:
+    ) -> TriageResult:
         """Classify urgency and decompose the question into sub-queries."""
         prompt = mlflow.genai.load_prompt(self._prompt_uri)
         system_messages: list[ChatCompletionMessageParam] = [
@@ -52,9 +52,9 @@ class TriageAgent:
             model=self._model,
             messages=messages,
             temperature=0,
-            response_format=TriageDecision,
+            response_format=TriageResult,
         )
         content = response.choices[0].message.content
         if content is None:
             raise ValueError("LLM returned empty content for triage")
-        return TriageDecision.model_validate_json(content)
+        return TriageResult.model_validate_json(content)
