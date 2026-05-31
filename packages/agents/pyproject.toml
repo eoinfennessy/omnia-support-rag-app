@@ -5,6 +5,7 @@ description = "Agent models and orchestration for Omnia Support"
 requires-python = ">=3.14"
 dependencies = [
     "mlflow>=3.11.1",
+    "openai-agents>=0.17.4",
     "omnia-support-rag",
     "omnia-support-store",
     "pydantic>=2.13.2",

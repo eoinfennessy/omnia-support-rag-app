@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Protocol
 
-from pydantic import BaseModel
+from pydantic import BaseModel, JsonValue
 
 if TYPE_CHECKING:
     from omnia_support_store import ScoredChunk
@@ -42,13 +43,35 @@ class TriageDecision(BaseModel):
     sub_queries: list[SubQuery]
 
 
-class ToolCallResult(BaseModel):
-    """Result from invoking an MCP tool."""
+class ToolCallResultOk(BaseModel):
+    """Successful result from invoking an MCP tool."""
+
+    data: JsonValue
+
+
+class ToolCallResultErr(BaseModel):
+    """Failed result from invoking an MCP tool."""
+
+    error: str
+
+
+ToolCallResult = ToolCallResultOk | ToolCallResultErr
+
+
+class ToolCall(BaseModel):
+    """An MCP tool invocation and its result."""
 
     tool_name: str
-    success: bool
-    data: dict[str, Any] | None = None
-    error: str | None = None
+    arguments: dict[str, JsonValue]
+    result: ToolCallResult
+
+    def format(self) -> str:
+        """Format the tool call and its result as a human-readable string."""
+        args = ", ".join(f"{k}={json.dumps(v)}" for k, v in self.arguments.items())
+        header = f"{self.tool_name}({args})"
+        if isinstance(self.result, ToolCallResultOk):
+            return f"{header}\nResult: {json.dumps(self.result.data)}"
+        return f"{header}\nError: {self.result.error}"
 
 
 class SubQueryResult(Protocol):
@@ -82,12 +105,12 @@ class ActionResult:
 
     query: str
     answer: str
-    tool_calls: list[ToolCallResult] = field(default_factory=list)
+    tool_calls: list[ToolCall] = field(default_factory=list)
 
     def format_for_aggregator(self) -> str:
         """Format the result for the response aggregator."""
-        tools = "\n".join(f"- {tc.tool_name}: {tc.data}" for tc in self.tool_calls)
-        return f"Sub-query: {self.query}\nAnswer: {self.answer}\n\nTool results:\n{tools}"
+        tools = "\n\n".join(f"{i}. {tc.format()}" for i, tc in enumerate(self.tool_calls, 1))
+        return f"Sub-query: {self.query}\nAnswer: {self.answer}\n\nTool calls:\n{tools}"
 
 
 @dataclass(frozen=True)

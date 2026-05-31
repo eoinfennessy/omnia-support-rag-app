@@ -1,5 +1,6 @@
 """Agent models and orchestration for Omnia Support."""
 
+from omnia_support_agents.action import extract_tool_calls
 from omnia_support_agents.models import (
     ActionResult,
     AgentResult,
@@ -7,7 +8,10 @@ from omnia_support_agents.models import (
     InformationResult,
     SubQuery,
     SubQueryResult,
+    ToolCall,
     ToolCallResult,
+    ToolCallResultErr,
+    ToolCallResultOk,
     TriageDecision,
     Urgency,
 )
@@ -20,8 +24,12 @@ __all__ = [
     "InformationResult",
     "SubQuery",
     "SubQueryResult",
+    "ToolCall",
     "ToolCallResult",
+    "ToolCallResultErr",
+    "ToolCallResultOk",
     "TriageAgent",
     "TriageDecision",
     "Urgency",
+    "extract_tool_calls",
 ]
