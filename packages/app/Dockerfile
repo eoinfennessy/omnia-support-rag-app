@@ -16,6 +16,7 @@ COPY pyproject.toml uv.lock ./
 COPY packages/models packages/models
 COPY packages/store packages/store
 COPY packages/rag packages/rag
+COPY packages/agents packages/agents
 COPY packages/app packages/app
 COPY dataset/omnia_retail_knowledge_base.json dataset/omnia_retail_knowledge_base.json
 

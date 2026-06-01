@@ -47,9 +47,9 @@ services:
     ports:
       - "8081:8081"
     environment:
-      MCP_TRANSPORT: sse
-      FASTMCP_HOST: "0.0.0.0"
-      FASTMCP_PORT: "8081"
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8081"
 
   app:
     build:
@@ -64,7 +64,7 @@ services:
       MLFLOW_TRACKING_URI: http://mlflow:5000
       RETRIEVAL_MODE: "${RETRIEVAL_MODE:-hybrid}"
       BM25_INDEX_PATH: /data/bm25
-      MCP_SERVER_URL: http://mcp-server:8081/sse
+      MCP_SERVER_URL: http://mcp-server:8081/mcp
     volumes:
       - ./data:/data
     depends_on:
@@ -76,6 +76,8 @@ services:
         condition: service_completed_successfully
       register-prompt:
         condition: service_completed_successfully
+      mcp-server:
+        condition: service_started
     profiles:
       - app
 

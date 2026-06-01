@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -71,11 +72,13 @@ class TestOrchestrator:
         )
         aggregator = MagicMock()
 
-        result = _make_orchestrator(
-            triage=triage,
-            information=information,
-            aggregator=aggregator,
-        ).handle("What is your return policy?", [])
+        result = asyncio.run(
+            _make_orchestrator(
+                triage=triage,
+                information=information,
+                aggregator=aggregator,
+            ).handle("What is your return policy?", []),
+        )
 
         assert result.answer == "You can return items within 30 days."
         assert result.urgency == Urgency.LOW
@@ -90,12 +93,14 @@ class TestOrchestrator:
             urgency=Urgency.MEDIUM,
             sub_queries=[SubQuery(query="order status for ORD-001", agent=AgentType.ACTION)],
         )
-        mock_runner.run_sync.return_value = _make_run_result("Your order is in transit.")
+        mock_runner.run = AsyncMock(return_value=_make_run_result("Your order is in transit."))
         aggregator = MagicMock()
 
-        result = _make_orchestrator(triage=triage, aggregator=aggregator).handle(
-            "Where is my order ORD-001?",
-            [],
+        result = asyncio.run(
+            _make_orchestrator(triage=triage, aggregator=aggregator).handle(
+                "Where is my order ORD-001?",
+                [],
+            ),
         )
 
         assert result.answer == "Your order is in transit."
@@ -114,7 +119,7 @@ class TestOrchestrator:
                 SubQuery(query="return policy", agent=AgentType.INFORMATION),
             ],
         )
-        mock_runner.run_sync.return_value = _make_run_result("Refund initiated.")
+        mock_runner.run = AsyncMock(return_value=_make_run_result("Refund initiated."))
         information = MagicMock()
         information.handle.return_value = _make_information_result(
             query="return policy",
@@ -123,11 +128,13 @@ class TestOrchestrator:
         aggregator = MagicMock()
         aggregator.aggregate.return_value = "Refund initiated and you have 30 days to return."
 
-        result = _make_orchestrator(
-            triage=triage,
-            information=information,
-            aggregator=aggregator,
-        ).handle("Item arrived damaged, what's the return policy?", [])
+        result = asyncio.run(
+            _make_orchestrator(
+                triage=triage,
+                information=information,
+                aggregator=aggregator,
+            ).handle("Item arrived damaged, what's the return policy?", []),
+        )
 
         assert result.answer == "Refund initiated and you have 30 days to return."
         assert result.urgency == Urgency.HIGH
@@ -140,9 +147,11 @@ class TestOrchestrator:
         triage.triage.return_value = _make_triage_decision(
             sub_queries=[SubQuery(query="check order", agent=AgentType.ACTION)],
         )
-        mock_runner.run_sync.side_effect = ConnectionError("MCP server unreachable")
+        mock_runner.run = AsyncMock(side_effect=ConnectionError("MCP server unreachable"))
 
-        result = _make_orchestrator(triage=triage).handle("Check my order", [])
+        result = asyncio.run(
+            _make_orchestrator(triage=triage).handle("Check my order", []),
+        )
 
         assert result.answer == UNAVAILABLE_MESSAGE
         assert isinstance(result.sub_query_results[0], ActionResult)
@@ -154,7 +163,9 @@ class TestOrchestrator:
         information = MagicMock()
         information.handle.return_value = _make_information_result()
 
-        result = _make_orchestrator(triage=triage, information=information).handle("urgent!", [])
+        result = asyncio.run(
+            _make_orchestrator(triage=triage, information=information).handle("urgent!", []),
+        )
 
         assert result.urgency == Urgency.CRITICAL
 
@@ -170,7 +181,9 @@ class TestOrchestrator:
         information = MagicMock()
         information.handle.return_value = _make_information_result()
 
-        _make_orchestrator(triage=triage, information=information).handle("follow-up", history)  # ty: ignore[invalid-argument-type]
+        asyncio.run(
+            _make_orchestrator(triage=triage, information=information).handle("follow-up", history),  # ty: ignore[invalid-argument-type]
+        )
 
         information.handle.assert_called_once_with("follow-up", history)
 
@@ -181,7 +194,9 @@ class TestOrchestrator:
         information = MagicMock()
         information.handle.return_value = _make_information_result()
 
-        _make_orchestrator(triage=triage, information=information).handle("question", history)  # ty: ignore[invalid-argument-type]
+        asyncio.run(
+            _make_orchestrator(triage=triage, information=information).handle("question", history),  # ty: ignore[invalid-argument-type]
+        )
 
         triage.triage.assert_called_once_with("question", history)
 
@@ -191,7 +206,9 @@ class TestOrchestrator:
         triage.triage.return_value = _make_triage_decision(
             sub_queries=[SubQuery(query="check order", agent=AgentType.ACTION)],
         )
-        mock_runner.run_sync.side_effect = TypeError("unexpected bug")
+        mock_runner.run = AsyncMock(side_effect=TypeError("unexpected bug"))
 
         with pytest.raises(TypeError, match="unexpected bug"):
-            _make_orchestrator(triage=triage).handle("Check my order", [])
+            asyncio.run(
+                _make_orchestrator(triage=triage).handle("Check my order", []),
+            )

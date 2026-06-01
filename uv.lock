@@ -1536,10 +1536,12 @@ source = { editable = "packages/app" }
 dependencies = [
     { name = "fastapi" },
     { name = "mlflow" },
+    { name = "omnia-support-agents" },
     { name = "omnia-support-models" },
     { name = "omnia-support-rag" },
     { name = "omnia-support-store" },
     { name = "openai" },
+    { name = "openai-agents" },
     { name = "python-dotenv" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -1548,10 +1550,12 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "mlflow", specifier = ">=3.11.1" },
+    { name = "omnia-support-agents", editable = "packages/agents" },
     { name = "omnia-support-models", editable = "packages/models" },
     { name = "omnia-support-rag", editable = "packages/rag" },
     { name = "omnia-support-store", editable = "packages/store" },
     { name = "openai", specifier = ">=2.32.0" },
+    { name = "openai-agents", specifier = ">=0.17.4" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.35.0" },
 ]

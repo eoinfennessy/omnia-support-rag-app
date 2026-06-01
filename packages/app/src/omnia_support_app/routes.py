@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from omnia_support_agents import ActionResult, InformationResult
 from omnia_support_models import Document, DocumentType
-from omnia_support_rag import join_records, run_rag_pipeline
 
 from .dependencies import AppState  # noqa: TC001 — needed at runtime for FastAPI Depends
 
@@ -44,34 +44,23 @@ class ChatResponse(BaseModel):
     session_id: str
     answer: str
     sources: list[Source]
+    urgency: str | None = None
+    sub_query_results: list[InformationResult | ActionResult] = Field(default_factory=list)
 
 
 @router.post("/chat")
-def chat(
+async def chat(
     body: ChatRequest,
     state: Annotated[AppState, Depends(_get_state)],
 ) -> ChatResponse:
     """Handle a chat message and return the assistant's response."""
     history = state.sessions.get_history(body.session_id)
-    cfg = state.config
 
-    result = run_rag_pipeline(
-        body.message,
-        completions_client=state.completions_client,
-        retriever=state.retriever,
-        prompt_uri=cfg.prompt_uri,
-        n_results=cfg.n_results,
-        model=cfg.llm_model,
-        history=history,
-        query_interpreter=state.query_interpreter,
-        rescorers=state.rescorers,
-        context_processors=state.context_processors,
-    )
+    result = await state.orchestrator.handle(body.message, history)
 
     state.sessions.add_messages(
         body.session_id,
         [
-            {"role": "developer", "content": join_records(result.retrieved_chunks)},
             {"role": "user", "content": body.message},
             {"role": "assistant", "content": result.answer},
         ],
@@ -79,27 +68,32 @@ def chat(
 
     seen: set[str] = set()
     sources: list[Source] = []
-    for record in result.retrieved_chunks:
-        doc_id = record.metadata["document_id"]
-        doc_type = record.metadata["type"]
-        if doc_id not in seen and doc_type in ("policy", "faq"):
-            seen.add(doc_id)
-            category = record.metadata["category"]
-            title = _to_title_case(category)
-            if doc_type == "faq":
-                title = f"{doc_id} - {title}"
-            sources.append(
-                Source(
-                    url=f"/{doc_type}s/{doc_id}" if doc_type == "faq" else f"/policies/{doc_id}",
-                    title=title,
-                    type=doc_type,
+    for sub_result in result.sub_query_results:
+        if not isinstance(sub_result, InformationResult):
+            continue
+        for record in sub_result.context:
+            doc_id = record.metadata["document_id"]
+            doc_type = record.metadata["type"]
+            if doc_id not in seen and doc_type in ("policy", "faq"):
+                seen.add(doc_id)
+                category = record.metadata["category"]
+                title = _to_title_case(category)
+                if doc_type == "faq":
+                    title = f"{doc_id} - {title}"
+                sources.append(
+                    Source(
+                        url=f"/{doc_type}s/{doc_id}" if doc_type == "faq" else f"/policies/{doc_id}",
+                        title=title,
+                        type=doc_type,
+                    )
                 )
-            )
 
     return ChatResponse(
         session_id=body.session_id,
         answer=result.answer,
         sources=sources,
+        urgency=result.urgency,
+        sub_query_results=result.sub_query_results,
     )
 
 

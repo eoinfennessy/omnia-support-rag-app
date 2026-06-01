@@ -7,10 +7,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import mlflow
 import openai
+from agents import Agent
+from agents.mcp import MCPServerStdio, MCPServerStreamableHttp
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from dotenv import load_dotenv
 
+from omnia_support_agents import (
+    AgentOrchestrator,
+    AggregatorAgent,
+    InformationAgent,
+    TriageAgent,
+)
 from omnia_support_models import Dataset
 from omnia_support_rag import (
     BM25Retriever,
@@ -31,35 +40,20 @@ from omnia_support_store import BM25sKeywordStore, ChromaVectorStore
 from .session import InMemorySessionStore
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from agents.mcp import MCPServer
 
-    from omnia_support_rag.context_processing import ContextProcessor
-    from omnia_support_rag.query_interpretation import QueryInterpreter
-    from omnia_support_rag.rag import CompletionsClient, Rescorer, Retriever
+    from omnia_support_rag.rag import Retriever
 
     from .session import SessionStore
-
-
-@dataclass(frozen=True)
-class AppConfig:
-    """Application configuration loaded from environment."""
-
-    prompt_uri: str
-    n_results: int
-    llm_model: str
 
 
 @dataclass
 class AppState:
     """Shared application state created once at startup."""
 
-    config: AppConfig
-    retriever: Retriever
-    rescorers: Sequence[Rescorer]
-    context_processors: Sequence[ContextProcessor]
-    completions_client: CompletionsClient
     dataset: Dataset
-    query_interpreter: QueryInterpreter
+    orchestrator: AgentOrchestrator
+    mcp_server: MCPServer
     sessions: SessionStore = field(default_factory=InMemorySessionStore)
 
 
@@ -77,7 +71,7 @@ def create_app_state() -> AppState:
         model_name=embedding_model,
     )
 
-    retrieval_mode = os.environ.get("RETRIEVAL_MODE", "semantic")
+    retrieval_mode = os.environ.get("RETRIEVAL_MODE", "hybrid")
 
     vector_store = None
     keyword_store = None
@@ -91,7 +85,7 @@ def create_app_state() -> AppState:
         keyword_store = BM25sKeywordStore(index_path=Path(os.environ.get("BM25_INDEX_PATH", "data/bm25")))
 
     rescorers = [DocumentTypeRescorer(), SatisfactionRescorer(), ResolutionStatusRescorer()]
-    semantic_filters = [CosineSimThresholdFilter()]
+    semantic_filters = [CosineSimThresholdFilter(min_similarity=0.23)]
     keyword_filters = [BM25ThresholdFilter()]
 
     retriever: Retriever
@@ -101,8 +95,8 @@ def create_app_state() -> AppState:
         semantic = SemanticRetriever(vector_store, filters=semantic_filters)
         keyword = BM25Retriever(keyword_store, filters=keyword_filters)
         retriever = HybridRetriever(
-            RetrieverWeight(semantic, 1.0),
-            RetrieverWeight(keyword, 1.0),
+            RetrieverWeight(semantic, 0.6),
+            RetrieverWeight(keyword, 0.4),
         )
     elif retrieval_mode == "bm25":
         if keyword_store is None:
@@ -119,17 +113,17 @@ def create_app_state() -> AppState:
     prompt_alias = os.environ.get("PROMPT_ALIAS", "production")
     llm_model = os.environ.get("LLM_MODEL", "gpt-5.4-mini")
 
-    config = AppConfig(
-        prompt_uri=f"prompts:/{prompt_name}@{prompt_alias}",
-        n_results=int(os.environ.get("N_RESULTS", "5")),
-        llm_model=llm_model,
-    )
+    prompt_uri = f"prompts:/{prompt_name}@{prompt_alias}"
+    n_results = int(os.environ.get("N_RESULTS", "8"))
 
     interpret_query_prompt_name = os.environ.get("INTERPRET_QUERY_PROMPT_NAME", "interpret_query")
     interpret_query_prompt_alias = os.environ.get("INTERPRET_QUERY_PROMPT_ALIAS", "production")
 
+    openai_client = openai.OpenAI()
+    completions_client = openai_client.chat.completions
+
     query_interpreter = LLMQueryInterpreter(
-        completions_client=openai.OpenAI().chat.completions,
+        completions_client=completions_client,
         model=llm_model,
         prompt_uri=f"prompts:/{interpret_query_prompt_name}@{interpret_query_prompt_alias}",
     )
@@ -139,12 +133,62 @@ def create_app_state() -> AppState:
     )
     dataset = Dataset.from_json(dataset_path)
 
-    return AppState(
-        config=config,
+    triage_agent = TriageAgent(
+        completions_client=openai_client.beta.chat.completions,
+        model=llm_model,
+        prompt_uri=f"prompts:/{os.environ.get('TRIAGE_PROMPT_NAME', 'triage')}@{prompt_alias}",
+    )
+
+    information_agent = InformationAgent(
+        completions_client=completions_client,
         retriever=retriever,
+        prompt_uri=prompt_uri,
+        n_results=n_results,
+        model=llm_model,
+        query_interpreter=query_interpreter,
         rescorers=rescorers,
         context_processors=context_processors,
-        completions_client=openai.OpenAI().chat.completions,
+    )
+
+    aggregator_agent = AggregatorAgent(
+        completions_client=completions_client,
+        model=llm_model,
+        prompt_uri=f"prompts:/{os.environ.get('AGGREGATE_PROMPT_NAME', 'aggregate')}@{prompt_alias}",
+    )
+
+    mcp_server_url = os.environ.get("MCP_SERVER_URL")
+    if mcp_server_url:
+        mcp_server = MCPServerStreamableHttp(
+            params={"url": mcp_server_url},
+            name="omnia-support-tools",
+            cache_tools_list=True,
+        )
+    else:
+        mcp_server = MCPServerStdio(
+            params={"command": "uv", "args": ["run", "omnia-support-mcp"]},
+            name="omnia-support-tools",
+            cache_tools_list=True,
+        )
+
+    action_prompt = mlflow.genai.load_prompt(
+        f"prompts:/{os.environ.get('ACTION_PROMPT_NAME', 'action')}@{prompt_alias}",
+    )
+    action_agent = Agent(
+        name="action",
+        instructions=action_prompt.template[0]["content"],
+        model=llm_model,
+        mcp_servers=[mcp_server],
+    )
+
+    orchestrator = AgentOrchestrator(
+        triage_agent=triage_agent,
+        information_agent=information_agent,
+        aggregator_agent=aggregator_agent,
+        action_agent=action_agent,
+    )
+
+    return AppState(
         dataset=dataset,
-        query_interpreter=query_interpreter,
+        orchestrator=orchestrator,
+        mcp_server=mcp_server,
     )

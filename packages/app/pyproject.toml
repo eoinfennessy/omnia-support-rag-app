@@ -7,9 +7,11 @@ dependencies = [
     "omnia-support-models",
     "omnia-support-rag",
     "omnia-support-store",
+    "omnia-support-agents",
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.35.0",
     "openai>=2.32.0",
+    "openai-agents>=0.17.4",
     "mlflow>=3.11.1",
     "python-dotenv>=1.2.2",
 ]
@@ -21,6 +23,7 @@ omnia-support-app = "omnia_support_app.main:main"
 omnia-support-models = { workspace = true }
 omnia-support-rag = { workspace = true }
 omnia-support-store = { workspace = true }
+omnia-support-agents = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]

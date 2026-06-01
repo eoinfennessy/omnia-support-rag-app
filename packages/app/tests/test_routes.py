@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from omnia_support_app.dependencies import AppConfig, AppState
+from omnia_support_agents import ActionResult, AgentResult, InformationResult, Urgency
+from omnia_support_agents.models import ToolCall, ToolCallResultOk
+from omnia_support_app.dependencies import AppState
 from omnia_support_app.routes import router
 from omnia_support_app.session import InMemorySessionStore
 from omnia_support_models import (
@@ -21,7 +23,6 @@ from omnia_support_models import (
     ProductCategory,
     ResolutionStatus,
 )
-from omnia_support_rag import PassthroughQueryInterpreter, RagResult
 from omnia_support_store.models import ChunkMetadata, ScoredChunk
 
 _TEST_DATASET = Dataset(
@@ -81,17 +82,9 @@ def _create_test_app() -> tuple[FastAPI, AppState]:
     app.include_router(router)
 
     state = AppState(
-        config=AppConfig(
-            prompt_uri="prompts:/test@prod",
-            n_results=3,
-            llm_model="gpt-4",
-        ),
-        retriever=MagicMock(),
-        rescorers=[],
-        context_processors=[],
-        completions_client=MagicMock(),
         dataset=_TEST_DATASET,
-        query_interpreter=PassthroughQueryInterpreter(),
+        orchestrator=MagicMock(handle=AsyncMock()),
+        mcp_server=MagicMock(),
         sessions=InMemorySessionStore(),
     )
     app.state.app_state = state
@@ -147,14 +140,41 @@ _TICKET_RECORD = _make_record(
 )
 
 
-@patch("omnia_support_app.routes.run_rag_pipeline")
+def _info_result(
+    query: str = "question",
+    answer: str = "answer",
+    context: list[ScoredChunk] | None = None,
+) -> InformationResult:
+    return InformationResult(query=query, answer=answer, context=context or [])
+
+
+def _action_result(
+    query: str = "question",
+    answer: str = "action answer",
+    tool_calls: list[ToolCall] | None = None,
+) -> ActionResult:
+    return ActionResult(query=query, answer=answer, tool_calls=tool_calls or [])
+
+
+def _agent_result(
+    answer: str = "answer",
+    urgency: Urgency = Urgency.LOW,
+    sub_query_results: list[InformationResult | ActionResult] | None = None,
+) -> AgentResult:
+    return AgentResult(
+        answer=answer,
+        urgency=urgency,
+        sub_query_results=sub_query_results or [],
+    )
+
+
 class TestChatEndpoint:
-    def test_returns_answer(self, mock_pipeline):
-        mock_pipeline.return_value = RagResult(
+    def test_returns_answer(self):
+        app, state = _create_test_app()
+        state.orchestrator.handle.return_value = _agent_result(  # ty: ignore[unresolved-attribute]
             answer="Our return policy is...",
-            retrieved_chunks=[_POLICY_RECORD],
+            sub_query_results=[_info_result(answer="Our return policy is...", context=[_POLICY_RECORD])],
         )
-        app, _ = _create_test_app()
         client = TestClient(app)
 
         response = client.post(
@@ -167,27 +187,43 @@ class TestChatEndpoint:
         assert data["answer"] == "Our return policy is..."
         assert data["session_id"] == "s1"
 
-    def test_passes_query_interpreter_to_pipeline(self, mock_pipeline):
-        mock_pipeline.return_value = RagResult(
-            answer="answer",
-            retrieved_chunks=[_POLICY_RECORD],
-        )
-        app, _ = _create_test_app()
+    def test_returns_urgency(self):
+        app, state = _create_test_app()
+        state.orchestrator.handle.return_value = _agent_result(urgency=Urgency.HIGH)  # ty: ignore[unresolved-attribute]
         client = TestClient(app)
 
-        client.post(
+        response = client.post(
             "/api/chat",
             json={"session_id": "s1", "message": "question"},
         )
 
-        assert isinstance(mock_pipeline.call_args.kwargs["query_interpreter"], PassthroughQueryInterpreter)
+        assert response.json()["urgency"] == "high"
 
-    def test_second_message_passes_history(self, mock_pipeline):
-        mock_pipeline.return_value = RagResult(
-            answer="answer",
-            retrieved_chunks=[_POLICY_RECORD],
+    def test_returns_sub_query_results(self):
+        app, state = _create_test_app()
+        info = _info_result(query="info q", answer="info a", context=[_POLICY_RECORD])
+        action = _action_result(
+            query="action q",
+            answer="action a",
+            tool_calls=[ToolCall(tool_name="get_order", arguments={"id": "ORD-1"}, result=ToolCallResultOk(data={}))],
         )
-        app, _state = _create_test_app()
+        state.orchestrator.handle.return_value = _agent_result(  # ty: ignore[unresolved-attribute]
+            answer="combined",
+            sub_query_results=[info, action],
+        )
+        client = TestClient(app)
+
+        response = client.post(
+            "/api/chat",
+            json={"session_id": "s1", "message": "question"},
+        )
+
+        data = response.json()
+        assert len(data["sub_query_results"]) == 2
+
+    def test_second_message_passes_history(self):
+        app, state = _create_test_app()
+        state.orchestrator.handle.return_value = _agent_result()  # ty: ignore[unresolved-attribute]
         client = TestClient(app)
 
         client.post(
@@ -199,19 +235,15 @@ class TestChatEndpoint:
             json={"session_id": "s1", "message": "follow-up"},
         )
 
-        second_pipeline_call = mock_pipeline.call_args_list[1]
-        history = second_pipeline_call.kwargs["history"]
-        assert len(history) == 3
-        assert history[0]["role"] == "developer"
-        assert history[1]["role"] == "user"
-        assert history[2]["role"] == "assistant"
+        second_call = state.orchestrator.handle.call_args_list[1]  # ty: ignore[unresolved-attribute]
+        history = second_call.args[1]
+        assert len(history) == 2
+        assert history[0]["role"] == "user"
+        assert history[1]["role"] == "assistant"
 
-    def test_stores_developer_user_assistant_triple(self, mock_pipeline):
-        mock_pipeline.return_value = RagResult(
-            answer="the answer",
-            retrieved_chunks=[_POLICY_RECORD],
-        )
+    def test_stores_user_assistant_pair(self):
         app, state = _create_test_app()
+        state.orchestrator.handle.return_value = _agent_result(answer="the answer")  # ty: ignore[unresolved-attribute]
         client = TestClient(app)
 
         client.post(
@@ -220,12 +252,11 @@ class TestChatEndpoint:
         )
 
         history = state.sessions.get_history("s1")
-        assert len(history) == 3
-        assert history[0] == {"role": "developer", "content": "Return policy content"}
-        assert history[1] == {"role": "user", "content": "my question"}
-        assert history[2] == {"role": "assistant", "content": "the answer"}
+        assert len(history) == 2
+        assert history[0] == {"role": "user", "content": "my question"}
+        assert history[1] == {"role": "assistant", "content": "the answer"}
 
-    def test_returns_deduplicated_sources(self, mock_pipeline):
+    def test_returns_deduplicated_sources(self):
         duplicate_record = _make_record(
             document_id="policy_001",
             page_content="Another chunk from same policy",
@@ -233,11 +264,13 @@ class TestChatEndpoint:
             category="returns",
             chunk_index=1,
         )
-        mock_pipeline.return_value = RagResult(
-            answer="answer",
-            retrieved_chunks=[_POLICY_RECORD, duplicate_record, _FAQ_RECORD],
+        state_orchestrator_result = _agent_result(
+            sub_query_results=[
+                _info_result(context=[_POLICY_RECORD, duplicate_record, _FAQ_RECORD]),
+            ],
         )
-        app, _ = _create_test_app()
+        app, state = _create_test_app()
+        state.orchestrator.handle.return_value = state_orchestrator_result  # ty: ignore[unresolved-attribute]
         client = TestClient(app)
 
         response = client.post(
@@ -250,12 +283,11 @@ class TestChatEndpoint:
         assert sources[0] == {"url": "/policies/policy_001", "title": "Returns", "type": "policy"}
         assert sources[1] == {"url": "/faqs/faq_001", "title": "faq_001 - General", "type": "faq"}
 
-    def test_excludes_support_tickets_from_sources(self, mock_pipeline):
-        mock_pipeline.return_value = RagResult(
-            answer="answer",
-            retrieved_chunks=[_TICKET_RECORD, _POLICY_RECORD],
+    def test_excludes_support_tickets_from_sources(self):
+        app, state = _create_test_app()
+        state.orchestrator.handle.return_value = _agent_result(  # ty: ignore[unresolved-attribute]
+            sub_query_results=[_info_result(context=[_TICKET_RECORD, _POLICY_RECORD])],
         )
-        app, _ = _create_test_app()
         client = TestClient(app)
 
         response = client.post(
@@ -267,26 +299,47 @@ class TestChatEndpoint:
         assert len(sources) == 1
         assert sources[0]["type"] == "policy"
 
-
-@patch("omnia_support_app.routes.run_rag_pipeline")
-class TestClearSessionEndpoint:
-    def test_clears_session(self, mock_pipeline):
-        mock_pipeline.return_value = RagResult(
-            answer="a",
-            retrieved_chunks=[_POLICY_RECORD],
-        )
+    def test_action_only_response_has_no_sources(self):
         app, state = _create_test_app()
+        state.orchestrator.handle.return_value = _agent_result(  # ty: ignore[unresolved-attribute]
+            sub_query_results=[
+                _action_result(
+                    tool_calls=[
+                        ToolCall(
+                            tool_name="get_order",
+                            arguments={"order_id": "ORD-1"},
+                            result=ToolCallResultOk(data={"status": "shipped"}),
+                        ),
+                    ],
+                ),
+            ],
+        )
+        client = TestClient(app)
+
+        response = client.post(
+            "/api/chat",
+            json={"session_id": "s1", "message": "Where is my order?"},
+        )
+
+        data = response.json()
+        assert data["sources"] == []
+
+
+class TestClearSessionEndpoint:
+    def test_clears_session(self):
+        app, state = _create_test_app()
+        state.orchestrator.handle.return_value = _agent_result()  # ty: ignore[unresolved-attribute]
         client = TestClient(app)
 
         client.post("/api/chat", json={"session_id": "s1", "message": "hi"})
-        assert len(state.sessions.get_history("s1")) == 3
+        assert len(state.sessions.get_history("s1")) == 2
 
         response = client.delete("/api/chat/s1")
 
         assert response.status_code == 204
         assert state.sessions.get_history("s1") == []
 
-    def test_clear_nonexistent_session_returns_204(self, mock_pipeline):  # noqa: ARG002
+    def test_clear_nonexistent_session_returns_204(self):
         app, _ = _create_test_app()
         client = TestClient(app)
 

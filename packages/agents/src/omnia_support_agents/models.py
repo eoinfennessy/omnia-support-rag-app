@@ -5,12 +5,11 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import TYPE_CHECKING, Protocol
+from typing import Protocol
 
 from pydantic import BaseModel, Field, JsonValue
 
-if TYPE_CHECKING:
-    from omnia_support_store import ScoredChunk
+from omnia_support_store import ScoredChunk  # noqa: TC001 — needed at runtime by dataclasses
 
 
 class AgentType(StrEnum):

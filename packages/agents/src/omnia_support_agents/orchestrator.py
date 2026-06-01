@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
+import asyncio
 from typing import TYPE_CHECKING
 
 import mlflow
@@ -39,21 +39,23 @@ class AgentOrchestrator:
         self._action_agent = action_agent
 
     @mlflow.trace(name="orchestrator")
-    def handle(
+    async def handle(
         self,
         question: str,
         history: list[ChatCompletionMessageParam],
     ) -> AgentResult:
         """Run the full orchestration pipeline for a user question."""
-        triage_result = self._triage_agent.triage(question, history)
+        triage_result = await asyncio.to_thread(
+            self._triage_agent.triage,
+            question,
+            history,
+        )
 
-        with ThreadPoolExecutor() as pool:
-            sub_query_results = list(
-                pool.map(lambda sq: self._dispatch(sq, history), triage_result.sub_queries),
-            )
+        tasks = (self._dispatch(sq, history) for sq in triage_result.sub_queries)
+        sub_query_results = await asyncio.gather(*tasks)
 
         answer = (
-            self._aggregator_agent.aggregate(sub_query_results)
+            await asyncio.to_thread(self._aggregator_agent.aggregate, sub_query_results)
             if len(sub_query_results) > 1
             else sub_query_results[0].answer
         )
@@ -64,18 +66,24 @@ class AgentOrchestrator:
             sub_query_results=sub_query_results,
         )
 
-    def _dispatch(
+    async def _dispatch(
         self,
         sub_query: SubQuery,
         history: list[ChatCompletionMessageParam],
     ) -> InformationResult | ActionResult:
-        if sub_query.agent == AgentType.INFORMATION:
-            return self._information_agent.handle(sub_query.query, history)
-        return self._handle_action(sub_query.query)
+        match sub_query.agent:
+            case AgentType.INFORMATION:
+                return await asyncio.to_thread(
+                    self._information_agent.handle,
+                    sub_query.query,
+                    history,
+                )
+            case AgentType.ACTION:
+                return await self._handle_action(sub_query.query)
 
-    def _handle_action(self, query: str) -> ActionResult:
+    async def _handle_action(self, query: str) -> ActionResult:
         try:
-            run_result = Runner.run_sync(self._action_agent, query)
+            run_result = await Runner.run(self._action_agent, query)
             return ActionResult(
                 query=query,
                 answer=run_result.final_output,

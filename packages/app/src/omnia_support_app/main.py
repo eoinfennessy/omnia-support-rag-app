@@ -44,8 +44,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     mlflow.set_tracking_uri(
         os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5000"),
     )
-    app.state.app_state = create_app_state()
+    state = create_app_state()
+    await state.mcp_server.connect()
+    app.state.app_state = state
     yield
+    await state.mcp_server.cleanup()
 
 
 def create_app() -> FastAPI:

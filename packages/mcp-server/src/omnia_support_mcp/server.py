@@ -9,7 +9,11 @@ from omnia_support_mcp.tools.inventory import get_product, search_product
 from omnia_support_mcp.tools.orders import get_order, list_customer_orders
 from omnia_support_mcp.tools.refunds import get_refund, process_refund
 
-mcp = FastMCP("omnia-support-tools")
+mcp = FastMCP(
+    "omnia-support-tools",
+    host=os.environ.get("MCP_HOST", "127.0.0.1"),
+    port=int(os.environ.get("MCP_PORT", "8000")),
+)
 
 mcp.tool()(get_order)
 mcp.tool()(list_customer_orders)
