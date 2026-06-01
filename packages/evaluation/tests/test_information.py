@@ -12,7 +12,7 @@ from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
 
 from omnia_support_eval.information.gold_set import (
     DATASET_NAME,
-    GoldSetEntry,
+    InformationGoldSetEntry,
     load_gold_set,
     sync_gold_set,
 )
@@ -116,11 +116,11 @@ def _make_trace(outputs: list, *, span_count: int = 1) -> MagicMock:
     return trace
 
 
-class TestGoldSetEntry:
+class TestInformationGoldSetEntry:
     def test_from_test_query_copies_fields(self):
         query = _make_test_query(query_id="TQ-005", query="Why?")
 
-        entry = GoldSetEntry.from_test_query(query, "expected answer")
+        entry = InformationGoldSetEntry.from_test_query(query, "expected answer")
 
         assert entry.query_id == "TQ-005"
         assert entry.query == "Why?"
@@ -130,7 +130,7 @@ class TestGoldSetEntry:
     def test_from_test_query_preserves_expected_document_ids(self):
         query = _make_test_query(expected_document_ids=["doc-1", "doc-2"])
 
-        entry = GoldSetEntry.from_test_query(query, "answer")
+        entry = InformationGoldSetEntry.from_test_query(query, "answer")
 
         assert entry.expected_document_ids == ["doc-1", "doc-2"]
 
@@ -505,8 +505,8 @@ def _make_gold_entry(
     expected_document_ids: list[str] | None = None,
     category: str = "general",
     notes: str = "",
-) -> GoldSetEntry:
-    return GoldSetEntry(
+) -> InformationGoldSetEntry:
+    return InformationGoldSetEntry(
         query_id=query_id,
         query=query,
         expected_answer=expected_answer,

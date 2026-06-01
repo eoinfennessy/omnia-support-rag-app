@@ -19,7 +19,7 @@ from mlflow.genai.scorers import (
 from omnia_support_agents import InformationAgent
 
 from ..common import content_hash, resolve_prompt_uri
-from .gold_set import GoldSetEntry, sync_gold_set
+from .gold_set import InformationGoldSetEntry, sync_gold_set
 from .scorers import retrieval_mrr, retrieval_recall
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 class RunEvaluationConfig:
     """Configuration for an information agent evaluation run."""
 
-    gold_set: list[GoldSetEntry]
+    gold_set: list[InformationGoldSetEntry]
     prompt_name: str
     prompt_version: int | None
     prompt_alias: str

@@ -19,19 +19,19 @@ if TYPE_CHECKING:
 DATASET_NAME = "omnia-support-gold-set"
 
 
-class GoldSetEntry(TestQuery):
+class InformationGoldSetEntry(TestQuery):
     """A test query with its expected answer for evaluation."""
 
     expected_answer: str
     history: list[dict[str, str]] = Field(default_factory=list)
 
     @classmethod
-    def from_test_query(cls, query: TestQuery, expected_answer: str) -> GoldSetEntry:
+    def from_test_query(cls, query: TestQuery, expected_answer: str) -> InformationGoldSetEntry:
         """Create a gold set entry from a test query and expected answer."""
         return cls(**query.model_dump(), expected_answer=expected_answer)
 
 
-def load_gold_set(gold_set_path: Path, dataset_path: Path) -> list[GoldSetEntry]:
+def load_gold_set(gold_set_path: Path, dataset_path: Path) -> list[InformationGoldSetEntry]:
     """Load and merge gold set entries from the dataset and gold set file.
 
     Merges expected_answers into test queries from the dataset,
@@ -46,15 +46,15 @@ def load_gold_set(gold_set_path: Path, dataset_path: Path) -> list[GoldSetEntry]
 
     dataset = Dataset.from_json(dataset_path)
 
-    entries: list[GoldSetEntry] = [
-        GoldSetEntry.from_test_query(query, expected_answers[query.query_id])
+    entries: list[InformationGoldSetEntry] = [
+        InformationGoldSetEntry.from_test_query(query, expected_answers[query.query_id])
         for query in dataset.test_queries
         if query.query_id in expected_answers
     ]
-    entries.extend(GoldSetEntry.model_validate(aq) for aq in additional_queries)
+    entries.extend(InformationGoldSetEntry.model_validate(aq) for aq in additional_queries)
 
     for conv in gold_data.get("conversations", []):
-        conv_entries: list[GoldSetEntry] = []
+        conv_entries: list[InformationGoldSetEntry] = []
         for turn in conv["turns"]:
             history = [
                 msg
@@ -64,7 +64,7 @@ def load_gold_set(gold_set_path: Path, dataset_path: Path) -> list[GoldSetEntry]
                     {"role": "assistant", "content": prior.expected_answer},
                 )
             ]
-            entry = GoldSetEntry(
+            entry = InformationGoldSetEntry(
                 query_id=turn["query_id"],
                 query=turn["query"],
                 expected_answer=turn["expected_answer"],
@@ -82,7 +82,7 @@ def load_gold_set(gold_set_path: Path, dataset_path: Path) -> list[GoldSetEntry]
     return entries
 
 
-def build_records(entries: list[GoldSetEntry]) -> list[dict[str, Any]]:
+def build_records(entries: list[InformationGoldSetEntry]) -> list[dict[str, Any]]:
     """Build MLflow dataset records from gold set entries."""
     return [
         {
@@ -101,7 +101,7 @@ def build_records(entries: list[GoldSetEntry]) -> list[dict[str, Any]]:
 
 
 def sync_gold_set(
-    entries: list[GoldSetEntry],
+    entries: list[InformationGoldSetEntry],
     hash_value: str,
     experiment_id: str,
 ) -> EvaluationDataset:
