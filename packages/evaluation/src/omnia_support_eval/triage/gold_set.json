@@ -1,0 +1,120 @@
+{
+  "triage_queries": [
+    {
+      "query_id": "triage-001",
+      "query": "What is your return policy?",
+      "expected_urgency": "medium",
+      "expected_sub_queries": [
+        {"query": "what is your return policy?", "agent": "information"}
+      ],
+      "category": "single-information"
+    },
+    {
+      "query_id": "triage-002",
+      "query": "I need to check my refund status for order ORD-2024-005",
+      "expected_urgency": "high",
+      "expected_sub_queries": [
+        {"query": "check refund status for order ORD-2024-005", "agent": "action"}
+      ],
+      "category": "single-action"
+    },
+    {
+      "query_id": "triage-003",
+      "query": "My order ORD-2024-010 still hasn't shown up and also can I return stuff after 30 days?",
+      "expected_urgency": "high",
+      "expected_sub_queries": [
+        {"query": "check delivery status for order ORD-2024-010", "agent": "action"},
+        {"query": "can items be returned after 30 days?", "agent": "information"}
+      ],
+      "category": "multi-mixed"
+    },
+    {
+      "query_id": "triage-004",
+      "query": "Do you sell wireless headphones?",
+      "expected_urgency": "low",
+      "expected_sub_queries": [
+        {"query": "do you sell wireless headphones?", "agent": "information"}
+      ],
+      "category": "single-information"
+    },
+    {
+      "query_id": "triage-005",
+      "query": "I received a damaged item in my order ORD-2024-042 and I want a refund immediately",
+      "expected_urgency": "high",
+      "expected_sub_queries": [
+        {"query": "process a refund for damaged item in order ORD-2024-042", "agent": "action"}
+      ],
+      "category": "single-action"
+    },
+    {
+      "query_id": "triage-006",
+      "query": "The product I bought is leaking battery acid and I'm worried about safety. Order ORD-2024-099.",
+      "expected_urgency": "critical",
+      "expected_sub_queries": [
+        {"query": "report safety issue with leaking battery acid for order ORD-2024-099", "agent": "action"}
+      ],
+      "category": "single-action"
+    },
+    {
+      "query_id": "triage-007",
+      "query": "What are your shipping options and how long does standard delivery take?",
+      "expected_urgency": "low",
+      "expected_sub_queries": [
+        {"query": "what are the shipping options and standard delivery time?", "agent": "information"}
+      ],
+      "category": "single-information"
+    },
+    {
+      "query_id": "triage-008",
+      "query": "Can I get a price match on order ORD-2024-015 and also what is your warranty policy?",
+      "expected_urgency": "medium",
+      "expected_sub_queries": [
+        {"query": "request price match for order ORD-2024-015", "agent": "action"},
+        {"query": "what is your warranty policy?", "agent": "information"}
+      ],
+      "category": "multi-mixed"
+    },
+    {
+      "query_id": "triage-009",
+      "query": "Where is my order ORD-2024-033? It was supposed to arrive yesterday.",
+      "expected_urgency": "high",
+      "expected_sub_queries": [
+        {"query": "check delivery status for order ORD-2024-033", "agent": "action"}
+      ],
+      "category": "single-action"
+    },
+    {
+      "query_id": "triage-010",
+      "query": "I was charged twice for order ORD-2024-077 and I need this resolved right now",
+      "expected_urgency": "critical",
+      "expected_sub_queries": [
+        {"query": "resolve duplicate charge for order ORD-2024-077", "agent": "action"}
+      ],
+      "category": "single-action"
+    },
+    {
+      "query_id": "triage-011",
+      "query": "What brands of laptops do you carry?",
+      "expected_urgency": "low",
+      "expected_sub_queries": [
+        {"query": "what brands of laptops do you carry?", "agent": "information"}
+      ],
+      "category": "single-information",
+      "history": [
+        {"role": "user", "content": "Hi, I'm looking for a new laptop"},
+        {"role": "assistant", "content": "Hello! I'd be happy to help you find a laptop. What are you looking for?"}
+      ]
+    },
+    {
+      "query_id": "triage-012",
+      "query": "I want to return the headphones from order ORD-2024-050, check if my other order ORD-2024-051 has shipped, and also what is your exchange policy?",
+      "expected_urgency": "high",
+      "expected_sub_queries": [
+        {"query": "process return for headphones from order ORD-2024-050", "agent": "action"},
+        {"query": "check shipping status for order ORD-2024-051", "agent": "action"},
+        {"query": "what is your exchange policy?", "agent": "information"}
+      ],
+      "category": "multi-mixed"
+    }
+  ]
+}

@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
+from omnia_support_agents import SubQuery  # noqa: TC001 — used at runtime by Pydantic
+
 from ..common import sync_dataset
 
 if TYPE_CHECKING:
@@ -22,9 +24,8 @@ class TriageGoldSetEntry(BaseModel):
 
     query_id: str
     query: str
-    expected_routing: list[str]
     expected_urgency: str
-    expected_sub_query_count: int
+    expected_sub_queries: list[SubQuery] = Field(min_length=1)
     history: list[dict[str, str]] = Field(default_factory=list)
     category: str = ""
     notes: str = ""
@@ -50,9 +51,10 @@ def build_records(entries: list[TriageGoldSetEntry]) -> list[dict[str, Any]]:
         {
             "inputs": {"question": entry.query, "history": entry.history},
             "expectations": {
-                "expected_routing": entry.expected_routing,
+                "expected_routing": [sq.agent for sq in entry.expected_sub_queries],
                 "expected_urgency": entry.expected_urgency,
-                "expected_sub_query_count": entry.expected_sub_query_count,
+                "expected_sub_query_count": len(entry.expected_sub_queries),
+                "expected_sub_queries": [sq.model_dump() for sq in entry.expected_sub_queries],
             },
             "tags": {
                 "query_id": entry.query_id,
