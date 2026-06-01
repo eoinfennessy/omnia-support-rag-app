@@ -1,13 +1,7 @@
 """Refund tools."""
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 from omnia_support_mcp.services.refunds import service
-
-if TYPE_CHECKING:
-    from omnia_support_mcp.services.refunds.store import Refund
+from omnia_support_mcp.services.refunds.store import Refund  # noqa: TC001 — FastMCP needs runtime access
 
 
 def process_refund(order_id: str, reason: str) -> Refund:

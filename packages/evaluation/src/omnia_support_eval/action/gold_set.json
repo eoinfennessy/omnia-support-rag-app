@@ -1,0 +1,74 @@
+{
+  "action_queries": [
+    {
+      "query_id": "action-001",
+      "query": "What is the status of my order ORD-2024-001?",
+      "expected_answer": "Order ORD-2024-001 has been delivered. It was delivered on 2024-11-14.",
+      "expected_tools": ["get_order"],
+      "category": "order-lookup"
+    },
+    {
+      "query_id": "action-002",
+      "query": "Has order ORD-2024-002 been delivered yet?",
+      "expected_answer": "Order ORD-2024-002 has not been delivered yet. It is currently shipped with an estimated delivery date of 2024-12-03.",
+      "expected_tools": ["get_order"],
+      "category": "order-status"
+    },
+    {
+      "query_id": "action-003",
+      "query": "Can you show me all orders for Sarah Murphy?",
+      "expected_answer": "Sarah Murphy has one order: ORD-2024-001 which has been delivered. It contains a ProBook 15 Laptop and a USB-C Docking Station.",
+      "expected_tools": ["list_customer_orders"],
+      "category": "customer-orders"
+    },
+    {
+      "query_id": "action-004",
+      "query": "How much does the ProBook 15 Laptop cost?",
+      "expected_answer": "The ProBook 15 Laptop costs €899.99.",
+      "expected_tools": ["search_product"],
+      "category": "product-search"
+    },
+    {
+      "query_id": "action-005",
+      "query": "Is the product PROD-004 in stock?",
+      "expected_answer": "The 24\" Full HD Monitor (PROD-004) is currently out of stock.",
+      "expected_tools": ["get_product"],
+      "category": "product-lookup"
+    },
+    {
+      "query_id": "action-006",
+      "query": "I want a refund for order ORD-2024-001 because the laptop screen is cracked",
+      "expected_answer": "A refund has been submitted for order ORD-2024-001. The refund amount is €1,049.98 and the status is pending.",
+      "expected_tools": ["process_refund"],
+      "category": "refund-process"
+    },
+    {
+      "query_id": "action-007",
+      "query": "What is the refund status for order ORD-2024-005?",
+      "expected_answer": "The refund for order ORD-2024-005 (REF-2024-001) has been completed. The refund amount was €219.98.",
+      "expected_tools": ["get_refund"],
+      "category": "refund-lookup"
+    },
+    {
+      "query_id": "action-008",
+      "query": "What items are in order ORD-2024-003 and when will it arrive?",
+      "expected_answer": "Order ORD-2024-003 contains a ProBook 13 Laptop and a Wireless Keyboard & Mouse Combo. The estimated delivery date is 2024-12-10.",
+      "expected_tools": ["get_order"],
+      "category": "order-details"
+    },
+    {
+      "query_id": "action-009",
+      "query": "Show me all of Liam O'Brien's orders and also check if the UltraWide 34 inch Monitor is available",
+      "expected_answer": "Liam O'Brien has one order: ORD-2024-002 for an UltraWide 34\" Monitor, currently shipped. The UltraWide 34\" Monitor is in stock.",
+      "expected_tools": ["list_customer_orders", "search_product"],
+      "category": "multi-tool"
+    },
+    {
+      "query_id": "action-010",
+      "query": "I'd like to return order ORD-2024-004 for a refund, the monitors are defective",
+      "expected_answer": "A refund has been submitted for order ORD-2024-004. The refund amount is €559.98 and the status is pending.",
+      "expected_tools": ["process_refund"],
+      "category": "refund-process"
+    }
+  ]
+}

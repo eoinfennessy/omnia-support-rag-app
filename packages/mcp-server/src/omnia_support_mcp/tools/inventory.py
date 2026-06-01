@@ -1,13 +1,7 @@
 """Inventory tools."""
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 from omnia_support_mcp.services.inventory import service
-
-if TYPE_CHECKING:
-    from omnia_support_mcp.services.inventory.store import Product
+from omnia_support_mcp.services.inventory.store import Product  # noqa: TC001 — FastMCP needs runtime access
 
 
 def get_product(product_id: str) -> Product:

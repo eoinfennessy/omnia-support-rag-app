@@ -1,13 +1,7 @@
 """Order tools."""
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 from omnia_support_mcp.services.orders import service
-
-if TYPE_CHECKING:
-    from omnia_support_mcp.services.orders.store import Order
+from omnia_support_mcp.services.orders.store import Order  # noqa: TC001 — FastMCP needs runtime access
 
 
 def get_order(order_id: str) -> Order:
