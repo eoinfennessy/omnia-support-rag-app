@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, JsonValue
 
 from ..common import sync_dataset
 
@@ -17,13 +17,44 @@ if TYPE_CHECKING:
 DATASET_NAME = "omnia-support-aggregator-gold-set"
 
 
+class ContextChunk(BaseModel):
+    """A single document chunk used as retrieval context."""
+
+    page_content: str
+
+
+class InformationInput(BaseModel):
+    """Pre-canned information agent result for aggregator evaluation."""
+
+    query: str
+    answer: str
+    context: list[ContextChunk] = Field(default_factory=list)
+
+
+class ToolCallInput(BaseModel):
+    """Pre-canned tool call for aggregator evaluation."""
+
+    tool_name: str
+    arguments: dict[str, JsonValue] = Field(default_factory=dict)
+    result: dict[str, JsonValue]
+
+
+class ActionInput(BaseModel):
+    """Pre-canned action agent result for aggregator evaluation."""
+
+    query: str
+    answer: str
+    tool_calls: list[ToolCallInput] = Field(default_factory=list)
+
+
 class AggregatorGoldSetEntry(BaseModel):
     """A test query with pre-canned sub-query results for aggregator evaluation."""
 
     query_id: str
     query: str
     expected_answer: str
-    aggregator_inputs: list[dict[str, str]]
+    information_inputs: list[InformationInput]
+    action_inputs: list[ActionInput]
     category: str = ""
     notes: str = ""
 
@@ -48,7 +79,8 @@ def build_records(entries: list[AggregatorGoldSetEntry]) -> list[dict[str, Any]]
         {
             "inputs": {
                 "question": entry.query,
-                "aggregator_inputs": entry.aggregator_inputs,
+                "information_inputs": [inp.model_dump() for inp in entry.information_inputs],
+                "action_inputs": [inp.model_dump() for inp in entry.action_inputs],
             },
             "expectations": {
                 "expected_response": entry.expected_answer,

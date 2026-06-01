@@ -1,0 +1,120 @@
+{
+  "aggregator_queries": [
+    {
+      "query_id": "AGG-001",
+      "query": "Where is order ORD-2024-002 and can I return items after 30 days?",
+      "expected_answer": "Your order ORD-2024-002 is currently shipped and on its way, with an estimated delivery date of 3 December 2024. The tracking number is IE2024TRK00198 and the order contains 1x UltraWide 34\" Monitor (€549.99). Regarding returns after 30 days, our standard return policy allows returns within 30 days of the delivery date for items that are unopened or show no signs of use. After 30 days, returns are generally not accepted unless the product has a manufacturer defect or is covered under warranty.",
+      "action_inputs": [
+        {
+          "query": "What is the status of order ORD-2024-002?",
+          "answer": "Order ORD-2024-002 is currently shipped. The tracking number is IE2024TRK00198 and the estimated delivery date is 3 December 2024. The order contains 1x UltraWide 34\" Monitor (€549.99), with a total of €549.99.",
+          "tool_calls": [
+            {
+              "tool_name": "get_order",
+              "arguments": {"order_id": "ORD-2024-002"},
+              "result": {
+                "data": {
+                  "order_id": "ORD-2024-002",
+                  "customer_name": "Liam O'Brien",
+                  "status": "shipped",
+                  "tracking_number": "IE2024TRK00198",
+                  "estimated_delivery": "2024-12-03",
+                  "delivered_date": null,
+                  "items": [
+                    {"product_id": "PROD-003", "name": "UltraWide 34\" Monitor", "quantity": 1, "price": 549.99}
+                  ],
+                  "total": 549.99
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "information_inputs": [
+        {
+          "query": "Can I return items after 30 days?",
+          "answer": "According to Omnia Retail's return policy, customers may return items within 30 days of the delivery date for a full refund, provided the items are unopened or show no signs of use. After 30 days, returns are not accepted unless the product has a manufacturer defect or is covered under warranty.",
+          "context": [
+            {
+              "page_content": "OMNIA RETAIL LTD - RETURN POLICY\n\nStandard Return Period: 30 days from delivery date\n\nEligible Items:\n- Unopened products in original packaging with all accessories\n- Opened products showing no signs of use (for testing purposes)\n- Products with manufacturer defects discovered within 30 days\n\nNon-Returnable Items:\n- Software and digital products once license key activated\n- Items marked as 'Final Sale' or 'Clearance'\n- Personalized or custom-configured products"
+            },
+            {
+              "page_content": "FAQ: What warranty coverage do I get when I buy from Omnia Retail?\n\nAll products sold by Omnia Retail come with two distinct layers of warranty protection:\n\n1. STATUTORY RIGHTS (Irish and EU Law)\nUnder the Consumer Rights Act 2022 (Ireland), which implements the EU Sale of Goods Directive (2019/771/EU), you have a statutory 2-year right to remedies for any product that is not in conformity with the contract at the time of delivery."
+            }
+          ]
+        }
+      ],
+      "category": "multi-mixed",
+      "notes": "Tests aggregation of one action result (order lookup) and one information result (policy question)"
+    },
+    {
+      "query_id": "AGG-002",
+      "query": "Check ORD-2024-001 status, what warranty covers, and is UltraWide 34 in stock?",
+      "expected_answer": "Your order ORD-2024-001 has been delivered on 14 November 2024. It contained 1x ProBook 15 Laptop (€899.99) and 1x USB-C Docking Station (€149.99). Regarding warranty coverage, all products come with the manufacturer's standard warranty which covers manufacturing defects and hardware failures. Warranty periods vary by product type — typically 1 year for laptops and 3 years for monitors. Additionally, under Irish and EU consumer law, you have a statutory 2-year right to remedies for any product not in conformity at the time of delivery. As for the UltraWide 34\" Monitor, it is currently in stock with 15 units available at €549.99.",
+      "action_inputs": [
+        {
+          "query": "What is the status of order ORD-2024-001?",
+          "answer": "Order ORD-2024-001 has been delivered on 14 November 2024. The tracking number was IE2024TRK00142. The order contained 1x ProBook 15 Laptop (€899.99) and 1x USB-C Docking Station (€149.99), with a total of €1,049.98.",
+          "tool_calls": [
+            {
+              "tool_name": "get_order",
+              "arguments": {"order_id": "ORD-2024-001"},
+              "result": {
+                "data": {
+                  "order_id": "ORD-2024-001",
+                  "customer_name": "Sarah Murphy",
+                  "status": "delivered",
+                  "tracking_number": "IE2024TRK00142",
+                  "estimated_delivery": "2024-11-15",
+                  "delivered_date": "2024-11-14",
+                  "items": [
+                    {"product_id": "PROD-001", "name": "ProBook 15 Laptop", "quantity": 1, "price": 899.99},
+                    {"product_id": "PROD-005", "name": "USB-C Docking Station", "quantity": 1, "price": 149.99}
+                  ],
+                  "total": 1049.98
+                }
+              }
+            }
+          ]
+        },
+        {
+          "query": "Is the UltraWide 34 Monitor in stock?",
+          "answer": "Yes, the UltraWide 34\" Monitor (PROD-003) is currently in stock. Price: €549.99. Available quantity: 15 units. Warehouse location: Cork.",
+          "tool_calls": [
+            {
+              "tool_name": "search_product",
+              "arguments": {"product_name": "UltraWide 34"},
+              "result": {
+                "data": {
+                  "product_id": "PROD-003",
+                  "name": "UltraWide 34\" Monitor",
+                  "category": "monitors",
+                  "price": 549.99,
+                  "stock_quantity": 15,
+                  "warehouse_location": "cork",
+                  "in_stock": true
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "information_inputs": [
+        {
+          "query": "What does the warranty cover?",
+          "answer": "All products sold by Omnia Retail come with the manufacturer's standard warranty, which covers manufacturing defects and hardware failures. Warranty periods vary by product type — typically 1 year for laptops, 3 years for monitors, and 1-2 years for accessories. Under Irish and EU consumer law, you also have a statutory 2-year right to remedies for any product not in conformity at the time of delivery.",
+          "context": [
+            {
+              "page_content": "OMNIA RETAIL LTD - WARRANTY POLICY\n\nManufacturer Warranty:\n- All products sold with manufacturer's standard warranty\n- Warranty period varies by manufacturer and product type\n- Typical periods: Laptops (1 year), Monitors (3 years), Accessories (1-2 years)\n- Warranty coverage begins from date of purchase\n\nWarranty Claims Process:\n1. Contact Omnia Retail customer support\n2. Provide proof of purchase and product serial number\n3. Describe issue and troubleshooting steps attempted\n4. We coordinate directly with manufacturer for repairs or replacement"
+            },
+            {
+              "page_content": "FAQ: What warranty coverage do I get when I buy from Omnia Retail?\n\nAll products sold by Omnia Retail come with two distinct layers of warranty protection:\n\n1. STATUTORY RIGHTS (Irish and EU Law)\nUnder the Consumer Rights Act 2022 (Ireland), which implements the EU Sale of Goods Directive (2019/771/EU), you have a statutory 2-year right to remedies for any product that is not in conformity with the contract at the time of delivery."
+            }
+          ]
+        }
+      ],
+      "category": "multi-mixed",
+      "notes": "Tests aggregation of two action results and one information result (3 sub-queries total)"
+    }
+  ]
+}

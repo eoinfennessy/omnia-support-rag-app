@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 
 from .action import cli as action_cli
+from .aggregator import cli as aggregator_cli
 from .information import cli as information_cli
 from .triage import cli as triage_cli
 
@@ -34,6 +35,12 @@ def main() -> None:
     )
     action_cli.add_args(action_parser)
 
+    aggregator_parser = subparsers.add_parser(
+        "aggregator",
+        help="Evaluate the aggregator agent",
+    )
+    aggregator_cli.add_args(aggregator_parser)
+
     args = parser.parse_args()
 
     if args.agent == "information":
@@ -42,3 +49,5 @@ def main() -> None:
         triage_cli.main(args)
     elif args.agent == "action":
         action_cli.main(args)
+    elif args.agent == "aggregator":
+        aggregator_cli.main(args)
