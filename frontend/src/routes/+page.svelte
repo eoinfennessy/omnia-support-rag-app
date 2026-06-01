@@ -41,7 +41,13 @@
 
 		try {
 			const res = await sendMessage(chat.sessionId, text);
-			chat.messages.push({ role: 'assistant', content: res.answer, sources: res.sources });
+			chat.messages.push({
+				role: 'assistant',
+				content: res.answer,
+				sources: res.sources,
+				urgency: res.urgency,
+				subQueryResults: res.sub_query_results
+			});
 		} catch {
 			chat.messages.push({
 				role: 'assistant',
@@ -79,7 +85,13 @@
 		{:else}
 			<div class="mx-auto flex max-w-3xl flex-col gap-4">
 				{#each chat.messages as msg}
-					<ChatMessage role={msg.role} content={msg.content} sources={msg.sources} />
+					<ChatMessage
+						role={msg.role}
+						content={msg.content}
+						sources={msg.sources}
+						urgency={msg.urgency}
+						subQueryResults={msg.subQueryResults}
+					/>
 				{/each}
 				{#if loading}
 					<div class="flex justify-start">

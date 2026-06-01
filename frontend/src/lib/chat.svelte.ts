@@ -1,9 +1,11 @@
-import type { Source } from '$lib/api';
+import type { Source, SubQueryResult } from '$lib/api';
 
 export interface Message {
 	role: 'user' | 'assistant';
 	content: string;
 	sources?: Source[];
+	urgency?: string | null;
+	subQueryResults?: SubQueryResult[];
 }
 
 let messages: Message[] = $state([]);

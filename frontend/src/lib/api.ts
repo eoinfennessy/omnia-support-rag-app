@@ -4,10 +4,43 @@ export interface Source {
 	type: string;
 }
 
+export interface ToolCall {
+	tool_name: string;
+	arguments: Record<string, unknown>;
+	result: { data?: unknown; error?: string };
+}
+
+export interface ContextChunk {
+	id: string;
+	page_content: string;
+	metadata: { document_id: string; type: string; category: string; [key: string]: unknown };
+	score: number;
+}
+
+export interface InformationSubQueryResult {
+	query: string;
+	answer: string;
+	context: ContextChunk[];
+}
+
+export interface ActionSubQueryResult {
+	query: string;
+	answer: string;
+	tool_calls: ToolCall[];
+}
+
+export type SubQueryResult = InformationSubQueryResult | ActionSubQueryResult;
+
+export function isActionResult(r: SubQueryResult): r is ActionSubQueryResult {
+	return 'tool_calls' in r;
+}
+
 export interface ChatResponse {
 	session_id: string;
 	answer: string;
 	sources: Source[];
+	urgency: string | null;
+	sub_query_results: SubQueryResult[];
 }
 
 export interface Document {
