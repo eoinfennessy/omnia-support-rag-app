@@ -1,8 +1,7 @@
-"""Tests for the evaluation module."""
+"""Tests for information agent evaluation: gold set, scorers, and dataset sync."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
@@ -11,14 +10,13 @@ import pytest
 from mlflow.exceptions import MlflowException
 from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
 
-from omnia_support_eval.gold_set import (
+from omnia_support_eval.information.gold_set import (
     DATASET_NAME,
     GoldSetEntry,
-    content_hash,
     load_gold_set,
-    sync_dataset,
+    sync_gold_set,
 )
-from omnia_support_eval.scorers import retrieval_mrr, retrieval_recall
+from omnia_support_eval.information.scorers import retrieval_mrr, retrieval_recall
 from omnia_support_models import TestQuery
 
 if TYPE_CHECKING:
@@ -322,20 +320,7 @@ class TestConversationExpansion:
         assert entries[0].history == []
 
 
-class TestContentHash:
-    def test_returns_sha256_hex_digest(self):
-        expected = hashlib.sha256(b"hello").hexdigest()
-
-        assert content_hash("hello") == expected
-
-    def test_different_inputs_produce_different_hashes(self):
-        assert content_hash("a") != content_hash("b")
-
-    def test_deterministic(self):
-        assert content_hash("test") == content_hash("test")
-
-
-class TestRetrievalPrecision:
+class TestRetrievalRecall:
     def test_returns_none_when_no_expected_ids(self):
         trace = _make_trace([])
 
@@ -354,7 +339,7 @@ class TestRetrievalPrecision:
 
         assert result == 0.0
 
-    def test_perfect_precision(self):
+    def test_perfect_recall(self):
         outputs = [
             {"id": "doc-1-chunk-0", "chunk": "text", "metadata": {"document_id": "doc-1"}, "score": 0.9},
             {"id": "doc-2-chunk-0", "chunk": "text", "metadata": {"document_id": "doc-2"}, "score": 0.8},
@@ -368,7 +353,7 @@ class TestRetrievalPrecision:
 
         assert result == 1.0
 
-    def test_partial_precision(self):
+    def test_partial_recall(self):
         outputs = [
             {"id": "doc-1-chunk-0", "chunk": "text", "metadata": {"document_id": "doc-1"}, "score": 0.9},
         ]
@@ -531,15 +516,15 @@ def _make_gold_entry(
     )
 
 
-@patch("omnia_support_eval.gold_set.create_dataset")
-@patch("omnia_support_eval.gold_set.get_dataset")
+@patch("omnia_support_eval.common.create_dataset")
+@patch("omnia_support_eval.common.get_dataset")
 class TestSyncDataset:
     def test_returns_existing_dataset_when_hash_matches(self, mock_get, mock_create):
         existing = MagicMock()
         mock_get.return_value = existing
         entries = [_make_gold_entry()]
 
-        result = sync_dataset(entries, "abc123def456", "exp-1")
+        result = sync_gold_set(entries, "abc123def456", "exp-1")
 
         expected_name = f"{DATASET_NAME}-abc123def456"
         mock_get.assert_called_once_with(name=expected_name)
@@ -552,7 +537,7 @@ class TestSyncDataset:
         mock_create.return_value = created
         entries = [_make_gold_entry(query_id="TQ-001", query="Q?", expected_answer="A")]
 
-        result = sync_dataset(entries, "abc123def456", "exp-1")
+        result = sync_gold_set(entries, "abc123def456", "exp-1")
 
         expected_name = f"{DATASET_NAME}-abc123def456"
         mock_create.assert_called_once_with(name=expected_name, experiment_id="exp-1")
@@ -567,7 +552,7 @@ class TestSyncDataset:
         mock_get.side_effect = MlflowException("server error", error_code=INTERNAL_ERROR)
 
         with pytest.raises(MlflowException, match="server error"):
-            sync_dataset([_make_gold_entry()], "abc123def456", "exp-1")
+            sync_gold_set([_make_gold_entry()], "abc123def456", "exp-1")
 
         mock_create.assert_not_called()
 
@@ -576,7 +561,7 @@ class TestSyncDataset:
         mock_get.return_value = existing
         full_hash = "a" * 64
 
-        sync_dataset([_make_gold_entry()], full_hash, "exp-1")
+        sync_gold_set([_make_gold_entry()], full_hash, "exp-1")
 
         expected_name = f"{DATASET_NAME}-aaaaaaaaaaaa"
         mock_get.assert_called_once_with(name=expected_name)
@@ -590,7 +575,7 @@ class TestSyncDataset:
             _make_gold_entry(query_id="TQ-002", query="Q2?", expected_answer="A2", category="returns"),
         ]
 
-        sync_dataset(entries, "abc123def456", "exp-1")
+        sync_gold_set(entries, "abc123def456", "exp-1")
 
         records = created.merge_records.call_args[0][0]
         assert len(records) == 2
@@ -609,7 +594,7 @@ class TestSyncDataset:
         entries = [_make_gold_entry(query_id="TQ-001", query="Follow up?", expected_answer="A")]
         entries[0].history = history
 
-        sync_dataset(entries, "abc123def456", "exp-1")
+        sync_gold_set(entries, "abc123def456", "exp-1")
 
         records = created.merge_records.call_args[0][0]
         assert records[0]["inputs"]["history"] == history
@@ -620,7 +605,7 @@ class TestSyncDataset:
         mock_create.return_value = created
         entries = [_make_gold_entry()]
 
-        sync_dataset(entries, "abc123def456", "exp-1")
+        sync_gold_set(entries, "abc123def456", "exp-1")
 
         records = created.merge_records.call_args[0][0]
         assert records[0]["inputs"]["history"] == []

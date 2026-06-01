@@ -1,16 +1,15 @@
-"""Gold set loading and MLflow dataset synchronisation."""
+"""Gold set loading and MLflow dataset synchronisation for information agent evaluation."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 from typing import TYPE_CHECKING, Any
 
-from mlflow.exceptions import MlflowException
-from mlflow.genai.datasets import create_dataset, get_dataset
 from pydantic import Field
 
 from omnia_support_models import Dataset, TestQuery
+
+from ..common import sync_dataset
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -83,36 +82,9 @@ def load_gold_set(gold_set_path: Path, dataset_path: Path) -> list[GoldSetEntry]
     return entries
 
 
-def content_hash(raw: str) -> str:
-    """Compute a SHA-256 hash of the gold set file contents."""
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
-
-def sync_dataset(
-    entries: list[GoldSetEntry],
-    hash_value: str,
-    experiment_id: str,
-) -> EvaluationDataset:
-    """Sync gold set entries into an MLflow dataset, skipping if unchanged."""
-    short_hash = hash_value[:12]
-    dataset_name = f"{DATASET_NAME}-{short_hash}"
-
-    try:
-        dataset = get_dataset(name=dataset_name)
-    except MlflowException as e:
-        if e.error_code != "RESOURCE_DOES_NOT_EXIST":
-            raise
-    else:
-        print(f"  MLflow dataset '{dataset_name}' is up to date")
-        return dataset
-
-    print(f"  Creating MLflow dataset '{dataset_name}'...")
-    dataset = create_dataset(
-        name=dataset_name,
-        experiment_id=experiment_id,
-    )
-
-    records = [
+def build_records(entries: list[GoldSetEntry]) -> list[dict[str, Any]]:
+    """Build MLflow dataset records from gold set entries."""
+    return [
         {
             "inputs": {"question": entry.query, "history": entry.history},
             "expectations": {
@@ -126,6 +98,17 @@ def sync_dataset(
         }
         for entry in entries
     ]
-    dataset.merge_records(records)
-    print(f"  Synced {len(records)} records to MLflow dataset")
-    return dataset
+
+
+def sync_gold_set(
+    entries: list[GoldSetEntry],
+    hash_value: str,
+    experiment_id: str,
+) -> EvaluationDataset:
+    """Sync information gold set entries into an MLflow dataset."""
+    return sync_dataset(
+        build_records(entries),
+        hash_value,
+        experiment_id,
+        dataset_name_prefix=DATASET_NAME,
+    )

@@ -1,4 +1,4 @@
-"""Core evaluation orchestration: config, predict function, and MLflow run."""
+"""Information agent evaluation: config, predict function, and MLflow run."""
 
 from __future__ import annotations
 
@@ -16,24 +16,24 @@ from mlflow.genai.scorers import (
     RetrievalSufficiency,
 )
 
-from omnia_support_rag import CompletionsClient, ContextProcessor, Rescorer, run_rag_pipeline
+from omnia_support_agents import InformationAgent
 
-from .gold_set import GoldSetEntry, content_hash, sync_dataset
+from ..common import content_hash, resolve_prompt_uri
+from .gold_set import GoldSetEntry, sync_gold_set
+from .scorers import retrieval_mrr, retrieval_recall
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
     from openai.types.chat import ChatCompletionMessageParam
 
-    from omnia_support_rag import Retriever
+    from omnia_support_rag import CompletionsClient, ContextProcessor, Rescorer, Retriever
     from omnia_support_rag.query_interpretation import QueryInterpreter
-
-from .scorers import retrieval_mrr, retrieval_recall
 
 
 @dataclass(frozen=True)
 class RunEvaluationConfig:
-    """Configuration for an evaluation run."""
+    """Configuration for an information agent evaluation run."""
 
     gold_set: list[GoldSetEntry]
     prompt_name: str
@@ -72,37 +72,33 @@ def make_predict_fn(
     use_metadata_filter: bool = True,
 ) -> Callable[[str], str]:
     """Create a predict function for mlflow.genai.evaluate()."""
+    agent = InformationAgent(
+        completions_client=completions_client,
+        retriever=retriever,
+        prompt_uri=prompt_uri,
+        n_results=n_results,
+        model=model,
+        rescorers=rescorers,
+        context_processors=context_processors,
+        query_interpreter=query_interpreter,
+        use_metadata_filter=use_metadata_filter,
+    )
 
     def predict(question: str, history: list[ChatCompletionMessageParam] | None = None) -> str:
-        result = run_rag_pipeline(
-            question,
-            completions_client=completions_client,
-            retriever=retriever,
-            prompt_uri=prompt_uri,
-            n_results=n_results,
-            model=model,
-            history=history or None,
-            rescorers=rescorers,
-            context_processors=context_processors,
-            query_interpreter=query_interpreter,
-            use_metadata_filter=use_metadata_filter,
-        )
+        result = agent.handle(question, history=history or None)
         return result.answer
 
     return predict
 
 
 def run_evaluation(config: RunEvaluationConfig) -> None:
-    """Run the evaluation pipeline."""
+    """Run the information agent evaluation pipeline."""
     mlflow.set_tracking_uri(
         os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5000"),
     )
     mlflow.set_experiment(config.experiment_name)
 
-    if config.prompt_version is not None:
-        prompt_uri = f"prompts:/{config.prompt_name}/{config.prompt_version}"
-    else:
-        prompt_uri = f"prompts:/{config.prompt_name}@{config.prompt_alias}"
+    prompt_uri = resolve_prompt_uri(config.prompt_name, config.prompt_version, config.prompt_alias)
     prompt = mlflow.genai.load_prompt(prompt_uri)
     print(f"Loaded prompt '{config.prompt_name}' version {prompt.version}")
 
@@ -122,7 +118,7 @@ def run_evaluation(config: RunEvaluationConfig) -> None:
     experiment = mlflow.get_experiment_by_name(config.experiment_name)
     if experiment is None:
         raise SystemExit(f"Error: experiment '{config.experiment_name}' not found")
-    dataset = sync_dataset(config.gold_set, gold_set_hash, experiment.experiment_id)
+    dataset = sync_gold_set(config.gold_set, gold_set_hash, experiment.experiment_id)
 
     predict_fn = make_predict_fn(
         completions_client=config.completions_client,

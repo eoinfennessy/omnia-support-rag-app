@@ -7,6 +7,7 @@ dependencies = [
     "omnia-support-models",
     "omnia-support-rag",
     "omnia-support-store",
+    "omnia-support-agents",
     "mlflow>=3.11.1",
     "openai>=2.32.0",
     "pyyaml>=6.0.3",
@@ -21,6 +22,7 @@ register-prompt = "omnia_support_eval.register_prompt:main"
 omnia-support-models = { workspace = true }
 omnia-support-rag = { workspace = true }
 omnia-support-store = { workspace = true }
+omnia-support-agents = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]

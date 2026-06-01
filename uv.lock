@@ -1562,6 +1562,7 @@ version = "0.1.0"
 source = { editable = "packages/evaluation" }
 dependencies = [
     { name = "mlflow" },
+    { name = "omnia-support-agents" },
     { name = "omnia-support-models" },
     { name = "omnia-support-rag" },
     { name = "omnia-support-store" },
@@ -1573,6 +1574,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "mlflow", specifier = ">=3.11.1" },
+    { name = "omnia-support-agents", editable = "packages/agents" },
     { name = "omnia-support-models", editable = "packages/models" },
     { name = "omnia-support-rag", editable = "packages/rag" },
     { name = "omnia-support-store", editable = "packages/store" },

@@ -1,4 +1,4 @@
-"""Custom MLflow GenAI scorers for RAG evaluation."""
+"""Custom MLflow GenAI scorers for information agent / RAG evaluation."""
 
 from __future__ import annotations
 
