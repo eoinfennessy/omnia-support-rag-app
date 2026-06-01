@@ -48,7 +48,8 @@ services:
       - "8081:8081"
     environment:
       MCP_TRANSPORT: sse
-      MCP_PORT: "8081"
+      FASTMCP_HOST: "0.0.0.0"
+      FASTMCP_PORT: "8081"
 
   app:
     build:
@@ -96,10 +97,11 @@ services:
       mlflow:
         condition: service_healthy
 
-  evaluation:
+  evaluation-information:
     build:
       context: .
       dockerfile: packages/evaluation/Dockerfile
+    command: ["evaluate", "information", "--config", "eval_config.yaml"]
     env_file: ${ENV_FILE:-.env}
     environment:
       CHROMA_HOST: chromadb
@@ -111,6 +113,56 @@ services:
     depends_on:
       chromadb:
         condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      register-prompt:
+        condition: service_completed_successfully
+    profiles:
+      - eval
+
+  evaluation-triage:
+    build:
+      context: .
+      dockerfile: packages/evaluation/Dockerfile
+    command: ["evaluate", "triage"]
+    env_file: ${ENV_FILE:-.env}
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    depends_on:
+      mlflow:
+        condition: service_healthy
+      register-prompt:
+        condition: service_completed_successfully
+    profiles:
+      - eval
+
+  evaluation-action:
+    build:
+      context: .
+      dockerfile: packages/evaluation/Dockerfile
+    command: ["evaluate", "action", "--mcp-server-url", "http://mcp-server:8081/sse"]
+    env_file: ${ENV_FILE:-.env}
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    depends_on:
+      mlflow:
+        condition: service_healthy
+      mcp-server:
+        condition: service_started
+      register-prompt:
+        condition: service_completed_successfully
+    profiles:
+      - eval
+
+  evaluation-aggregator:
+    build:
+      context: .
+      dockerfile: packages/evaluation/Dockerfile
+    command: ["evaluate", "aggregator"]
+    env_file: ${ENV_FILE:-.env}
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    depends_on:
       mlflow:
         condition: service_healthy
       register-prompt:

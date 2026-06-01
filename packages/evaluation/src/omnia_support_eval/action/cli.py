@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from agents.mcp import MCPServerStdio
+from agents.mcp import MCPServerSse, MCPServerStdio
 from dotenv import load_dotenv
 
 from ..common import load_yaml_config, resolve_config
@@ -25,6 +25,7 @@ _DEFAULTS: dict[str, Any] = {
     "prompt_alias": "production",
     "model": "gpt-5.4-mini",
     "experiment_name": "omnia-support-action-eval",
+    "mcp_server_url": None,
 }
 
 
@@ -44,6 +45,11 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 
     parser.add_argument("--model", help="LLM model for action agent")
     parser.add_argument("--experiment-name", help="MLflow experiment name")
+    parser.add_argument(
+        "--mcp-server-url",
+        help="MCP server SSE URL (e.g. http://host:8081/sse). "
+        "If omitted, spawns a local MCP server subprocess via stdio.",
+    )
 
 
 def main(args: argparse.Namespace) -> None:
@@ -59,10 +65,16 @@ def main(args: argparse.Namespace) -> None:
 
     gold_set = load_gold_set(Path(args.gold_set))
 
-    mcp_server = MCPServerStdio(
-        params={"command": "uv", "args": ["run", "omnia-support-mcp"]},
-        name="omnia-support-tools",
-    )
+    if args.mcp_server_url:
+        mcp_server = MCPServerSse(
+            params={"url": args.mcp_server_url},
+            name="omnia-support-tools",
+        )
+    else:
+        mcp_server = MCPServerStdio(
+            params={"command": "uv", "args": ["run", "omnia-support-mcp"]},
+            name="omnia-support-tools",
+        )
 
     config = RunEvaluationConfig(
         gold_set=gold_set,

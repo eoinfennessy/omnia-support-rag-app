@@ -1,7 +1,7 @@
 MLFLOW_TRACKING_URI ?= http://localhost:5000
 RETRIEVAL_MODE ?= hybrid
 
-.PHONY: help lint lint-fix format format-check type-check check fix install-hooks up down infra-local infra-docker ingest test register-prompt eval-local eval-docker frontend-build app mcp-local mcp-docker mcp-inspect
+.PHONY: help lint lint-fix format format-check type-check check fix install-hooks up down infra-local infra-docker ingest test register-prompt eval-information-local eval-triage-local eval-action-local eval-aggregator-local eval-information-docker eval-triage-docker eval-action-docker eval-aggregator-docker frontend-build app mcp-local mcp-docker mcp-inspect
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$|^##@' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; /^##@/ {printf "\n\033[1m%s\033[0m\n", substr($$0, 5); next} {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -54,13 +54,39 @@ register-prompt: ## Register all prompts to MLflow
 		--prompt-path prompts/aggregate.yaml \
 		--prompt-name aggregate
 
-eval-local: register-prompt ## Run evaluation locally
+eval-information-local: register-prompt ## Run information agent evaluation locally
 	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
 	MLFLOW_GENAI_EVALUATION_MAX_WORKERS=1 \
-		uv run --package omnia-support-eval evaluate --config packages/evaluation/eval_config.yaml --retrieval-mode $(RETRIEVAL_MODE)
+		uv run --package omnia-support-eval evaluate information \
+		--config packages/evaluation/src/omnia_support_eval/information/eval_config.yaml \
+		--retrieval-mode $(RETRIEVAL_MODE)
 
-eval-docker: ## Run evaluation in Docker
-	docker compose --profile eval run --rm evaluation
+eval-triage-local: register-prompt ## Run triage agent evaluation locally
+	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
+	MLFLOW_GENAI_EVALUATION_MAX_WORKERS=1 \
+		uv run --package omnia-support-eval evaluate triage
+
+eval-action-local: register-prompt ## Run action agent evaluation locally
+	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
+	MLFLOW_GENAI_EVALUATION_MAX_WORKERS=1 \
+		uv run --package omnia-support-eval evaluate action
+
+eval-aggregator-local: register-prompt ## Run aggregator agent evaluation locally
+	MLFLOW_TRACKING_URI=$(MLFLOW_TRACKING_URI) \
+	MLFLOW_GENAI_EVALUATION_MAX_WORKERS=1 \
+		uv run --package omnia-support-eval evaluate aggregator
+
+eval-information-docker: ## Run information agent evaluation in Docker
+	docker compose --profile eval run --rm evaluation-information
+
+eval-triage-docker: ## Run triage agent evaluation in Docker
+	docker compose --profile eval run --rm evaluation-triage
+
+eval-action-docker: ## Run action agent evaluation in Docker
+	docker compose --profile eval run --rm evaluation-action
+
+eval-aggregator-docker: ## Run aggregator agent evaluation in Docker
+	docker compose --profile eval run --rm evaluation-aggregator
 
 ##@ Application
 frontend-build: ## Build the SvelteKit frontend

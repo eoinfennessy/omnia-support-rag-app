@@ -1,5 +1,8 @@
 """MCP server entry point — registers customer support tools."""
 
+import os
+from typing import Literal, cast, get_args
+
 from mcp.server.fastmcp import FastMCP
 
 from omnia_support_mcp.tools.inventory import get_product, search_product
@@ -15,10 +18,15 @@ mcp.tool()(search_product)
 mcp.tool()(process_refund)
 mcp.tool()(get_refund)
 
+Transport = Literal["stdio", "sse", "streamable-http"]
+
 
 def main() -> None:
     """Run the MCP server."""
-    mcp.run()
+    transport = os.environ.get("MCP_TRANSPORT", "stdio")
+    if transport not in get_args(Transport):
+        raise SystemExit(f"Invalid MCP_TRANSPORT={transport!r}, expected one of {get_args(Transport)}")
+    mcp.run(transport=cast("Transport", transport))
 
 
 if __name__ == "__main__":
