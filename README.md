@@ -4,9 +4,11 @@ Name: Eoin Fennessy
 
 Student Number: 20100018
 
-Github Repo URL: https://github.com/setu-ibm/ai-assistant-eoinfennessy
+GitHub Repo URLs:
+- Assignment 1: https://github.com/setu-ibm/ai-assistant-eoinfennessy
+- Assignment 2: https://github.com/setu-ibm/agentic-assistant-eoinfennessy
 
-Youtube (or other) URL: https://youtu.be/Ft4hb1KT89c sorry - the video is a bit long. Please watch in 1.5 or 2x speed :)
+Youtube URL (assignment 1): https://youtu.be/Ft4hb1KT89c sorry - the video is a bit long. Please watch in 1.5 or 2x speed :)
 
 ----
 
@@ -150,3 +152,28 @@ make fix      # Auto-fix lint and formatting issues
    - Flag for human escalation with reasoning - []
 
    Fallback operates at two levels. At the retrieval level, threshold filters on both retrievers reject low-confidence results - if every chunk is filtered out, the pipeline returns a set fallback response asking the user to rephrase, without calling the LLM. At the generation level, the system prompt instructs the model to say it can't answer the question instead of guessing when the retrieved context is insufficient. Human escalation flagging is not implemented.
+
+## Assignment 2a
+
+1. **Specialised Agent Architecture: Build at least 3 specialised agents** 
+   - Triage Agent: Classify urgency, route to appropriate handler - [X]
+   - Information Agent: Uses advanced RAG with query decomposition - [X]
+   - Action Agent: Executes operations via tool calling - [X]
+   - Agents must communicate and coordinate - [X]
+
+2. **Query Decomposition & Multi-Step Reasoning: Handle complex requests** 
+   - Must break down into sub-problems - [X]
+   - Execute multiple retrieval operations - [X]
+   - Synthesise comprehensive response - [X]
+
+3. **Tool Integration: Connect to simulated backend systems (you'll provide mock APIs)**
+   - At least 1 API connected - [X]
+   - MCP used - [X]
+
+4. **Advanced Retrieval Strategies: Implement at least 2 advanced techniques**
+   - Query expansion/rewriting - [X]
+   - Hypothetical document embeddings (HyDE) - []
+   - Parent-child document chunking - []
+   - Temporal/metadata boosting - [X]
+   - Students choose and justify their approaches - [X]
+      - Query expansion, rewriting and metadata filtering & boosting were included & configured because of improvements in evaluation metrics. See [elective/README.md](elective/README.md) for more detail.
