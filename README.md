@@ -1,14 +1,10 @@
-# Omnia Support RAG App
+# Omnia Support - AI Chatbot
 
-Name: Eoin Fennessy
+A multi-agent AI chatbot for customer support, combining RAG with hybrid search, a document-ingestion pipeline, and multi-turn conversational memory. A triage agent identifies intent, breaks complex requests into sub-queries, and routes them to specialist agents; MCP servers connect agents to order, refund, and inventory tools. An MLflow-backed evaluation framework tracks agent and RAG pipeline performance.
 
-Student Number: 20100018
+<img width="909" height="805" alt="Image" src="https://github.com/user-attachments/assets/28d9e6d4-bbe1-49d6-b89a-4461b028e05a" />
 
-GitHub Repo URLs:
-- Assignment 1: https://github.com/setu-ibm/ai-assistant-eoinfennessy
-- Assignment 2: https://github.com/setu-ibm/agentic-assistant-eoinfennessy
-
-Youtube URL (assignment 1): https://youtu.be/Ft4hb1KT89c sorry - the video is a bit long. Please watch in 1.5 or 2x speed :)
+See [presentation/README.md](./presentation/README.md) for system architecture and pipeline flows.
 
 ----
 
